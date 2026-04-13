@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — Product Vision</title>
+<style>
+:root {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --text-2: #444;
+  --text-3: #888;
+  --accent: #007aff;
+  --accent-bg: rgba(0,122,255,0.06);
+  --green: #34c759;
+  --green-bg: rgba(52,199,89,0.06);
+  --orange: #ff9500;
+  --orange-bg: rgba(255,149,0,0.06);
+  --purple: #af52de;
+  --purple-bg: rgba(175,82,222,0.06);
+  --red: #ff3b30;
+  --border: rgba(0,0,0,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+.page { max-width:860px; margin:0 auto; padding:3rem 2rem; }
+
+/* Hero */
+.hero { text-align:center; padding:3rem 0 2.5rem; }
+.hero .label { font-size:.72rem; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:.75rem; }
+.hero h1 { font-size:2.8rem; font-weight:800; letter-spacing:-0.04em; line-height:1.1; }
+.hero h1 span { background:linear-gradient(135deg, var(--accent), var(--purple)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.hero .subtitle { font-size:1.15rem; color:var(--text-2); margin-top:.75rem; max-width:560px; margin-left:auto; margin-right:auto; line-height:1.5; }
+.hero .tags { display:flex; gap:.5rem; justify-content:center; margin-top:1.25rem; flex-wrap:wrap; }
+.hero .tag { font-size:.7rem; padding:.3rem .7rem; border-radius:100px; font-weight:500; }
+
+/* Sections */
+.section { margin-top:3rem; }
+.section-label { font-size:.65rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--accent); margin-bottom:.5rem; }
+.section h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.02em; margin-bottom:.75rem; }
+.section p { font-size:.95rem; color:var(--text-2); line-height:1.7; }
+
+/* Cards */
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+@media(max-width:640px) { .card-grid { grid-template-columns:1fr; } }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; }
+.card .icon { font-size:1.8rem; margin-bottom:.5rem; }
+.card h3 { font-size:1rem; font-weight:600; margin-bottom:.35rem; }
+.card p { font-size:.85rem; color:var(--text-2); line-height:1.6; }
+
+/* Problem/Solution */
+.vs-grid { display:grid; grid-template-columns:1fr auto 1fr; gap:1.5rem; align-items:center; margin-top:1.25rem; }
+@media(max-width:640px) { .vs-grid { grid-template-columns:1fr; } }
+.vs-card { padding:1.75rem; border-radius:16px; }
+.vs-card h3 { font-size:.95rem; font-weight:700; margin-bottom:.5rem; }
+.vs-card ul { list-style:none; padding:0; }
+.vs-card li { font-size:.88rem; padding:.3rem 0; display:flex; gap:.4rem; align-items:flex-start; line-height:1.5; }
+.vs-arrow { font-size:1.5rem; color:var(--accent); font-weight:700; }
+
+/* Flow */
+.flow { display:flex; align-items:center; gap:.5rem; margin-top:1.25rem; flex-wrap:wrap; justify-content:center; }
+.flow-step { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:.75rem 1rem; text-align:center; min-width:120px; }
+.flow-step .num { font-size:.6rem; font-weight:700; color:var(--accent); text-transform:uppercase; letter-spacing:.05em; }
+.flow-step .label { font-size:.82rem; font-weight:600; margin-top:.15rem; }
+.flow-step .sub { font-size:.68rem; color:var(--text-3); margin-top:.1rem; }
+.flow-arrow { font-size:1.2rem; color:var(--text-3); }
+
+/* Pricing */
+.pricing-grid { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-top:1rem; }
+@media(max-width:640px) { .pricing-grid { grid-template-columns:1fr; } }
+.pricing-card { padding:1.75rem; border-radius:16px; border:1px solid var(--border); background:var(--surface); }
+.pricing-card.pro { border-color:rgba(0,122,255,.2); background:var(--accent-bg); position:relative; }
+.pricing-card .badge { position:absolute; top:-10px; right:16px; background:var(--accent); color:#fff; font-size:.6rem; font-weight:600; padding:.2rem .6rem; border-radius:100px; }
+.pricing-card h3 { font-size:1.1rem; font-weight:700; }
+.pricing-card .price { font-size:1.8rem; font-weight:800; margin:.25rem 0; }
+.pricing-card .price span { font-size:.85rem; font-weight:400; color:var(--text-3); }
+.pricing-card ul { list-style:none; padding:0; margin-top:.5rem; }
+.pricing-card li { font-size:.82rem; color:var(--text-2); padding:.2rem 0; display:flex; gap:.3rem; }
+
+/* Roadmap */
+.roadmap { margin-top:1.25rem; }
+.rm-item { display:flex; gap:1rem; padding:1rem 0; border-bottom:1px solid var(--border); }
+.rm-item:last-child { border:none; }
+.rm-date { min-width:80px; font-size:.75rem; font-weight:600; color:var(--accent); }
+.rm-content h4 { font-size:.9rem; font-weight:600; }
+.rm-content p { font-size:.8rem; color:var(--text-2); margin-top:.1rem; }
+
+/* Persona */
+.persona-card { display:flex; gap:1.5rem; background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.75rem; margin-top:1rem; }
+@media(max-width:640px) { .persona-card { flex-direction:column; } }
+.persona-avatar { font-size:3rem; flex-shrink:0; }
+.persona-info h3 { font-size:1.05rem; font-weight:600; }
+.persona-info .role { font-size:.8rem; color:var(--accent); font-weight:500; }
+.persona-info .quote { font-size:.88rem; color:var(--text-2); font-style:italic; margin:.5rem 0; line-height:1.5; border-left:3px solid var(--accent); padding-left:.75rem; }
+.persona-info .details { font-size:.8rem; color:var(--text-2); line-height:1.6; }
+
+/* ASO */
+.aso-block { background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-top:1rem; font-family:'SF Mono',ui-monospace,monospace; }
+.aso-row { display:flex; gap:.5rem; margin-bottom:.35rem; align-items:baseline; }
+.aso-label { font-size:.65rem; font-weight:600; color:var(--text-3); text-transform:uppercase; min-width:70px; }
+.aso-value { font-size:.85rem; color:var(--text); font-weight:500; }
+
+/* Metrics */
+.metrics-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:.75rem; margin-top:1rem; }
+@media(max-width:640px) { .metrics-grid { grid-template-columns:repeat(2,1fr); } }
+.metric { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:1rem; text-align:center; }
+.metric .num { font-size:1.5rem; font-weight:800; color:var(--accent); }
+.metric .label { font-size:.68rem; color:var(--text-3); margin-top:.15rem; }
+
+/* Footer */
+.footer { margin-top:3rem; padding-top:2rem; border-top:1px solid var(--border); text-align:center; font-size:.75rem; color:var(--text-3); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="label">Product Vision — April 2026</div>
+    <h1><span>PostKit</span></h1>
+    <h1>AI Photos to Posts</h1>
+    <div class="subtitle">Ta galerie a 15 000 photos. PostKit les transforme en posts quotidiens. Capture une fois, poste partout, chaque jour.</div>
+    <div class="tags">
+      <span class="tag" style="background:var(--accent-bg);color:var(--accent);">iOS + macOS</span>
+      <span class="tag" style="background:var(--green-bg);color:var(--green);">SwiftUI natif</span>
+      <span class="tag" style="background:var(--purple-bg);color:var(--purple);">Core ML + Gemini</span>
+      <span class="tag" style="background:var(--orange-bg);color:var(--orange);">Ship: avril 2026</span>
+    </div>
+  </div>
+
+  <!-- REAL PHOTOS: CHAOTIC GALLERY -->
+  <div class="section">
+    <div class="section-label">Le contenu existe deja</div>
+    <h2>15 000 photos. 0 posts. Le probleme est dans ta galerie.</h2>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:3px;margin-top:1rem;border-radius:12px;overflow:hidden;">
+      <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-food-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-life-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-auto-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-nomad-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-life-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-auto-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-food-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-nomad-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-dev-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-food-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-auto-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-life-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-dev-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-nomad-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+      <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;filter:brightness(0.9);">
+    </div>
+    <p style="text-align:center;font-size:.8rem;color:var(--text-3);margin-top:.5rem;">18 photos d'une vraie galerie — voitures, code, cafes, plages, amis. Tout melange.</p>
+  </div>
+
+  <!-- PROBLEM / SOLUTION -->
+  <div class="section">
+    <div class="section-label">Le probleme</div>
+    <h2>1 seconde pour capturer. 1 heure pour poster. Ce ratio est casse.</h2>
+    <div class="vs-grid">
+      <div class="vs-card" style="background:var(--orange-bg);">
+        <h3 style="color:var(--orange);">Aujourd'hui</h3>
+        <ul>
+          <li>📱 15 000 photos dans ta galerie</li>
+          <li>🔍 30 min a chercher LA bonne photo</li>
+          <li>😤 Galerie polluee de screenshots, doublons, random</li>
+          <li>📝 Encore 30 min pour ecrire le post</li>
+          <li>🗓️ Resultat : tu postes 1x par semaine, pas tous les jours</li>
+        </ul>
+      </div>
+      <div class="vs-arrow">→</div>
+      <div class="vs-card" style="background:var(--green-bg);">
+        <h3 style="color:var(--green);">Avec PostKit</h3>
+        <ul>
+          <li>🏷️ L'IA classe tes photos par pilier de marque</li>
+          <li>👆 Tu valides en swipant (2 min au lieu de 30)</li>
+          <li>📐 Tes templates assemblent les posts automatiquement</li>
+          <li>✍️ Hook et caption generes par l'IA</li>
+          <li>📤 Un post pret chaque matin, sur chaque plateforme</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW POSTKIT ORGANIZES -->
+  <div class="section">
+    <div class="section-label">PostKit en action</div>
+    <h2>Meme galerie. Classee en 2 minutes.</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-top:1rem;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding:1rem 1rem .5rem;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;">🚗 Automotive</div>
+            <div style="font-size:.72rem;color:var(--text-3);">Porsche, Ferrari, showrooms</div>
+          </div>
+          <span style="font-size:.65rem;font-weight:600;background:var(--accent-bg);color:var(--accent);padding:.2rem .5rem;border-radius:100px;">89 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:0 2px 2px;">
+          <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-auto-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-auto-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-auto-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding:1rem 1rem .5rem;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;">💻 Dev & Nomad</div>
+            <div style="font-size:.72rem;color:var(--text-3);">Code, setup, sunset office</div>
+          </div>
+          <span style="font-size:.65rem;font-weight:600;background:var(--accent-bg);color:var(--accent);padding:.2rem .5rem;border-radius:100px;">342 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:0 2px 2px;">
+          <img src="assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-dev-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-dev-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-nomad-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding:1rem 1rem .5rem;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;">✈️ Travel & Food</div>
+            <div style="font-size:.72rem;color:var(--text-3);">Plages, cafes, cuisine</div>
+          </div>
+          <span style="font-size:.65rem;font-weight:600;background:var(--green-bg);color:var(--green);padding:.2rem .5rem;border-radius:100px;">215 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;padding:0 2px 2px;">
+          <img src="assets/gallery-nomad-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-food-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-food-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1rem;">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding:1rem 1rem .5rem;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;">🎭 Lifestyle</div>
+            <div style="font-size:.72rem;color:var(--text-3);">Amis, rooftop, echecs</div>
+          </div>
+          <span style="font-size:.65rem;font-weight:600;background:var(--purple-bg);color:var(--purple);padding:.2rem .5rem;border-radius:100px;">67 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:0 2px 2px;">
+          <img src="assets/gallery-life-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-life-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-life-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+        <div style="padding:1rem 1rem .5rem;display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-size:.95rem;font-weight:700;">🍜 Food & Bangkok</div>
+            <div style="font-size:.72rem;color:var(--text-3);">Street food, skyline, culture</div>
+          </div>
+          <span style="font-size:.65rem;font-weight:600;background:var(--orange-bg);color:var(--orange);padding:.2rem .5rem;border-radius:100px;">128 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;padding:0 2px 2px;">
+          <img src="assets/gallery-food-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-nomad-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+          <img src="assets/gallery-food-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;">
+        </div>
+      </div>
+    </div>
+    <p style="text-align:center;font-size:.85rem;color:var(--text-2);margin-top:1rem;font-weight:500;">Memes photos. Zero effort. Classees automatiquement par pilier de marque.</p>
+  </div>
+
+  <!-- SCREEN 1: CLASSIFICATION VIEW (swipe card) -->
+  <div class="section" style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-top:2rem;">
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:2.5rem;align-items:center;">
+      <!-- Phone mockup -->
+      <div style="background:#f2f2f7;border:1px solid rgba(0,0,0,0.1);border-radius:28px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+        <div style="height:20px;background:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#8e8e93;">9:41</div>
+        <div style="padding:.6rem;">
+          <!-- Header -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
+            <span style="font-size:.62rem;color:#8e8e93;">← Back</span>
+            <span style="font-size:.72rem;font-weight:600;">🚗 Automotive</span>
+            <span style="font-size:.55rem;color:#8e8e93;">12/89</span>
+          </div>
+          <div style="height:3px;background:rgba(0,0,0,0.06);border-radius:2px;margin-bottom:.5rem;"><div style="width:13%;height:100%;background:#007aff;border-radius:2px;"></div></div>
+          <!-- Photo card -->
+          <div style="border-radius:16px;overflow:hidden;position:relative;box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+            <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:3/4;object-fit:cover;display:block;">
+            <!-- AI badge -->
+            <div style="position:absolute;top:8px;right:8px;background:rgba(255,255,255,0.85);backdrop-filter:blur(8px);padding:3px 8px;border-radius:100px;font-size:.55rem;font-weight:600;color:#007aff;">AI: 94%</div>
+            <!-- Tags overlay -->
+            <div style="position:absolute;bottom:8px;left:8px;right:8px;display:flex;gap:3px;flex-wrap:wrap;">
+              <span style="padding:2px 6px;border-radius:4px;font-size:.48rem;background:rgba(255,255,255,0.85);color:#3c3c43;">🚗 porsche</span>
+              <span style="padding:2px 6px;border-radius:4px;font-size:.48rem;background:rgba(255,255,255,0.85);color:#3c3c43;">🌅 golden hour</span>
+              <span style="padding:2px 6px;border-radius:4px;font-size:.48rem;background:rgba(255,255,255,0.85);color:#3c3c43;">📍 Bangkok</span>
+              <span style="padding:2px 6px;border-radius:4px;font-size:.48rem;background:rgba(255,255,255,0.85);color:#007aff;">+ tag</span>
+            </div>
+          </div>
+          <!-- Swipe buttons -->
+          <div style="display:flex;justify-content:center;gap:1rem;margin-top:.6rem;">
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#ff3b30;">✕</div>
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#8e8e93;">↩</div>
+            <div style="width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,0.7);border:1px solid rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#34c759;">✓</div>
+          </div>
+        </div>
+        <div style="height:4px;width:32%;margin:3px auto 4px;background:#aeaeb2;border-radius:2px;opacity:.2;"></div>
+      </div>
+      <!-- Text -->
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:.5rem;">Classification</div>
+        <h3 style="font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.5rem;">89 photos. 2 minutes. Classe.</h3>
+        <p style="font-size:.95rem;color:var(--text-2);line-height:1.7;">L'IA detecte le contenu, les tags, le lieu, le cadrage. Toi tu swipes : droite = oui, gauche = non. 89 photos classees en 2 minutes au lieu de 30. Chaque card est aussi un micro-editeur — tu corriges les tags et la localisation en une touche.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ONE-LINER -->
+  <div class="section" style="text-align:center;padding:2rem 0;">
+    <div style="font-size:1.6rem;font-weight:800;letter-spacing:-0.02em;max-width:600px;margin:0 auto;line-height:1.3;">
+      "Capture une fois. Poste partout. Chaque jour."
+    </div>
+    <div style="font-size:.85rem;color:var(--text-3);margin-top:.5rem;">— Vision fondatrice</div>
+  </div>
+
+  <!-- ICP / PERSONA -->
+  <div class="section">
+    <div class="section-label">Pour qui</div>
+    <h2>Tu es entrepreneur. Pas content creator.</h2>
+    <div class="persona-card">
+      <div class="persona-avatar">👨‍💻</div>
+      <div class="persona-info">
+        <h3>Alex, 32 ans</h3>
+        <div class="role">Dev freelance & fondateur d'un micro-SaaS</div>
+        <div class="quote">"Je sais que je dois poster pour mon business. J'ai des milliers de photos cool de ma vie — voyages, code, events, food. Mais organiser tout ca pour en faire du contenu me prend tellement de temps que je finis par ne rien poster."</div>
+        <div class="details">
+          <strong>Pain points :</strong> galerie chaotique, pas de systeme, perd 1h par post, feed incoherent, culpabilite de ne pas poster<br>
+          <strong>Goals :</strong> poster quotidiennement, construire un personal brand credible, sans que ca devienne un second job<br>
+          <strong>Plateformes :</strong> LinkedIn (business), Instagram (lifestyle), X (tech)<br>
+          <strong>Budget outils :</strong> 10-30€/mois pour des outils qui lui font gagner du temps<br>
+          <strong>Mantra :</strong> "Les reseaux sociaux c'est le CV du futur"
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CORE FEATURES -->
+  <div class="section">
+    <div class="section-label">Comment</div>
+    <h2>Du chaos au post en 3 etapes</h2>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:.75rem;align-items:center;margin-top:1.5rem;">
+      <!-- Step 1 -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:1.25rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+        <div style="display:flex;gap:2px;justify-content:center;margin-bottom:.5rem;">
+          <img src="assets/gallery-auto-1.webp" style="width:28px;height:28px;object-fit:cover;border-radius:4px;opacity:.6;">
+          <img src="assets/gallery-food-2.webp" style="width:28px;height:28px;object-fit:cover;border-radius:4px;opacity:.6;">
+          <img src="assets/gallery-life-1.webp" style="width:28px;height:28px;object-fit:cover;border-radius:4px;opacity:.6;">
+        </div>
+        <div style="font-size:.95rem;font-weight:700;">Scan</div>
+        <div style="font-size:.7rem;color:var(--text-3);">L'IA analyse ta galerie</div>
+      </div>
+      <div style="font-size:1.2rem;color:var(--text-3);">→</div>
+      <!-- Step 2: Pillar card -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:16px;padding:.75rem;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,0.03);">
+        <div style="background:rgba(0,122,255,0.04);border:1px solid rgba(0,122,255,0.1);border-radius:10px;padding:.4rem;margin-bottom:.35rem;">
+          <div style="display:flex;align-items:center;gap:3px;justify-content:center;margin-bottom:.25rem;">
+            <span style="font-size:.6rem;">🚗</span>
+            <span style="font-size:.5rem;font-weight:600;">Auto</span>
+            <span style="font-size:.4rem;background:rgba(0,122,255,0.08);color:#007aff;padding:1px 4px;border-radius:100px;">89</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1px;">
+            <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+            <img src="assets/gallery-auto-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          </div>
+        </div>
+        <div style="font-size:.95rem;font-weight:700;">Classe</div>
+        <div style="font-size:.7rem;color:var(--text-3);">Triees par pilier</div>
+      </div>
+      <div style="font-size:1.2rem;color:var(--text-3);">→</div>
+      <!-- Step 3: Poste (collage ready to publish) -->
+      <div style="background:linear-gradient(145deg,rgba(52,199,89,0.04),rgba(0,122,255,0.03));border:1px solid rgba(52,199,89,0.15);border-radius:16px;padding:.75rem;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.04);">
+        <div style="background:#fff;border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:.35rem;margin-bottom:.35rem;">
+          <div style="display:grid;grid-template-columns:2fr 1fr;grid-template-rows:1fr 1fr;gap:2px;">
+            <img src="assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;grid-row:span 2;">
+            <img src="assets/gallery-auto-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+            <img src="assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          </div>
+          <div style="display:flex;align-items:center;gap:3px;margin-top:.3rem;">
+            <div style="width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,0.08);overflow:hidden;"><img src="assets/nico-avatar.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+            <span style="font-size:.42rem;font-weight:600;">nico.build</span>
+            <span style="font-size:.35rem;color:#8e8e93;margin-left:auto;">Bangkok Morning Hustle</span>
+          </div>
+        </div>
+        <div style="font-size:.95rem;font-weight:700;">Poste</div>
+        <div style="font-size:.7rem;color:var(--text-3);">Pret a publier 📤</div>
+      </div>
+    </div>
+    <div class="card-grid" style="margin-top:1.5rem;">
+      <div class="card">
+        <div class="icon">🏷️</div>
+        <h3>Classification IA</h3>
+        <p>Core ML (on-device, gratuit) + Gemini Flash (cloud, precis). Detecte piliers, cadrage, lieu, moment, mood. 15K photos en 15 min.</p>
+      </div>
+      <div class="card">
+        <div class="icon">👆</div>
+        <h3>Validation rapide</h3>
+        <p>Swipe mode (1 by 1) ou Grid mode (batch). Chaque card est un micro-editeur : tags, loc, cadrage editables pendant le tri.</p>
+      </div>
+      <div class="card">
+        <div class="icon">📐</div>
+        <h3>Templates de posts</h3>
+        <p>Definis un format (4 photos : POV + detail + wide + portrait). L'IA pioche dans tes assets tries pour remplir les slots. Killer feature payante.</p>
+      </div>
+      <div class="card">
+        <div class="icon">✍️</div>
+        <h3>AI Content Generation</h3>
+        <p>Hook, caption, conseil du jour — generes par l'IA a partir de ton persona et du contexte des photos. Ton adapte par plateforme.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: HOME DASHBOARD -->
+  <div class="section" style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-top:2rem;">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:2.5rem;align-items:center;">
+      <!-- Text (left this time for visual rhythm) -->
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green);margin-bottom:.5rem;">Dashboard</div>
+        <h3 style="font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.5rem;">Tes piliers. Tes photos. Ton prochain post.</h3>
+        <p style="font-size:.95rem;color:var(--text-2);line-height:1.7;">Tes piliers avec un apercu visuel du contenu. Le status du scan en temps reel. Des raccourcis vers la classification, la composition de posts, et la creation de templates. Rien de superflu — juste ce dont tu as besoin pour poster.</p>
+      </div>
+      <!-- Phone mockup -->
+      <div style="background:#f2f2f7;border:1px solid rgba(0,0,0,0.1);border-radius:28px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+        <div style="height:20px;background:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#8e8e93;">9:41</div>
+        <div style="padding:.6rem;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:.4rem;"><div><div style="font-size:.5rem;color:#8e8e93;">Good morning</div><div style="font-size:.82rem;font-weight:700;">Nico</div></div><div style="font-size:.85rem;">⚙️</div></div>
+          <!-- Scan status -->
+          <div style="background:rgba(255,255,255,0.75);border:1px solid rgba(0,122,255,0.1);border-radius:10px;padding:.4rem;margin-bottom:.4rem;text-align:center;">
+            <div style="font-size:.58rem;font-weight:600;">12 items to review</div>
+            <div style="font-size:.45rem;color:#8e8e93;">Last scan 14:32 · <span style="color:#007aff;">Review now</span></div>
+          </div>
+          <!-- Pillar bento -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:.3rem;">
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.3rem;text-align:center;">
+              <div style="display:flex;align-items:center;gap:2px;justify-content:center;"><span style="font-size:.65rem;">🚗</span><span style="font-size:.48rem;font-weight:600;">Auto</span><span style="font-size:.4rem;background:rgba(0,122,255,0.08);color:#007aff;padding:1px 4px;border-radius:100px;">89</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:.15rem;">
+                <img src="assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-auto-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-auto-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.3rem;text-align:center;">
+              <div style="display:flex;align-items:center;gap:2px;justify-content:center;"><span style="font-size:.65rem;">💻</span><span style="font-size:.48rem;font-weight:600;">Dev</span><span style="font-size:.4rem;background:rgba(0,122,255,0.08);color:#007aff;padding:1px 4px;border-radius:100px;">342</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:.15rem;">
+                <img src="assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-dev-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-dev-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.3rem;text-align:center;">
+              <div style="display:flex;align-items:center;gap:2px;justify-content:center;"><span style="font-size:.65rem;">✈️</span><span style="font-size:.48rem;font-weight:600;">Travel</span><span style="font-size:.4rem;background:rgba(52,199,89,0.08);color:#34c759;padding:1px 4px;border-radius:100px;">215</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:.15rem;">
+                <img src="assets/gallery-nomad-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-food-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+              </div>
+            </div>
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.3rem;text-align:center;">
+              <div style="display:flex;align-items:center;gap:2px;justify-content:center;"><span style="font-size:.65rem;">🍜</span><span style="font-size:.48rem;font-weight:600;">Food</span><span style="font-size:.4rem;background:rgba(255,149,0,0.08);color:#ff9500;padding:1px 4px;border-radius:100px;">128</span></div>
+              <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;margin-top:.15rem;">
+                <img src="assets/gallery-food-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-food-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+                <img src="assets/gallery-nomad-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:2px;">
+              </div>
+            </div>
+          </div>
+          <!-- Quick actions -->
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;">
+            <div style="background:rgba(0,122,255,0.06);border:1px solid rgba(0,122,255,0.1);border-radius:8px;padding:.25rem;text-align:center;"><div style="font-size:.6rem;">👆</div><div style="font-size:.42rem;font-weight:600;color:#007aff;">Review</div></div>
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.25rem;text-align:center;"><div style="font-size:.6rem;">📝</div><div style="font-size:.42rem;font-weight:600;">Compose</div></div>
+            <div style="background:rgba(255,255,255,0.6);border:1px solid rgba(0,0,0,0.04);border-radius:8px;padding:.25rem;text-align:center;"><div style="font-size:.6rem;">📐</div><div style="font-size:.42rem;font-weight:600;">Template</div></div>
+          </div>
+        </div>
+        <!-- Tab bar -->
+        <div style="display:flex;justify-content:space-around;padding:.3rem 0;background:rgba(255,255,255,0.65);border-top:1px solid rgba(0,0,0,0.06);font-size:.4rem;color:#8e8e93;">
+          <div style="text-align:center;color:#007aff;"><div style="font-size:.65rem;">🏠</div>Home</div>
+          <div style="text-align:center;"><div style="font-size:.65rem;">🔍</div>Explore</div>
+          <div style="text-align:center;"><div style="font-size:.65rem;">🏷️</div>Classify</div>
+          <div style="text-align:center;"><div style="font-size:.65rem;">📝</div>Posts</div>
+          <div style="text-align:center;"><div style="font-size:.65rem;">👤</div>Profile</div>
+        </div>
+        <div style="height:4px;width:32%;margin:3px auto 4px;background:#aeaeb2;border-radius:2px;opacity:.2;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONVERSION FLOW — Framer-style -->
+  <div class="section">
+    <div class="section-label">Conversion</div>
+    <h2>Tu vois le resultat avant de payer</h2>
+    <p>L'onboarding EST la demo. Pendant le scan, l'user setup tout. Quand c'est fini, 3 posts sont prets. Le paywall arrive apres la preuve de valeur.</p>
+
+    <!-- 5-step funnel -->
+    <div style="display:flex;flex-direction:column;gap:0;margin-top:2rem;">
+
+      <!-- Step 1 -->
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:0;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#34c759;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(52,199,89,0.25);">1</div>
+          <div style="width:2px;flex:1;background:linear-gradient(to bottom,#34c759,#007aff);"></div>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(52,199,89,0.12);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#34c759;">L'IA analyse ta galerie</div>
+              <div style="font-size:1.05rem;font-weight:700;margin-top:.2rem;">500 photos scannees gratuitement</div>
+              <div style="font-size:.78rem;color:var(--text-3);margin-top:.15rem;">Core ML + Gemini classifient par pilier, cadrage, lieu, moment</div>
+            </div>
+            <div style="display:flex;gap:4px;flex-shrink:0;margin-left:1rem;">
+              <img src="assets/gallery-auto-1.webp" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
+              <img src="assets/gallery-food-2.webp" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
+              <img src="assets/gallery-life-1.webp" style="width:44px;height:44px;object-fit:cover;border-radius:8px;">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2 -->
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:0;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#007aff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(0,122,255,0.25);">2</div>
+          <div style="width:2px;flex:1;background:linear-gradient(to bottom,#007aff,#af52de);"></div>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(0,122,255,0.1);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#007aff;">Pendant le scan — zero temps mort</div>
+          <div style="font-size:1.05rem;font-weight:700;margin-top:.2rem;">Setup tes templates et tes reseaux</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-top:.15rem;">Definis tes formats de post, choisis tes plateformes, configure ton ton par reseau</div>
+        </div>
+      </div>
+
+      <!-- Step 3 -->
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:0;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#af52de,#007aff);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(175,82,222,0.3);">3</div>
+          <div style="width:2px;flex:1;background:linear-gradient(to bottom,#af52de,#ff9500);"></div>
+        </div>
+        <div style="background:linear-gradient(145deg,rgba(175,82,222,0.03),rgba(0,122,255,0.02));border:1px solid rgba(175,82,222,0.15);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:0 4px 16px rgba(175,82,222,0.05);">
+          <div>
+            <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#af52de;">Scan termine</div>
+            <div style="font-size:1.05rem;font-weight:700;margin-top:.2rem;">Prets a publier sur tous vos reseaux ✨</div>
+            <div style="font-size:.78rem;color:var(--text-3);margin-top:.15rem;">L'IA a rempli vos templates avec vos photos classees. Hook et caption generes.</div>
+            <div style="display:flex;gap:.75rem;margin-top:.75rem;align-items:center;">
+              <!-- Instagram -->
+              <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                <defs><linearGradient id="ig" x1="2" y1="30" x2="30" y2="2"><stop stop-color="#FEDA75"/><stop offset=".25" stop-color="#FA7E1E"/><stop offset=".5" stop-color="#D62976"/><stop offset=".75" stop-color="#962FBF"/><stop offset="1" stop-color="#4F5BD5"/></linearGradient></defs>
+                <rect width="32" height="32" rx="8" fill="url(#ig)"/>
+                <rect x="6" y="6" width="20" height="20" rx="5" stroke="#fff" stroke-width="2" fill="none"/>
+                <circle cx="16" cy="16" r="5" stroke="#fff" stroke-width="2" fill="none"/>
+                <circle cx="22.5" cy="9.5" r="1.5" fill="#fff"/>
+              </svg>
+              <!-- TikTok -->
+              <svg width="32" height="32" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="8" fill="#000"/>
+                <path d="M21.5 8.5c-.9-.6-1.5-1.6-1.5-2.8h-2.7v13.1c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .7.1 1 .2v-2.8c-.3 0-.7-.1-1-.1-3.2 0-5.8 2.6-5.8 5.8s2.6 5.8 5.8 5.8 5.8-2.6 5.8-5.8V13c1.1.8 2.4 1.2 3.8 1.2v-2.7c-1 0-1.8-.4-2.3-1" fill="#25F4EE"/>
+                <path d="M21.5 8.5c-.9-.6-1.5-1.6-1.5-2.8h-2.7v13.1c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .7.1 1 .2v-2.8c-.3 0-.7-.1-1-.1-3.2 0-5.8 2.6-5.8 5.8s2.6 5.8 5.8 5.8 5.8-2.6 5.8-5.8V13c1.1.8 2.4 1.2 3.8 1.2v-2.7c-1 0-1.8-.4-2.3-1" fill="#FE2C55" style="transform:translate(1px,1px);"/>
+                <path d="M21.5 8.5c-.9-.6-1.5-1.6-1.5-2.8h-2.7v13.1c0 1.7-1.4 3.1-3.1 3.1s-3.1-1.4-3.1-3.1 1.4-3.1 3.1-3.1c.3 0 .7.1 1 .2v-2.8c-.3 0-.7-.1-1-.1-3.2 0-5.8 2.6-5.8 5.8s2.6 5.8 5.8 5.8 5.8-2.6 5.8-5.8V13c1.1.8 2.4 1.2 3.8 1.2v-2.7c-1 0-1.8-.4-2.3-1" fill="#fff"/>
+              </svg>
+              <!-- LinkedIn -->
+              <svg width="32" height="32" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="8" fill="#0A66C2"/>
+                <path d="M10.5 13.5v8M10.5 9.5v.01" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+                <path d="M14.5 21.5v-5c0-1.5.7-2.5 2-2.5s1.8.8 1.8 2.2v5.3" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                <path d="M18.3 21.5v-4.5c0-1.5.7-2.5 2-2.5s1.7.8 1.7 2.2v4.8" stroke="#fff" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+              </svg>
+              <!-- Pinterest -->
+              <svg width="32" height="32" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="8" fill="#E60023"/>
+                <path d="M16 6C11 6 7 10 7 15c0 2.7 1.5 5 3.7 6.2 0-.5.1-1.3.2-1.8l1-4.2s-.3-.5-.3-1.2c0-1.2.7-2 1.5-2 .7 0 1 .5 1 1.1 0 .7-.4 1.7-.7 2.6-.2.8.4 1.4 1.2 1.4 1.4 0 2.5-1.5 2.5-3.7 0-1.9-1.4-3.3-3.3-3.3-2.3 0-3.6 1.7-3.6 3.5 0 .7.3 1.4.6 1.8.1.1.1.2 0 .3l-.2.8c0 .2-.2.2-.3.1-1-.5-1.7-1.9-1.7-3.1 0-2.5 1.8-4.8 5.3-4.8 2.8 0 4.9 2 4.9 4.6 0 2.8-1.7 5-4.1 5-.8 0-1.6-.4-1.8-.9l-.5 1.9c-.2.7-.6 1.4-.9 1.9.7.2 1.4.3 2.2.3 4.4 0 8-3.6 8-8s-3.6-9-8-9z" fill="#fff"/>
+              </svg>
+              <!-- X -->
+              <svg width="32" height="32" viewBox="0 0 32 32">
+                <rect width="32" height="32" rx="8" fill="#000"/>
+                <path d="M18.2 14.3L24.5 7h-1.5l-5.5 6.3L13 7H7.5l6.6 9.6L7.5 25H9l5.8-6.7L19.5 25h5.5l-6.8-10.7zm-2 2.4l-.7-1L9.4 8.3h2.3l4.3 6.2.7 1 5.5 7.9h-2.3l-4.5-6.5-.2-.2z" fill="#fff"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: Paywall -->
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:0;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:40px;height:40px;border-radius:50%;background:#ff9500;display:flex;align-items:center;justify-content:center;font-size:1.1rem;color:#fff;font-weight:700;box-shadow:0 3px 10px rgba(255,149,0,0.25);">4</div>
+          <div style="width:2px;flex:1;background:linear-gradient(to bottom,#ff9500,#34c759);"></div>
+        </div>
+        <div style="background:#fff;border:1px solid rgba(255,149,0,0.12);border-radius:16px;padding:1.25rem 1.5rem;margin-bottom:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.02);">
+          <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#ff9500;">Paywall</div>
+          <div style="font-size:1.05rem;font-weight:700;margin-top:.2rem;">9.99€/mois pour automatiser ca</div>
+          <div style="font-size:.78rem;color:var(--text-3);margin-top:.15rem;font-style:italic;">"Tu viens de voir 3 posts prets en 10 minutes. Tu veux ca chaque jour, sur chaque plateforme ?"</div>
+        </div>
+      </div>
+
+      <!-- Step 5: Unlimited -->
+      <div style="display:grid;grid-template-columns:56px 1fr;gap:0;align-items:stretch;">
+        <div style="display:flex;flex-direction:column;align-items:center;">
+          <div style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#34c759,#007aff);display:flex;align-items:center;justify-content:center;font-size:1.2rem;color:#fff;font-weight:700;box-shadow:0 4px 14px rgba(52,199,89,0.3);">5</div>
+        </div>
+        <div style="background:linear-gradient(145deg,rgba(52,199,89,0.04),rgba(0,122,255,0.03));border:1px solid rgba(52,199,89,0.15);border-radius:16px;padding:1.25rem 1.5rem;box-shadow:0 4px 16px rgba(52,199,89,0.05);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.6rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#34c759;">Chaque matin</div>
+              <div style="font-size:1.05rem;font-weight:700;margin-top:.2rem;">Des posts illimites, sans effort</div>
+              <div style="font-size:.78rem;color:var(--text-3);margin-top:.15rem;">Scan illimite. Templates illimites. AI hook + caption. Chaque jour, un post frais avec du contenu jamais utilise. Tu captures, PostKit poste.</div>
+            </div>
+            <div style="font-size:2.5rem;flex-shrink:0;margin-left:1rem;">🚀</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCREEN 3: POST EDITOR (slots with real photos) -->
+  <div class="section" style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-top:2rem;">
+    <div style="display:grid;grid-template-columns:280px 1fr;gap:2.5rem;align-items:center;">
+      <!-- Phone mockup -->
+      <div style="background:#f2f2f7;border:1px solid rgba(0,0,0,0.1);border-radius:28px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+        <div style="height:20px;background:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#8e8e93;">9:41</div>
+        <div style="padding:.6rem;">
+          <div style="font-size:.58rem;color:#007aff;margin-bottom:.25rem;">← Posts</div>
+          <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06);border-radius:7px;padding:.25rem .4rem;font-size:.65rem;font-weight:600;margin-bottom:.2rem;">Bangkok Morning Hustle</div>
+          <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06);border-radius:7px;padding:.25rem .4rem;font-size:.55rem;color:#3c3c43;margin-bottom:.3rem;">Sunrise coding + Porsche spotting. Daily nomad life.</div>
+          <div style="font-size:.55rem;font-weight:600;margin-bottom:.2rem;">Slots (3/4 filled)</div>
+          <!-- Slots grid with real photos -->
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:.3rem;">
+            <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4;">
+              <img src="assets/gallery-dev-1.webp" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;bottom:2px;left:2px;display:flex;gap:2px;">
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">POV</span>
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">💻</span>
+              </div>
+            </div>
+            <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4;">
+              <img src="assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;bottom:2px;left:2px;display:flex;gap:2px;">
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">Detail</span>
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">🚗</span>
+              </div>
+            </div>
+            <div style="border-radius:8px;overflow:hidden;position:relative;aspect-ratio:3/4;">
+              <img src="assets/gallery-nomad-4.webp" style="width:100%;height:100%;object-fit:cover;">
+              <div style="position:absolute;bottom:2px;left:2px;display:flex;gap:2px;">
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">Wide</span>
+                <span style="padding:1px 4px;border-radius:3px;font-size:.38rem;background:rgba(255,255,255,0.85);">🌅</span>
+              </div>
+            </div>
+            <!-- Empty slot -->
+            <div style="border-radius:8px;border:2px dashed rgba(0,0,0,0.1);aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div style="font-size:.5rem;font-weight:600;color:#8e8e93;">Portrait</div>
+              <div style="font-size:.42rem;color:#aeaeb2;">Nomad pillar</div>
+              <div style="font-size:.45rem;color:#007aff;margin-top:.15rem;">+ Browse</div>
+            </div>
+          </div>
+          <!-- Actions -->
+          <div style="background:#007aff;color:#fff;text-align:center;padding:.3rem;border-radius:100px;font-size:.55rem;font-weight:600;margin-bottom:.2rem;">📁 Export to Album</div>
+          <div style="background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.08);text-align:center;padding:.3rem;border-radius:100px;font-size:.55rem;margin-bottom:.2rem;">✨ Suggest Hook & Caption</div>
+          <div style="display:flex;gap:3px;">
+            <div style="flex:1;background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.08);text-align:center;padding:.3rem;border-radius:100px;font-size:.5rem;">📤 Share</div>
+            <div style="flex:1;background:#34c759;color:#fff;text-align:center;padding:.3rem;border-radius:100px;font-size:.5rem;font-weight:600;">Publish</div>
+          </div>
+        </div>
+        <div style="height:4px;width:32%;margin:3px auto 4px;background:#aeaeb2;border-radius:2px;opacity:.2;"></div>
+      </div>
+      <!-- Text -->
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--purple);margin-bottom:.5rem;">Post Builder</div>
+        <h3 style="font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.5rem;">L'IA assemble. Tu publies.</h3>
+        <p style="font-size:.95rem;color:var(--text-2);line-height:1.7;">Chaque slot montre les criteres du template (cadrage, pilier, tags). Tape un slot vide et l'explorateur s'ouvre pre-filtre avec les photos qui matchent. L'IA genere le hook et la caption. Exporte en album Photos pour poster depuis Instagram en 1 tap.</p>
+        <p style="font-size:.85rem;color:var(--text-3);margin-top:.5rem;font-style:italic;">3 des 4 slots remplis automatiquement avec de vraies photos de la galerie du fondateur.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section">
+    <div class="section-label">Business Model</div>
+    <h2>Gratuit pour trier. Pro pour automatiser.</h2>
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <h3>Free</h3>
+        <div class="price">0€</div>
+        <p style="font-size:.8rem;color:var(--text-3);">Le hook. Decouvre la valeur.</p>
+        <ul>
+          <li>✓ 500 photos classifiees</li>
+          <li>✓ 5 piliers max</li>
+          <li>✓ Classification swipe/grid</li>
+          <li>✓ 3 posts manuels</li>
+          <li>✓ Export album Photos</li>
+          <li style="color:var(--text-3);">✗ Templates</li>
+          <li style="color:var(--text-3);">✗ AI auto-fill</li>
+          <li style="color:var(--text-3);">✗ AI hook/caption</li>
+        </ul>
+      </div>
+      <div class="pricing-card pro">
+        <div class="badge">Recommande</div>
+        <h3>Pro</h3>
+        <div class="price">9.99€ <span>/mois</span></div>
+        <p style="font-size:.8rem;color:var(--text-3);">ou 79.99€/an (2 mois offerts)</p>
+        <ul>
+          <li>✓ Scan illimite</li>
+          <li>✓ Piliers illimites</li>
+          <li>✓ Templates de posts</li>
+          <li>✓ AI auto-fill des templates</li>
+          <li>✓ AI hook + caption + conseil</li>
+          <li>✓ Posts illimites</li>
+          <li>✓ Ton adapte par plateforme</li>
+          <li>✓ Brand brainstorming (30 questions)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: TEMPLATE BUILDER -->
+  <div class="section" style="background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:2rem;margin-top:2rem;">
+    <div style="display:grid;grid-template-columns:1fr 280px;gap:2.5rem;align-items:center;">
+      <div>
+        <div style="font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:.5rem;">Killer Feature Pro</div>
+        <h3 style="font-size:1.4rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.5rem;">Definis une fois, poste chaque jour.</h3>
+        <p style="font-size:.95rem;color:var(--text-2);line-height:1.7;">Cree un template avec tes regles : 4 photos (POV + detail + wide + portrait), pilier Automotive, tags morning. L'IA pioche dans tes assets classes pour remplir chaque slot avec du contenu frais que tu n'as jamais utilise. Un post pret chaque matin.</p>
+        <p style="font-size:.85rem;color:var(--text-3);margin-top:.5rem;font-style:italic;">C'est la feature qui justifie les 9.99€/mois — l'automation de contenu.</p>
+      </div>
+      <!-- Phone mockup -->
+      <div style="background:#f2f2f7;border:1px solid rgba(0,0,0,0.1);border-radius:28px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.08);">
+        <div style="height:20px;background:rgba(255,255,255,0.4);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:#8e8e93;">9:41</div>
+        <div style="padding:.6rem;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+            <span style="font-size:.52rem;color:#007aff;">← Templates</span>
+            <span style="background:#007aff;color:#fff;font-size:.45rem;font-weight:600;padding:.15rem .35rem;border-radius:100px;">Save</span>
+          </div>
+          <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06);border-radius:7px;padding:.25rem .4rem;font-size:.62rem;font-weight:600;margin-bottom:.15rem;">Bangkok Morning</div>
+          <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06);border-radius:7px;padding:.25rem .4rem;font-size:.5rem;color:#3c3c43;margin-bottom:.3rem;">4-photo carousel: POV, detail, wide, portrait. For Instagram.</div>
+          <div style="font-size:.52rem;font-weight:600;margin-bottom:.15rem;">Slots (4)</div>
+          <!-- Slots -->
+          <div style="background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:.35rem;margin-bottom:.2rem;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.55rem;font-weight:600;">Slot 1 — POV</div>
+              <div style="font-size:.42rem;color:#8e8e93;">Pillar: any · Tags: morning</div>
+            </div>
+            <span style="color:#aeaeb2;font-size:.55rem;">≡</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:.35rem;margin-bottom:.2rem;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.55rem;font-weight:600;">Slot 2 — Detail</div>
+              <div style="font-size:.42rem;color:#8e8e93;">Pillar: Auto · Tags: any</div>
+            </div>
+            <span style="color:#aeaeb2;font-size:.55rem;">≡</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:.35rem;margin-bottom:.2rem;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.55rem;font-weight:600;">Slot 3 — Wide</div>
+              <div style="font-size:.42rem;color:#8e8e93;">Pillar: Nomad · Tags: morning</div>
+            </div>
+            <span style="color:#aeaeb2;font-size:.55rem;">≡</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.75);border:1px solid rgba(255,255,255,0.6);border-radius:10px;padding:.35rem;margin-bottom:.3rem;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.55rem;font-weight:600;">Slot 4 — Portrait</div>
+              <div style="font-size:.42rem;color:#8e8e93;">Pillar: Dev · Tags: any</div>
+            </div>
+            <span style="color:#aeaeb2;font-size:.55rem;">≡</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.06);text-align:center;padding:.3rem;border-radius:100px;font-size:.5rem;color:#007aff;margin-bottom:.2rem;">+ Add Slot</div>
+          <!-- Preview with real photos -->
+          <div style="font-size:.48rem;font-weight:600;color:#8e8e93;margin-bottom:.1rem;">Preview auto-fill :</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:2px;border-radius:6px;overflow:hidden;">
+            <img src="assets/gallery-nomad-3.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+            <img src="assets/gallery-auto-4.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+            <img src="assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+            <img src="assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;">
+          </div>
+        </div>
+        <div style="height:4px;width:32%;margin:3px auto 4px;background:#aeaeb2;border-radius:2px;opacity:.2;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COMPETITIVE EDGE -->
+  <div class="section">
+    <div class="section-label">Positionnement</div>
+    <h2>Pas un scheduler. Pas un editeur. Un assembleur.</h2>
+    <p>Buffer, Later, Planoly = tu as deja ton contenu, ils le programment. Canva = tu crees du contenu graphique. PostKit = tu as deja le contenu dans ta galerie, PostKit le trouve, le trie, et le transforme en posts. Personne ne fait ca.</p>
+    <div class="card-grid" style="margin-top:1rem;">
+      <div class="card" style="border-left:3px solid var(--text-3);">
+        <h3>Buffer / Later / Planoly</h3>
+        <p>Scheduling. Tu fournis le contenu, ils le programment. Ne resolvent pas le probleme "quel contenu poster".</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--text-3);">
+        <h3>Canva</h3>
+        <p>Creation graphique. Templates visuels. Ne touche pas a ta galerie photo existante.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--text-3);">
+        <h3>Photos / Google Photos</h3>
+        <p>Organisation basique. Albums, recherche. Pas de concept de "pilier de marque" ni de post assembly.</p>
+      </div>
+      <div class="card" style="border-left:3px solid var(--accent);">
+        <h3 style="color:var(--accent);">PostKit</h3>
+        <p><strong>Le chainon manquant.</strong> Entre ta galerie et tes reseaux. Classe par pilier de marque, assemble en posts via templates, genere le texte. Le contenu existe deja — PostKit le met en forme.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ASO -->
+  <div class="section">
+    <div class="section-label">App Store</div>
+    <h2>ASO optimise — 9+ keywords indexes</h2>
+    <div class="aso-block">
+      <div class="aso-row"><span class="aso-label">Titre</span><span class="aso-value">PostKit: AI Photos to Posts</span></div>
+      <div class="aso-row"><span class="aso-label">Subtitle</span><span class="aso-value">Camera Roll to Daily Content</span></div>
+      <div class="aso-row"><span class="aso-label">Category</span><span class="aso-value">Photo & Video (primary) · Productivity (secondary)</span></div>
+      <div class="aso-row"><span class="aso-label">Keywords</span><span class="aso-value">organize,brand,social,creator,planner,schedule,sort,classify,template,pillar,feed,instagram,linkedin</span></div>
+      <div class="aso-row"><span class="aso-label">Pricing</span><span class="aso-value">Freemium + Subscription (9.99€/mo)</span></div>
+    </div>
+  </div>
+
+  <!-- ROADMAP -->
+  <div class="section">
+    <div class="section-label">Roadmap</div>
+    <h2>3 horizons</h2>
+    <div class="roadmap">
+      <div class="rm-item">
+        <div class="rm-date">Avr 18</div>
+        <div class="rm-content">
+          <h4>MVP — TestFlight + App Store</h4>
+          <p>Classification IA, swipe/grid mode, pillar CRUD, post assembly, onboarding 5 etapes, export album, Share Sheet. Freemium actif.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-date">Avr 30</div>
+        <div class="rm-content">
+          <h4>v1.1 — Monetisation</h4>
+          <p>Template builder + AI auto-fill. Brand brainstorming (30 questions). Paywall Pro. Premieres conversions.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-date">Mai</div>
+        <div class="rm-content">
+          <h4>v1.2 — Growth</h4>
+          <p>Integration reseaux (LinkedIn API, Instagram). Tone per platform. iCloud sync. Landing page + Product Hunt launch.</p>
+        </div>
+      </div>
+      <div class="rm-item">
+        <div class="rm-date">Juin</div>
+        <div class="rm-content">
+          <h4>v2.0 — WWDC Ready</h4>
+          <p>Adoption des nouvelles features Apple AI (Core ML, Vision). Gemma sur Hetzner (cout zero). Apple Notes integration. Multi-platform posting natif.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KEY METRICS -->
+  <div class="section">
+    <div class="section-label">Objectifs lancement</div>
+    <h2>Metriques cles — 30 premiers jours</h2>
+    <div class="metrics-grid">
+      <div class="metric"><div class="num">500</div><div class="label">Downloads</div></div>
+      <div class="metric"><div class="num">5%</div><div class="label">Free → Pro</div></div>
+      <div class="metric"><div class="num">25</div><div class="label">Abonnes Pro</div></div>
+      <div class="metric"><div class="num">250€</div><div class="label">MRR mois 1</div></div>
+    </div>
+  </div>
+
+  <!-- TECH STACK -->
+  <div class="section">
+    <div class="section-label">Stack technique</div>
+    <h2>Portfolio-quality iOS architecture</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="icon">📱</div>
+        <h3>SwiftUI + MVVM</h3>
+        <p>Multiplateforme (iOS + macOS). Protocols partout. Dependency injection. Zero hardcoded values — tout dans des enums (Strings, Colors, Tokens).</p>
+      </div>
+      <div class="card">
+        <div class="icon">💾</div>
+        <h3>SwiftData + Protocol</h3>
+        <p>PersistenceService abstrait. SwiftData implementation. Pret pour iCloud/CloudKit. Testable avec MockPersistence.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🤖</div>
+        <h3>Hybrid AI Pipeline</h3>
+        <p>Core ML (on-device, gratuit, rapide) + Gemini Flash (cloud, precis). ImageClassifier protocol — switchable vers Gemma/Claude.</p>
+      </div>
+      <div class="card">
+        <div class="icon">🎨</div>
+        <h3>Liquid Glass Design</h3>
+        <p>Apple HIG. iOS 26 ready. Liquid Glass materials. SF Symbols. Adaptive layout Mac/iPhone.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOUNDER -->
+  <div class="section" style="text-align:center;padding:2rem 0;">
+    <div style="font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);margin-bottom:.5rem;">Fondateur</div>
+    <div style="font-size:1.2rem;font-weight:700;">Nicolas Lucchetta</div>
+    <div style="font-size:.88rem;color:var(--text-2);margin-top:.25rem;">Fullstack developer · AI builder · Digital nomad</div>
+    <div style="font-size:.82rem;color:var(--text-3);margin-top:.15rem;">Bangkok · Building in public</div>
+  </div>
+
+  <div class="footer">
+    PostKit — Product Vision v1.0 · April 13, 2026<br>
+    Confidentiel — Ne pas distribuer sans autorisation
+  </div>
+
+</div>
+</body>
+</html>

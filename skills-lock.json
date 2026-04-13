@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "skills": {
+    "app-store-aso": {
+      "source": "TimBroddin/app-store-aso-skill",
+      "sourceType": "github",
+      "computedHash": "b4a4caa5c28a5fdf7eeae14f3123201dab9dafee9fff48bbaea8a8fbf374585c"
+    },
+    "app-store-opportunity-research": {
+      "source": "froessell/app-store-opportunity-research",
+      "sourceType": "github",
+      "computedHash": "3f530fad3e4936a5292e84adf343de8be7bc383a4476fd03fff1ffa6b3a2530c"
+    },
+    "app-store-optimization": {
+      "source": "sickn33/antigravity-awesome-skills",
+      "sourceType": "github",
+      "computedHash": "716e0748b407db7b438b75e4cdcffd5d70d4f0ceeb3519465c31e31dae9417d0"
+    },
+    "marketing-ideas": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "6463f11419704994d58248c398b99c6b097eac24f72f4c86bea1565e435e222e"
+    }
+  }
+}
