@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Persona Editor</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Persona Editor</h1>
+  <div class="path">Views/Profile/PersonaEditorView.swift</div>
+  <div class="refs"><span class="ref">PB-022</span><span class="ref">TabBar / Profile / Persona</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">No post-onboarding editing. Persona was locked after initial setup.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full inline editor: bio, voice/tone (global), platforms, pillar summary. AI preview. "Redo Onboarding" button. Auto-save.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 13</span><span class="vh-desc">Removed global tone picker. Tone is now per-platform: each platform card shows its assigned tones. Tap platform to edit its tones. Bio → Platforms (with nested tones) → Pillars → Redo.</span></div>
+</div>
+
+<!-- DEFAULT STATE v0.2 -->
+<div class="section">
+  <div class="section-title">Default State (v0.2 — Tone per platform)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Profile</div>
+      <div style="font-size:.45rem;color:var(--green);">Auto-saved</div>
+    </div>
+    <div class="m-title">Your Persona</div>
+
+    <!-- Bio section -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.3rem 0 .1rem;">Bio</div>
+    <div class="m-glass-light">
+      <div class="m-input" style="min-height:2.5rem;font-size:.55rem;line-height:1.4;">Solo founder building AI SaaS for automotive. Digital nomad in Bangkok. I share code, cars, and coffee.</div>
+      <div style="font-size:.42rem;color:var(--text-3);text-align:right;">98 / 280</div>
+    </div>
+
+    <!-- Platforms + Tones (per-platform) -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Platforms & Tones</div>
+
+    <div class="m-glass" style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+      <div style="font-size:.9rem;">📸</div>
+      <div style="flex:1;">
+        <div style="font-size:.58rem;font-weight:600;">Instagram</div>
+        <div style="display:flex;gap:.15rem;margin-top:.1rem;">
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.42rem;">🎯 Professional</span>
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.42rem;">📖 Storyteller</span>
+        </div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-4);">›</div>
+    </div>
+
+    <div class="m-glass" style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+      <div style="font-size:.9rem;">💼</div>
+      <div style="flex:1;">
+        <div style="font-size:.58rem;font-weight:600;">LinkedIn</div>
+        <div style="display:flex;gap:.15rem;margin-top:.1rem;">
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.42rem;">🎯 Professional</span>
+        </div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-4);">›</div>
+    </div>
+
+    <div class="m-glass" style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+      <div style="font-size:.9rem;">𝕏</div>
+      <div style="flex:1;">
+        <div style="font-size:.58rem;font-weight:600;">X / Twitter</div>
+        <div style="display:flex;gap:.15rem;margin-top:.1rem;">
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.42rem;">✂️ Minimal</span>
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.42rem;">😎 Casual</span>
+        </div>
+      </div>
+      <div style="font-size:.55rem;color:var(--text-4);">›</div>
+    </div>
+
+    <div class="m-glass-light" style="text-align:center;font-size:.52rem;color:var(--accent);font-weight:500;">+ Add platform</div>
+
+    <!-- Pillar summary -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Pillars</div>
+    <div class="m-glass-light" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="m-chips" style="margin-bottom:0;">
+        <span class="m-chip" style="font-size:.45rem;">💻 Dev</span>
+        <span class="m-chip" style="font-size:.45rem;">🤖 AI</span>
+        <span class="m-chip" style="font-size:.45rem;">🚗 Auto</span>
+        <span class="m-chip" style="font-size:.45rem;">✈️ Travel</span>
+      </div>
+      <div style="font-size:.48rem;color:var(--accent);cursor:pointer;white-space:nowrap;">Manage →</div>
+    </div>
+
+    <!-- AI Preview -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.3rem 0 .1rem;">AI sees you as:</div>
+    <div class="m-glass" style="font-size:.52rem;color:var(--text-2);line-height:1.4;font-style:italic;">
+      A Bangkok-based solo founder building AI products for automotive. Professional + storyteller on Instagram, professional on LinkedIn, minimal + casual on X.
+    </div>
+
+    <!-- Redo Onboarding -->
+    <div style="text-align:center;margin-top:.4rem;padding-top:.3rem;border-top:1px solid rgba(0,0,0,.06);">
+      <div style="font-size:.52rem;color:var(--orange);cursor:pointer;font-weight:500;">Redo Onboarding (guided flow)</div>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti ac"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- PLATFORM TONE DETAIL -->
+<div class="section">
+  <div class="section-title">Platform Tone Detail (tap a platform)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Persona</div>
+      <div style="font-size:.45rem;color:var(--green);">Auto-saved</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.4rem;">
+      <div style="font-size:1.3rem;">📸</div>
+      <div>
+        <div style="font-size:.85rem;font-weight:700;">Instagram</div>
+        <div style="font-size:.52rem;color:var(--text-3);">Select 1-3 tones for this platform</div>
+      </div>
+    </div>
+
+    <div class="m-glass m-glass-active" style="cursor:pointer;">
+      <div style="font-weight:600;font-size:.65rem;">🎯 Professional & Sharp</div>
+      <div style="font-size:.5rem;color:var(--text-3);font-style:italic;margin-top:.08rem;">"Just shipped a new AI feature from our Bangkok office."</div>
+    </div>
+    <div class="m-glass m-glass-active" style="cursor:pointer;">
+      <div style="font-weight:600;font-size:.65rem;">📖 Storyteller</div>
+      <div style="font-size:.5rem;color:var(--text-3);font-style:italic;margin-top:.08rem;">"5am. Bangkok rooftop. The code finally compiled."</div>
+    </div>
+    <div class="m-glass-light" style="cursor:pointer;">
+      <div style="font-weight:600;font-size:.65rem;">😎 Casual & Fun</div>
+      <div style="font-size:.5rem;color:var(--text-3);font-style:italic;margin-top:.08rem;">"Broo just shipped from BKK 🔥"</div>
+    </div>
+    <div class="m-glass-light" style="cursor:pointer;">
+      <div style="font-weight:600;font-size:.65rem;">🔥 Inspirational & Bold</div>
+      <div style="font-size:.5rem;color:var(--text-3);font-style:italic;margin-top:.08rem;">"The view from the top is earned."</div>
+    </div>
+    <div class="m-glass-light" style="cursor:pointer;">
+      <div style="font-weight:600;font-size:.65rem;">✂️ Minimal & Clean</div>
+      <div style="font-size:.5rem;color:var(--text-3);font-style:italic;margin-top:.08rem;">"New feature. Bangkok. Shipped."</div>
+    </div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">Empty bio</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.68rem;font-weight:600;margin-bottom:.15rem;">Your Persona</div>
+        <div style="font-size:.52rem;font-weight:600;color:var(--accent);margin-bottom:.1rem;">Bio</div>
+        <div class="m-glass-light">
+          <div class="m-input" style="min-height:1.5rem;font-size:.52rem;color:var(--text-4);">Write a short bio...</div>
+          <div style="font-size:.42rem;color:var(--text-3);text-align:right;">0 / 280</div>
+        </div>
+        <div style="font-size:.48rem;color:var(--text-3);font-style:italic;">AI will use pillars and tones as fallback.</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">Platform with 0 tones</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.68rem;font-weight:600;margin-bottom:.15rem;">📸 Instagram</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-bottom:.2rem;">No tone selected. AI defaults to Professional.</div>
+        <div class="m-glass-light" style="font-size:.55rem;">🎯 Professional</div>
+        <div class="m-glass-light" style="font-size:.55rem;">📖 Storyteller</div>
+        <div class="m-glass-light" style="font-size:.55rem;">😎 Casual</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">3 tones max</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.68rem;font-weight:600;margin-bottom:.15rem;">📸 Instagram — 3 tones</div>
+        <div style="font-size:.48rem;padding:.1rem .3rem;background:var(--yellow-bg);border-radius:5px;color:var(--yellow);margin-bottom:.15rem;">2-3 voices max for a strong brand</div>
+        <div class="m-glass m-glass-active" style="font-size:.55rem;">🎯 Pro ✓</div>
+        <div class="m-glass m-glass-active" style="font-size:.55rem;">📖 Story ✓</div>
+        <div class="m-glass m-glass-active" style="font-size:.55rem;">😎 Casual ✓</div>
+        <div class="m-glass-light" style="font-size:.55rem;opacity:.4;">🔥 Inspirational (max)</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Redo onboarding confirm</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div class="m-glass" style="max-width:90%;">
+          <div style="font-size:.65rem;font-weight:700;margin-bottom:.1rem;">Redo Onboarding?</div>
+          <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.2rem;">Settings will be pre-filled. Nothing is lost.</div>
+          <div style="display:flex;gap:.2rem;">
+            <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">Cancel</div>
+            <div class="m-btn" style="flex:1;font-size:.5rem;">Restart</div>
+          </div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Edit bio text</td><td>Auto-save with 500ms debounce, AI preview updates</td></tr>
+    <tr><td>Tap platform card</td><td>Navigate to platform tone detail (select 1-3 tones with examples)</td></tr>
+    <tr><td>Tap tone in detail</td><td>Toggle tone on/off (max 3), auto-save</td></tr>
+    <tr><td>Tap "+ Add platform"</td><td>Show platform picker to add a new platform</td></tr>
+    <tr><td>Tap "Manage →" on pillars</td><td>Navigate to Pillars Management screen</td></tr>
+    <tr><td>Tap "Redo Onboarding"</td><td>Confirmation dialog → restart guided flow (pre-filled)</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Empty bio: allowed. AI uses pillars + per-platform tones as fallback.</li>
+    <li>Platform with 0 tones: allowed. AI defaults to Professional for that platform.</li>
+    <li>3 tones per platform: max enforced, 4th/5th greyed out with tooltip.</li>
+    <li>All platforms removed: allowed. AI generates generic content.</li>
+    <li>Redo onboarding: pre-fills all steps with current values. No data loss.</li>
+    <li>Rapid edits: auto-save debounced at 500ms.</li>
+    <li>Bio over 280 chars: counter red, stops accepting.</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Bio editable inline with char counter</li>
+    <li>NO global tone picker — tone is per-platform only</li>
+    <li>Each platform card shows its assigned tones as badges</li>
+    <li>Tap platform → tone detail with same-phrase examples</li>
+    <li>Tone multi-select 1-3 max per platform</li>
+    <li>AI preview reflects per-platform tone assignments</li>
+    <li>"Manage Pillars" navigates correctly</li>
+    <li>"Redo Onboarding" with confirmation, pre-fills values</li>
+    <li>Auto-save on all changes</li>
+  </ul>
+</div>
+</body></html>

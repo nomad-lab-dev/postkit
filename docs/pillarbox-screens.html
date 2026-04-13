@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — Screen Navigator</title>
+<style>
+:root {
+  --bg: #f2f2f7;
+  --surface: rgba(255,255,255,0.72);
+  --glass: rgba(255,255,255,0.55);
+  --glass-border: rgba(0,0,0,0.08);
+  --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --text: #1c1c1e;
+  --text-2: #3c3c43;
+  --text-3: #8e8e93;
+  --accent: #007aff;
+  --accent-bg: rgba(0,122,255,0.08);
+  --green: #34c759;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: var(--bg); color: var(--text); height:100vh; overflow:hidden; }
+
+.shell { display:grid; grid-template-columns:260px 1fr; height:100vh; }
+
+/* Sidebar */
+.sidebar {
+  background: var(--surface); backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid var(--glass-border);
+  padding: 1rem;
+  overflow-y: auto;
+  display: flex; flex-direction: column;
+}
+.sidebar-header { margin-bottom: 1rem; }
+.sidebar-header h1 { font-size: 1.1rem; font-weight: 700; }
+.sidebar-header p { font-size: .68rem; color: var(--text-3); }
+.sidebar-header .home-link {
+  display: inline-block; margin-top: .4rem;
+  font-size: .65rem; color: var(--accent); text-decoration: none;
+  padding: .25rem .55rem; border: 1px solid rgba(0,122,255,.12);
+  border-radius: 100px; background: var(--accent-bg);
+}
+
+.branch { margin-bottom: .4rem; }
+.branch-label {
+  font-size: .78rem; font-weight: 600;
+  padding: .4rem .55rem; border-radius: 8px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  display: flex; align-items: center; gap: .35rem;
+  cursor: pointer; transition: all .12s;
+}
+.branch-label:hover { background: rgba(255,255,255,0.7); }
+.branch-label .count {
+  font-size: .55rem; color: var(--text-3);
+  background: var(--bg); padding: .04rem .3rem;
+  border-radius: 100px; margin-left: auto;
+}
+.branch-children {
+  padding-left: .85rem; margin-top: .15rem;
+  border-left: 2px solid rgba(0,0,0,0.04); margin-left: .55rem;
+}
+.screen-btn {
+  display: flex; align-items: center; gap: .3rem;
+  padding: .3rem .45rem; border-radius: 6px;
+  font-size: .7rem; background: none; border: none;
+  color: var(--text-2); cursor: pointer;
+  font-family: inherit; width: 100%; text-align: left;
+  margin-bottom: .06rem; transition: all .1s;
+}
+.screen-btn:hover { background: var(--accent-bg); color: var(--accent); }
+.screen-btn.active { background: var(--accent-bg); color: var(--accent); font-weight: 500; }
+.screen-btn .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); flex-shrink: 0; }
+.screen-btn .new-tag { font-size:.5rem; padding:.06rem .25rem; border-radius:100px; background:rgba(175,82,222,0.08); color:#af52de; font-weight:500; margin-left:auto; }
+
+.sidebar-footer { margin-top: auto; padding-top: .75rem; border-top: 1px solid rgba(0,0,0,0.05); }
+.sidebar-footer p { font-size: .6rem; color: var(--text-3); }
+
+/* Main content (iframe) */
+.main {
+  background: var(--bg);
+  position: relative;
+}
+.main iframe {
+  width: 100%; height: 100%;
+  border: none; background: var(--bg);
+}
+.main .empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100%; color: var(--text-3);
+}
+.main .empty-state .icon { font-size: 3rem; margin-bottom: .75rem; opacity: .3; }
+.main .empty-state p { font-size: .85rem; }
+
+@media(max-width:768px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { max-height: 40vh; border-right: none; border-bottom: 1px solid var(--glass-border); }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <h1>📱 PillarBox</h1>
+      <p>Screen Navigator — v0.3</p>
+      <a href="pillarbox-product-cockpit.html" class="home-link">← Cockpit</a>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🚀 Onboarding <span class="count">5</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/01-welcome.html"><span class="dot"></span>01 Welcome</button>
+        <button class="screen-btn" data-src="screens/02-pillars.html"><span class="dot"></span>02 Pillars <span class="new-tag">v0.2</span></button>
+        <button class="screen-btn" data-src="screens/03-platforms-tone.html"><span class="dot"></span>03 Platforms + Tone</button>
+        <button class="screen-btn" data-src="screens/04-bio-brainstorm.html"><span class="dot"></span>04 Bio / Brainstorm <span class="new-tag">v0.2</span></button>
+        <button class="screen-btn" data-src="screens/05-first-scan.html"><span class="dot"></span>05 First Scan <span class="new-tag">v0.3</span></button>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🏠 Home <span class="count">1</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/home-dashboard.html"><span class="dot"></span>Dashboard <span class="new-tag">v0.2</span></button>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🔍 Explore <span class="count">2</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/explore-grid.html"><span class="dot"></span>Asset Grid <span class="new-tag">v0.2</span></button>
+        <button class="screen-btn" data-src="screens/asset-detail.html"><span class="dot"></span>Asset Detail</button>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">🏷️ Classify <span class="count">2</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/classification-queue.html"><span class="dot"></span>Classification Queue <span class="new-tag">v0.3</span></button>
+        <button class="screen-btn" data-src="screens/classification-view.html"><span class="dot"></span>Classification View <span class="new-tag">v0.3</span></button>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">📝 Posts <span class="count">3</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/posts-list.html"><span class="dot"></span>Posts List</button>
+        <button class="screen-btn" data-src="screens/post-editor.html"><span class="dot"></span>Post Editor</button>
+        <button class="screen-btn" data-src="screens/template-builder.html"><span class="dot"></span>Template Builder <span class="new-tag">v0.2</span></button>
+      </div>
+    </div>
+
+    <div class="branch">
+      <div class="branch-label" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'block':'none'">👤 Profile <span class="count">4</span></div>
+      <div class="branch-children">
+        <button class="screen-btn" data-src="screens/persona-editor.html"><span class="dot"></span>Persona Editor <span class="new-tag">v0.2</span></button>
+        <button class="screen-btn" data-src="screens/pillars-management.html"><span class="dot"></span>Pillars CRUD</button>
+        <button class="screen-btn" data-src="screens/scan-settings.html"><span class="dot"></span>Scan Settings</button>
+        <button class="screen-btn" data-src="screens/stats.html"><span class="dot"></span>Stats</button>
+      </div>
+    </div>
+
+    <div class="sidebar-footer">
+      <p>17 screens · 38 stories · Liquid Glass</p>
+    </div>
+  </div>
+
+  <div class="main" id="main">
+    <div class="empty-state" id="emptyState">
+      <div class="icon">📱</div>
+      <p>Select a screen from the tree</p>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.screen-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.screen-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const main = document.getElementById('main');
+    const empty = document.getElementById('emptyState');
+    if (empty) empty.remove();
+    let iframe = main.querySelector('iframe');
+    if (!iframe) {
+      iframe = document.createElement('iframe');
+      main.appendChild(iframe);
+    }
+    iframe.src = btn.dataset.src + '?v=' + Date.now();
+  });
+});
+</script>
+</body>
+</html>

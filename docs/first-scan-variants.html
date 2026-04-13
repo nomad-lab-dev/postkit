@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — First Scan — Variants</title>
+<style>
+:root {
+  --bg:#f2f2f7;--surface:rgba(255,255,255,0.72);--glass:rgba(255,255,255,0.55);
+  --glass-strong:rgba(255,255,255,0.78);--glass-border:rgba(0,0,0,0.08);
+  --glass-shadow:0 2px 12px rgba(0,0,0,0.06);
+  --text:#1c1c1e;--text-2:#3c3c43;--text-3:#8e8e93;--text-4:#aeaeb2;
+  --accent:#007aff;--accent-bg:rgba(0,122,255,0.08);
+  --green:#34c759;--green-bg:rgba(52,199,89,0.1);
+  --yellow:#ff9f0a;--yellow-bg:rgba(255,159,10,0.1);
+  --orange:#ff9500;--orange-bg:rgba(255,149,0,0.1);
+  --red:#ff3b30;--red-bg:rgba(255,59,48,0.08);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+.page{max-width:900px;margin:0 auto;padding:2rem;}
+.header{text-align:center;margin-bottom:2rem;}
+.header h1{font-size:1.5rem;font-weight:700;}
+.header p{color:var(--text-3);font-size:.85rem;margin-top:.3rem;}
+.header .note{display:inline-block;margin-top:.5rem;font-size:.72rem;padding:.25rem .6rem;background:var(--green-bg);color:var(--green);border-radius:100px;font-weight:500;}
+
+.section-label{font-size:.75rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.04em;margin:2rem 0 .75rem;padding-bottom:.3rem;border-bottom:1px solid rgba(0,0,0,0.06);}
+
+/* Phone */
+.phone-row{display:flex;gap:1.5rem;justify-content:center;flex-wrap:wrap;}
+.phone-col{text-align:center;}
+.phone-col .state{font-size:.65rem;font-weight:600;margin-bottom:.35rem;padding:.15rem .45rem;border-radius:100px;display:inline-block;}
+.phone{width:280px;background:var(--bg);border:1px solid rgba(0,0,0,0.1);border-radius:24px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06),inset 0 0 0 1px rgba(255,255,255,0.5);font-size:.68rem;}
+.ph-bar{height:18px;display:flex;align-items:center;justify-content:center;font-size:.52rem;color:var(--text-3);background:rgba(255,255,255,0.3);}
+.ph-b{min-height:420px;padding:.7rem;position:relative;}
+.ph-home{height:3px;width:32%;margin:3px auto 2px;background:var(--text-4);border-radius:2px;opacity:.2;}
+
+.dots{display:flex;justify-content:center;gap:3px;margin-bottom:.35rem;}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,0.1);}
+.dot-a{background:var(--accent);width:14px;border-radius:3px;}
+.dot-d{background:var(--green);}
+.nav{position:absolute;bottom:.7rem;left:.7rem;right:.7rem;display:flex;gap:.3rem;}
+.nav>*{flex:1;text-align:center;padding:.38rem;}
+.btn{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;padding:.35rem .65rem;border-radius:100px;font-size:.6rem;font-weight:600;box-shadow:0 2px 8px rgba(0,122,255,0.2);}
+.btn-green{background:var(--green);box-shadow:0 2px 12px rgba(52,199,89,0.3);}
+.btn-g{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.08);color:var(--text-2);padding:.35rem .65rem;border-radius:100px;font-size:.6rem;}
+.btn-dis{display:inline-flex;align-items:center;justify-content:center;background:var(--text-4);color:#fff;padding:.35rem .65rem;border-radius:100px;font-size:.6rem;opacity:.5;}
+.glass{background:var(--glass-strong);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.6);border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,0.04);padding:.5rem;margin-bottom:.3rem;}
+.chip{display:inline-block;padding:.12rem .35rem;border-radius:100px;font-size:.48rem;font-weight:500;}
+
+/* Unlock card styles */
+.unlock-card{border-radius:14px;padding:.65rem;text-align:center;margin-bottom:.35rem;transition:all .3s;}
+.unlock-locked{background:rgba(0,0,0,0.03);border:2px dashed rgba(0,0,0,0.1);cursor:pointer;}
+.unlock-locked:hover{border-color:rgba(0,122,255,.3);background:rgba(0,122,255,.02);}
+.unlock-granted{background:var(--green-bg);border:2px solid rgba(52,199,89,.25);}
+
+/* Edge case cards */
+.edge-row{display:flex;gap:1rem;overflow-x:auto;padding-bottom:.5rem;margin-top:.5rem;}
+.edge-col{flex-shrink:0;}
+.edge-col .edge-label{font-size:.58rem;font-weight:600;padding:.12rem .35rem;border-radius:100px;display:inline-block;margin-bottom:.25rem;}
+.edge-col .phone{width:210px;}
+.edge-col .phone .ph-b{min-height:280px;padding:.55rem;font-size:.58rem;}
+
+/* Notes */
+.note-box{margin-top:2rem;background:var(--surface);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;padding:1.25rem;box-shadow:var(--glass-shadow);}
+.note-box h3{font-size:.9rem;font-weight:600;margin-bottom:.35rem;}
+.note-box p{font-size:.8rem;color:var(--text-2);line-height:1.6;}
+.note-box ul{font-size:.8rem;color:var(--text-2);line-height:1.7;padding-left:1.2rem;margin-top:.3rem;}
+</style>
+</head>
+<body>
+<div class="page">
+
+<div class="header">
+  <h1>05 — First Scan — Final Direction</h1>
+  <p>Hybrid: Unlock Cards (B) + Pre-launch checklist rocket header</p>
+  <div class="note">Location removed — EXIF data is in the photos, no permission needed</div>
+</div>
+
+<!-- ==================== MAIN STATES ==================== -->
+<div class="section-label">Happy Path — 3 States</div>
+
+<div class="phone-row">
+
+  <!-- STATE 1: Initial — 1 locked, 1 auto-granted -->
+  <div class="phone-col">
+    <div class="state" style="background:var(--accent-bg);color:var(--accent);">State 1 — Ready to unlock</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:4.5rem;">
+      <div class="dots"><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-a"></div></div>
+
+      <!-- Persona recap -->
+      <div class="glass" style="font-size:.48rem;padding:.3rem .4rem;text-align:center;">
+        <div style="color:var(--text-3);margin-bottom:.08rem;">YOUR SETUP</div>
+        <div style="display:flex;gap:.12rem;flex-wrap:wrap;justify-content:center;">
+          <span class="chip" style="background:var(--accent-bg);color:var(--accent);">💻 Dev</span>
+          <span class="chip" style="background:rgba(50,173,230,.1);color:#32ade6;">🤖 AI</span>
+          <span class="chip" style="background:rgba(255,149,0,.1);color:#ff9500;">🚗 Auto</span>
+        </div>
+        <div style="font-size:.42rem;color:var(--text-4);margin-top:.08rem;">📸 Pro+Story · 💼 Pro · Persona: set</div>
+      </div>
+
+      <!-- Rocket + title -->
+      <div style="text-align:center;margin:.5rem 0 .45rem;">
+        <div style="font-size:2rem;">🚀</div>
+        <div style="font-size:.82rem;font-weight:700;margin-top:.15rem;">Pre-launch checklist</div>
+        <div style="font-size:.52rem;color:var(--text-3);">Unlock access to start scanning</div>
+      </div>
+
+      <!-- Card 1: Photos — LOCKED -->
+      <div class="unlock-card unlock-locked">
+        <div style="font-size:1.5rem;margin-bottom:.1rem;">🔒</div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--text-2);">Photo Library</div>
+        <div style="font-size:.5rem;color:var(--text-3);margin-top:.05rem;">Access your photos & videos</div>
+        <div style="font-size:.52rem;color:var(--accent);font-weight:500;margin-top:.15rem;">Tap to unlock</div>
+      </div>
+
+      <!-- Card 2: Network — AUTO GRANTED -->
+      <div class="unlock-card unlock-granted">
+        <div style="font-size:1.5rem;margin-bottom:.1rem;">✅</div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--green);">Network</div>
+        <div style="font-size:.5rem;color:var(--green);">Connected — AI classification ready</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn-g">Maybe Later</div>
+        <div class="btn-dis" style="flex:2;">🚀 Launch (1/2)</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <!-- STATE 2: All unlocked — same layout as State 1, just states flipped -->
+  <div class="phone-col">
+    <div class="state" style="background:var(--green-bg);color:var(--green);">State 2 — All unlocked!</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:4.5rem;">
+      <div class="dots"><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-d"></div><div class="dot dot-a"></div></div>
+
+      <!-- Persona recap — same as State 1 -->
+      <div class="glass" style="font-size:.48rem;padding:.3rem .4rem;text-align:center;">
+        <div style="color:var(--text-3);margin-bottom:.08rem;">YOUR SETUP</div>
+        <div style="display:flex;gap:.12rem;flex-wrap:wrap;justify-content:center;">
+          <span class="chip" style="background:var(--accent-bg);color:var(--accent);">💻 Dev</span>
+          <span class="chip" style="background:rgba(50,173,230,.1);color:#32ade6;">🤖 AI</span>
+          <span class="chip" style="background:rgba(255,149,0,.1);color:#ff9500;">🚗 Auto</span>
+        </div>
+        <div style="font-size:.42rem;color:var(--text-4);margin-top:.08rem;">📸 Pro+Story · 💼 Pro · Persona: set</div>
+      </div>
+
+      <!-- Rocket + success title — same position as State 1 -->
+      <div style="text-align:center;margin:.5rem 0 .45rem;">
+        <div style="font-size:2rem;">🚀</div>
+        <div style="font-size:.82rem;font-weight:700;color:var(--green);margin-top:.15rem;">Ready for launch!</div>
+        <div style="font-size:.52rem;color:var(--text-3);">All systems are go</div>
+      </div>
+
+      <!-- Card 1: Photos — GRANTED (same card structure as locked, just green) -->
+      <div class="unlock-card unlock-granted">
+        <div style="font-size:1.5rem;margin-bottom:.1rem;">📸</div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--green);">Photo Library</div>
+        <div style="font-size:.5rem;color:var(--green);margin-top:.05rem;">12,847 photos accessible</div>
+      </div>
+
+      <!-- Card 2: Network — GRANTED (same structure) -->
+      <div class="unlock-card unlock-granted">
+        <div style="font-size:1.5rem;margin-bottom:.1rem;">🌐</div>
+        <div style="font-size:.68rem;font-weight:600;color:var(--green);">Network</div>
+        <div style="font-size:.5rem;color:var(--green);margin-top:.05rem;">Connected — Gemini Flash ready</div>
+      </div>
+
+      <!-- Scan info -->
+      <div style="text-align:center;margin-top:.2rem;">
+        <div style="font-size:.5rem;color:var(--text-3);">~12 minutes · starts with most recent</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn btn-green" style="flex:1;">🚀 Launch Scan</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <!-- STATE 3: Scan launched — transition to Home -->
+  <div class="phone-col">
+    <div class="state" style="background:var(--purple-bg);color:var(--purple);">State 3 — Scanning...</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+      <div style="font-size:2.5rem;margin-bottom:.4rem;">🔍</div>
+      <div style="font-size:.85rem;font-weight:700;">Scanning your library...</div>
+      <div style="font-size:.55rem;color:var(--text-3);margin-top:.15rem;margin-bottom:.6rem;">You'll be taken to your dashboard in a moment</div>
+
+      <div style="width:80%;">
+        <div style="display:flex;justify-content:space-between;font-size:.5rem;color:var(--text-3);margin-bottom:.15rem;">
+          <span>Starting...</span>
+          <span>47 / 12,847</span>
+        </div>
+        <div style="height:4px;background:rgba(0,0,0,0.06);border-radius:2px;">
+          <div style="width:3%;height:100%;background:var(--accent);border-radius:2px;transition:width 1s;"></div>
+        </div>
+      </div>
+
+      <div style="font-size:.48rem;color:var(--text-4);margin-top:.4rem;">Scanning your last 30 days first</div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+</div>
+
+<!-- ==================== EDGE CASES ==================== -->
+<div class="section-label">Edge Cases</div>
+
+<div class="edge-row">
+  <div class="edge-col">
+    <div class="edge-label" style="background:var(--red-bg);color:var(--red);">Permission denied</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:3rem;">
+      <div style="text-align:center;margin:.3rem 0;">
+        <div style="font-size:1.5rem;">🚀</div>
+        <div style="font-size:.7rem;font-weight:700;margin-top:.1rem;">Pre-launch checklist</div>
+      </div>
+
+      <div class="unlock-card" style="background:var(--red-bg);border:2px solid rgba(255,59,48,.2);text-align:center;">
+        <div style="font-size:1.1rem;margin-bottom:.08rem;">⚠️</div>
+        <div style="font-size:.6rem;font-weight:600;color:var(--red);">Photo Library — Denied</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin:.08rem 0 .12rem;">PillarBox can't scan without photo access</div>
+        <div style="font-size:.5rem;color:var(--accent);font-weight:500;">Open Settings →</div>
+      </div>
+
+      <div class="unlock-card unlock-granted" style="text-align:center;">
+        <div style="font-size:.6rem;color:var(--green);">✅ Network — Ready</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn-g">Skip for now</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <div class="edge-col">
+    <div class="edge-label" style="background:var(--yellow-bg);color:var(--yellow);">Limited photo access</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:3rem;">
+      <div style="text-align:center;margin:.3rem 0;">
+        <div style="font-size:1.5rem;">🚀</div>
+        <div style="font-size:.7rem;font-weight:700;margin-top:.1rem;">Pre-launch checklist</div>
+      </div>
+
+      <div class="unlock-card" style="background:var(--yellow-bg);border:2px solid rgba(255,159,10,.2);text-align:center;">
+        <div style="font-size:1.1rem;margin-bottom:.08rem;">⚡</div>
+        <div style="font-size:.6rem;font-weight:600;color:var(--yellow);">Limited Access</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin:.05rem 0;">Only 234 selected photos</div>
+        <div style="display:flex;gap:.15rem;justify-content:center;margin-top:.1rem;">
+          <span style="font-size:.48rem;color:var(--accent);font-weight:500;">Allow full access</span>
+          <span style="font-size:.48rem;color:var(--text-4);">or</span>
+          <span style="font-size:.48rem;color:var(--green);font-weight:500;">Scan 234</span>
+        </div>
+      </div>
+
+      <div class="unlock-card unlock-granted" style="text-align:center;">
+        <div style="font-size:.6rem;color:var(--green);">✅ Network — Ready</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <div class="edge-col">
+    <div class="edge-label" style="background:var(--orange-bg);color:var(--orange);">No network</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:3rem;">
+      <div style="text-align:center;margin:.3rem 0;">
+        <div style="font-size:1.5rem;">🚀</div>
+        <div style="font-size:.7rem;font-weight:700;margin-top:.1rem;">Pre-launch checklist</div>
+      </div>
+
+      <div class="unlock-card unlock-granted" style="text-align:center;">
+        <div style="font-size:.6rem;color:var(--green);">📸 Photos — 12,847 accessible</div>
+      </div>
+
+      <div class="unlock-card" style="background:var(--orange-bg);border:2px solid rgba(255,149,0,.2);text-align:center;">
+        <div style="font-size:1.1rem;margin-bottom:.08rem;">📡</div>
+        <div style="font-size:.6rem;font-weight:600;color:var(--orange);">No Network</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin:.05rem 0;">AI classification needs internet</div>
+        <div style="font-size:.48rem;color:var(--text-4);margin-top:.08rem;">On-device only mode available (less accurate)</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn-g" style="flex:1;">Scan offline</div>
+        <div class="btn-dis" style="flex:1;">🚀 Launch</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <div class="edge-col">
+    <div class="edge-label" style="background:rgba(0,0,0,0.04);color:var(--text-3);">Empty library</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:3rem;">
+      <div style="text-align:center;margin:.3rem 0;">
+        <div style="font-size:1.5rem;">🚀</div>
+        <div style="font-size:.7rem;font-weight:700;margin-top:.1rem;">Pre-launch checklist</div>
+      </div>
+
+      <div class="unlock-card" style="background:rgba(0,0,0,0.02);border:2px solid rgba(0,0,0,0.06);text-align:center;">
+        <div style="font-size:1.1rem;margin-bottom:.08rem;">📷</div>
+        <div style="font-size:.6rem;font-weight:600;color:var(--text-3);">Photo Library — Empty</div>
+        <div style="font-size:.48rem;color:var(--text-4);margin-top:.05rem;">Take some photos and come back!</div>
+      </div>
+
+      <div class="unlock-card unlock-granted" style="text-align:center;">
+        <div style="font-size:.6rem;color:var(--green);">✅ Network — Ready</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn" style="flex:1;">Go to Home →</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+
+  <div class="edge-col">
+    <div class="edge-label" style="background:var(--accent-bg);color:var(--accent);">Skipped onboarding</div>
+    <div class="phone"><div class="ph-bar">9:41</div><div class="ph-b" style="padding-bottom:3rem;">
+      <div style="text-align:center;margin:.3rem 0;">
+        <div style="font-size:1.5rem;">🚀</div>
+        <div style="font-size:.7rem;font-weight:700;margin-top:.1rem;">Pre-launch checklist</div>
+      </div>
+
+      <div style="font-size:.48rem;padding:.2rem .35rem;background:var(--yellow-bg);border-radius:6px;color:var(--yellow);margin-bottom:.25rem;text-align:center;">No persona set — AI will use pillars only</div>
+
+      <div class="unlock-card unlock-locked" style="text-align:center;">
+        <div style="font-size:1.1rem;">🔒</div>
+        <div style="font-size:.6rem;font-weight:600;color:var(--text-2);">Photo Library</div>
+        <div style="font-size:.48rem;color:var(--accent);">Tap to unlock</div>
+      </div>
+
+      <div class="unlock-card unlock-granted" style="text-align:center;">
+        <div style="font-size:.6rem;color:var(--green);">✅ Network</div>
+      </div>
+
+      <div class="nav">
+        <div class="btn-g">Skip</div>
+        <div class="btn-dis" style="flex:2;">🚀 Launch (1/2)</div>
+      </div>
+    </div><div class="ph-home"></div></div>
+  </div>
+</div>
+
+<!-- ==================== DESIGN NOTES ==================== -->
+<div class="note-box">
+  <h3>Design Decisions</h3>
+  <ul>
+    <li><strong>2 permissions only</strong> — Location removed. EXIF GPS data is read from photo metadata via PhotoKit, no Location Services permission needed.</li>
+    <li><strong>Network auto-detected</strong> — Not a "permission" per se, but shown as a system check. If offline, offer "scan offline" (Core ML only, less accurate).</li>
+    <li><strong>In most cases, 1 tap</strong> — Network is auto-green. User taps Photos once → both green → Launch enabled. Minimal friction.</li>
+    <li><strong>Unlock card flip animation</strong> — Locked (grey, dashed, padlock) → granted (green, solid, checkmark + real data like photo count). Satisfying micro-interaction.</li>
+    <li><strong>Rocket header</strong> — Consistent across all states. Gives a "mission" feel without being over the top.</li>
+    <li><strong>Persona recap</strong> — Compact at top. Shows what was configured. If nothing was configured (skipped), shows warning.</li>
+    <li><strong>State 3 (scanning)</strong> — Brief transition screen before auto-navigating to Home dashboard. Shows initial progress.</li>
+  </ul>
+</div>
+
+</div>
+</body>
+</html>

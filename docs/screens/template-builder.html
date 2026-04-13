@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Template Builder</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Template Builder</h1>
+  <div class="path">Views/Posts/TemplateBuilderView.swift</div>
+  <div class="refs"><span class="ref">PB-037</span><span class="ref">Posts / Templates or Home / Quick Action</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">No template system. Posts had no structure.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Template builder with configurable slots. Per-slot cadrage/pillar/tags/description. Drag reorder. Preview visual. CRUD complete.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 13</span><span class="vh-desc">Added description text field below template name. Added "Validate & Share" button for social sharing alongside Save.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1 — Editing a template)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Templates</div>
+      <div class="m-btn" style="font-size:.48rem;padding:.15rem .35rem;">Save</div>
+      <div class="m-btn-glass" style="font-size:.48rem;padding:.15rem .35rem;">Share</div>
+    </div>
+    <div class="m-input" style="font-size:.65rem;font-weight:600;">Track Day Carousel</div>
+    <div class="m-input" style="font-size:.52rem;color:var(--text-3);">4-photo carousel: hero, detail, action, portrait. For Instagram & LinkedIn.</div>
+    <!-- Slot list -->
+    <div style="font-size:.55rem;font-weight:600;margin:.25rem 0 .15rem;">Slots (4)</div>
+    <!-- Slot 1 -->
+    <div class="m-glass" style="position:relative;">
+      <div style="position:absolute;left:-2px;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text-4);cursor:grab;">≡</div>
+      <div style="margin-left:.6rem;">
+        <div style="font-size:.58rem;font-weight:600;">Slot 1 — Hero shot</div>
+        <div style="display:flex;gap:.15rem;flex-wrap:wrap;margin-top:.1rem;">
+          <span class="m-chip" style="font-size:.42rem;">🖼 Wide</span>
+          <span class="m-chip" style="font-size:.42rem;">🚗 Automotive</span>
+        </div>
+        <div style="font-size:.45rem;color:var(--text-3);margin-top:.08rem;">Opening wide shot of the car on track</div>
+      </div>
+    </div>
+    <!-- Slot 2 -->
+    <div class="m-glass" style="position:relative;">
+      <div style="position:absolute;left:-2px;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text-4);cursor:grab;">≡</div>
+      <div style="margin-left:.6rem;">
+        <div style="font-size:.58rem;font-weight:600;">Slot 2 — Detail close-up</div>
+        <div style="display:flex;gap:.15rem;flex-wrap:wrap;margin-top:.1rem;">
+          <span class="m-chip" style="font-size:.42rem;">🖼 Detail</span>
+          <span class="m-chip" style="font-size:.42rem;">🚗 Automotive</span>
+        </div>
+        <div style="font-size:.45rem;color:var(--text-3);margin-top:.08rem;">Engine bay, wheel, interior detail</div>
+      </div>
+    </div>
+    <!-- Slot 3 -->
+    <div class="m-glass" style="position:relative;">
+      <div style="position:absolute;left:-2px;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text-4);cursor:grab;">≡</div>
+      <div style="margin-left:.6rem;">
+        <div style="font-size:.58rem;font-weight:600;">Slot 3 — Driver POV</div>
+        <div style="display:flex;gap:.15rem;flex-wrap:wrap;margin-top:.1rem;">
+          <span class="m-chip" style="font-size:.42rem;">🖼 POV</span>
+        </div>
+        <div style="font-size:.45rem;color:var(--text-3);margin-top:.08rem;">Cockpit view, steering wheel, dashboard</div>
+      </div>
+    </div>
+    <!-- Slot 4 -->
+    <div class="m-glass" style="position:relative;">
+      <div style="position:absolute;left:-2px;top:50%;transform:translateY(-50%);font-size:.6rem;color:var(--text-4);cursor:grab;">≡</div>
+      <div style="margin-left:.6rem;">
+        <div style="font-size:.58rem;font-weight:600;">Slot 4 — Portrait / People</div>
+        <div style="display:flex;gap:.15rem;flex-wrap:wrap;margin-top:.1rem;">
+          <span class="m-chip" style="font-size:.42rem;">🖼 Portrait</span>
+          <span class="m-chip" style="font-size:.42rem;">Any pillar</span>
+        </div>
+        <div style="font-size:.45rem;color:var(--text-3);margin-top:.08rem;">Driver or crew portrait</div>
+      </div>
+    </div>
+    <div style="text-align:center;margin-top:.2rem;">
+      <div class="m-btn-glass" style="font-size:.52rem;">+ Add slot</div>
+    </div>
+    <!-- Preview -->
+    <div style="font-size:.55rem;font-weight:600;margin:.35rem 0 .15rem;">Preview</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;">
+      <div style="aspect-ratio:1;background:rgba(0,122,255,.1);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.35rem;color:var(--accent);">W</div>
+      <div style="aspect-ratio:1;background:rgba(0,122,255,.08);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.35rem;color:var(--accent);">D</div>
+      <div style="aspect-ratio:1;background:rgba(0,122,255,.06);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.35rem;color:var(--accent);">POV</div>
+      <div style="aspect-ratio:1;background:rgba(0,122,255,.04);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.35rem;color:var(--accent);">P</div>
+    </div>
+    <div style="text-align:center;margin-top:.3rem;">
+      <span style="font-size:.5rem;color:var(--red);cursor:pointer;">Delete template</span>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">0 slots — can't save</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-input" style="font-size:.62rem;font-weight:600;">Empty Template</div>
+        <div style="text-align:center;margin-top:1rem;">
+          <div style="font-size:1rem;color:var(--text-4);">📋</div>
+          <div style="font-size:.55rem;color:var(--text-3);margin-top:.1rem;">Add at least 1 slot to save.</div>
+          <div class="m-btn-glass" style="font-size:.52rem;margin-top:.2rem;">+ Add slot</div>
+        </div>
+        <div class="m-btn-disabled" style="width:100%;text-align:center;margin-top:.5rem;font-size:.52rem;">Save (min 1 slot)</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">New slot config</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.62rem;font-weight:600;margin-bottom:.15rem;">Configure Slot</div>
+        <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Cadrage type</div>
+        <div class="m-chips">
+          <span class="m-chip m-chip-sel">POV</span>
+          <span class="m-chip">Detail</span>
+          <span class="m-chip">Wide</span>
+          <span class="m-chip">Portrait</span>
+          <span class="m-chip">Any</span>
+        </div>
+        <div style="font-size:.5rem;color:var(--text-3);margin:.15rem 0 .1rem;">Required pillar(s)</div>
+        <div class="m-chips">
+          <span class="m-chip m-chip-sel">🚗 Automotive</span>
+          <span class="m-chip">💻 Dev</span>
+          <span class="m-chip">🤖 AI</span>
+          <span class="m-chip">✈️ Travel</span>
+        </div>
+        <div style="font-size:.5rem;color:var(--text-3);margin:.15rem 0 .1rem;">Tags (optional)</div>
+        <div class="m-input" style="font-size:.52rem;">track, circuit</div>
+        <div style="font-size:.5rem;color:var(--text-3);margin:.15rem 0 .1rem;">Description (optional)</div>
+        <div class="m-input" style="font-size:.52rem;">Opening wide shot of the car</div>
+        <div class="m-btn" style="width:100%;text-align:center;margin-top:.2rem;font-size:.52rem;">Done</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--purple-bg);color:var(--purple);">Many slots (scrollable)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.62rem;font-weight:600;margin-bottom:.1rem;">10-Slide Carousel</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.15rem;">10 slots configured</div>
+        <div class="m-glass-light" style="font-size:.5rem;padding:.2rem .3rem;">Slot 1 — Wide — 🚗</div>
+        <div class="m-glass-light" style="font-size:.5rem;padding:.2rem .3rem;">Slot 2 — Detail — 🚗</div>
+        <div class="m-glass-light" style="font-size:.5rem;padding:.2rem .3rem;">Slot 3 — POV</div>
+        <div class="m-glass-light" style="font-size:.5rem;padding:.2rem .3rem;">Slot 4 — Portrait</div>
+        <div class="m-glass-light" style="font-size:.5rem;padding:.2rem .3rem;">Slot 5 — Wide — 💻</div>
+        <div style="font-size:.42rem;color:var(--text-4);text-align:center;margin-top:.1rem;">+ 5 more slots (scroll down)</div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1px;margin-top:.15rem;">
+          <div style="aspect-ratio:1;background:rgba(0,122,255,.1);border-radius:2px;"></div>
+          <div style="aspect-ratio:1;background:rgba(0,122,255,.08);border-radius:2px;"></div>
+          <div style="aspect-ratio:1;background:rgba(0,122,255,.06);border-radius:2px;"></div>
+          <div style="aspect-ratio:1;background:rgba(0,122,255,.05);border-radius:2px;"></div>
+          <div style="aspect-ratio:1;background:rgba(0,122,255,.04);border-radius:2px;"></div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap "+ Add slot"</td><td>Add new slot with default settings (Any cadrage, no pillar, empty description)</td></tr>
+    <tr><td>Tap slot card</td><td>Open slot configuration (cadrage picker, pillar multi-select, tags, description)</td></tr>
+    <tr><td>Configure slot fields</td><td>Auto-save changes to slot</td></tr>
+    <tr><td>Drag slot (via handle)</td><td>Reorder slot position, persist new order</td></tr>
+    <tr><td>Tap delete on a slot</td><td>Remove slot (confirm if it's the last one)</td></tr>
+    <tr><td>Tap "Save"</td><td>Persist template, available in "Create Post" flow</td></tr>
+    <tr><td>Tap "Share"</td><td>Validate template + open Share Sheet (post to socials, export, etc.)</td></tr>
+    <tr><td>Tap "Delete template"</td><td>Confirmation dialog, then remove template entirely</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>0 slots: Cannot save template. "Add at least 1 slot" message shown, Save button disabled.</li>
+    <li>Duplicate template name: Allowed (templates have unique IDs, not unique names)</li>
+    <li>Very many slots (10+): Scrollable list, no hard limit. Preview grid adapts.</li>
+    <li>Last slot deleted: Confirmation "This is the last slot. Remove it?" to prevent accidental empty template.</li>
+    <li>Template in use by posts: Deleting template doesn't affect existing posts (they keep their slot structure).</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Full CRUD for templates (create, read, update, delete)</li>
+    <li>Per-slot configuration: cadrage picker, pillar multi-select, tags, description</li>
+    <li>Drag handles to reorder slots, order persisted</li>
+    <li>Preview visual shows mini slot boxes with cadrage labels</li>
+    <li>Templates accessible from "Create Post" flow as starting point</li>
+    <li>0 slots prevents save with clear feedback</li>
+    <li>Delete template requires confirmation</li>
+  </ul>
+</div>
+</body></html>

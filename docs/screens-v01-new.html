@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — New Screens v0.1</title>
+<style>
+  :root {
+    --bg:#f2f2f7;--surface:rgba(255,255,255,0.72);--glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.78);--glass-border:rgba(0,0,0,0.08);
+    --glass-shadow:0 2px 12px rgba(0,0,0,0.06);
+    --text:#1c1c1e;--text-2:#3c3c43;--text-3:#8e8e93;--text-4:#aeaeb2;
+    --accent:#007aff;--accent-bg:rgba(0,122,255,0.08);
+    --green:#34c759;--green-bg:rgba(52,199,89,0.1);
+    --yellow:#ff9f0a;--orange:#ff9500;--orange-bg:rgba(255,149,0,0.1);
+    --red:#ff3b30;--purple:#af52de;--purple-bg:rgba(175,82,222,0.08);
+    --cyan:#32ade6;--cyan-bg:rgba(50,173,230,0.1);
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+  .page{max-width:1200px;margin:0 auto;padding:1.5rem;}
+  .header{text-align:center;margin-bottom:2rem;}
+  .header h1{font-size:1.6rem;font-weight:700;}
+  .header p{color:var(--text-3);font-size:.85rem;}
+
+  .screen-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:1.5rem;}
+  .screen-card{background:var(--surface);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;box-shadow:var(--glass-shadow);overflow:hidden;}
+  .sc-header{padding:1rem 1.25rem;border-bottom:1px solid rgba(0,0,0,0.06);background:rgba(255,255,255,0.5);}
+  .sc-header h2{font-size:1rem;font-weight:600;display:flex;align-items:center;gap:.4rem;}
+  .sc-header .tag{font-size:.6rem;padding:.12rem .4rem;border-radius:100px;background:var(--purple-bg);color:var(--purple);font-weight:500;}
+  .sc-header .path{font-size:.68rem;color:var(--text-3);font-family:'SF Mono',monospace;margin-top:.15rem;}
+  .sc-body{padding:1.25rem;}
+
+  .phone{width:280px;margin:0 auto;background:var(--bg);border:1px solid rgba(0,0,0,0.1);border-radius:24px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.06),inset 0 0 0 1px rgba(255,255,255,0.5);}
+  .phone-bar{height:18px;display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--text-3);background:rgba(255,255,255,0.3);}
+  .phone-body{min-height:420px;padding:.7rem;position:relative;font-size:.72rem;}
+  .phone-home{height:4px;width:34%;margin:3px auto 2px;background:var(--text-4);border-radius:2px;opacity:.25;}
+  .phone-tab{display:flex;justify-content:space-around;padding:.4rem 0 .3rem;background:rgba(255,255,255,0.65);backdrop-filter:blur(20px);border-top:1px solid rgba(0,0,0,0.06);font-size:.5rem;color:var(--text-3);}
+  .phone-tab .ti{text-align:center;}.phone-tab .ti.a{color:var(--accent);}
+  .phone-tab .ic{font-size:.85rem;}
+
+  /* Shared components */
+  .g{background:var(--glass-strong);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.6);border-radius:10px;box-shadow:0 1px 6px rgba(0,0,0,0.04);padding:.5rem;margin-bottom:.4rem;}
+  .g-light{background:var(--glass);border:1px solid var(--glass-border);border-radius:10px;padding:.5rem;margin-bottom:.4rem;}
+  .btn{display:inline-flex;align-items:center;justify-content:center;background:var(--accent);color:#fff;padding:.35rem .65rem;border-radius:100px;font-size:.62rem;font-weight:600;box-shadow:0 2px 8px rgba(0,122,255,0.2);}
+  .btn-g{display:inline-flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.55);border:1px solid rgba(0,0,0,0.08);color:var(--text-2);padding:.35rem .65rem;border-radius:100px;font-size:.62rem;}
+  .chip{display:inline-block;padding:.18rem .45rem;border-radius:100px;font-size:.58rem;background:var(--accent-bg);color:var(--accent);font-weight:500;}
+  .title{font-size:.88rem;font-weight:700;margin-bottom:.3rem;}
+  .sub{font-size:.62rem;color:var(--text-3);margin-bottom:.5rem;}
+  .dots{display:flex;justify-content:center;gap:4px;margin-bottom:.4rem;}
+  .dot{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,0.12);}
+  .dot.a{background:var(--accent);width:16px;border-radius:3px;}
+  .dot.d{background:var(--green);}
+  .nav{position:absolute;bottom:.7rem;left:.7rem;right:.7rem;display:flex;gap:.35rem;}
+  .nav>*{flex:1;text-align:center;padding:.4rem;}
+  .bento{display:grid;grid-template-columns:1fr 1fr;gap:.3rem;margin-bottom:.4rem;}
+  .bento-item{background:rgba(255,255,255,0.6);backdrop-filter:blur(12px);border:1px solid rgba(0,0,0,0.06);border-radius:10px;padding:.4rem;text-align:center;}
+  .bento-item .em{font-size:1rem;}.bento-item .lb{font-size:.55rem;font-weight:600;color:var(--text-2);margin-top:.1rem;}
+  .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:.25rem;}
+  .mini-grid div{aspect-ratio:1;border-radius:3px;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);}
+
+  .notes{margin-top:1rem;font-size:.78rem;color:var(--text-2);line-height:1.6;}
+  .notes strong{color:var(--text);}
+
+  /* Card stack */
+  .card-stack{position:relative;width:90%;margin:0 auto .5rem;}
+  .card-bg1{position:absolute;top:5px;left:5px;right:5px;bottom:-7px;background:rgba(255,255,255,0.4);border-radius:12px;border:1px solid rgba(0,0,0,0.04);z-index:1;}
+  .card-bg2{position:absolute;top:10px;left:10px;right:10px;bottom:-14px;background:rgba(255,255,255,0.25);border-radius:12px;border:1px solid rgba(0,0,0,0.03);z-index:0;}
+  .card-main{position:relative;z-index:2;background:var(--glass-strong);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.6);border-radius:12px;padding:.75rem;box-shadow:0 3px 12px rgba(0,0,0,0.05);}
+
+  .mc-opt{padding:.3rem .45rem;border-radius:8px;font-size:.62rem;background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.06);color:var(--text-2);margin-bottom:.2rem;}
+  .mc-opt.sel{background:var(--accent-bg);border-color:rgba(0,122,255,0.2);color:var(--accent);font-weight:500;}
+  .expand-hint{font-size:.55rem;color:var(--accent);text-align:center;margin-top:.3rem;padding:.25rem;border:1px dashed rgba(0,122,255,0.2);border-radius:6px;}
+
+  /* Slots */
+  .slot-grid{display:grid;grid-template-columns:1fr 1fr;gap:.3rem;margin-bottom:.4rem;}
+  .slot{border-radius:8px;aspect-ratio:3/4;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.55rem;text-align:center;padding:.3rem;}
+  .slot-empty{border:2px dashed rgba(0,0,0,0.12);color:var(--text-3);background:rgba(0,0,0,0.02);}
+  .slot-filled{border:1px solid rgba(0,0,0,0.08);background:linear-gradient(135deg,#d0d8f0,#c8e0f0);position:relative;}
+  .slot-filled .slot-tags{position:absolute;bottom:3px;left:3px;right:3px;display:flex;gap:2px;flex-wrap:wrap;}
+  .slot-filled .st{padding:1px 4px;border-radius:3px;font-size:.4rem;background:rgba(255,255,255,0.8);color:var(--text-2);}
+  .slot-req{font-weight:600;color:var(--text-3);margin-bottom:.15rem;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>PillarBox — New & Updated Screens (v0.1)</h1>
+    <p>Screens added or significantly reworked after challenge round 1</p>
+  </div>
+
+  <div class="screen-grid">
+
+    <!-- ===== PILLARS BENTO ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>02 — Pillars Setup <span class="tag">Updated v0.1</span></h2>
+        <div class="path">Views/Onboarding/OnboardingPillarsView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4.5rem;">
+            <div class="title">What do you create content about?</div>
+            <div class="sub">Tap to toggle. Add your own.</div>
+            <div class="dots"><div class="dot d"></div><div class="dot a"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+            <div class="bento">
+              <div class="bento-item" style="border-color:rgba(0,122,255,.2);background:var(--accent-bg);">
+                <div class="em">💻</div><div class="lb">Developer</div>
+                <div style="font-size:.5rem;color:var(--text-3);">Code, tools, building</div>
+              </div>
+              <div class="bento-item" style="border-color:rgba(50,173,230,.2);background:var(--cyan-bg);">
+                <div class="em">🤖</div><div class="lb">AI / Tech</div>
+                <div style="font-size:.5rem;color:var(--text-3);">ML, prompts, automation</div>
+              </div>
+              <div class="bento-item" style="border-color:rgba(255,149,0,.2);background:var(--orange-bg);">
+                <div class="em">🚗</div><div class="lb">Automotive</div>
+                <div style="font-size:.5rem;color:var(--text-3);">Cars, tracks, driving</div>
+              </div>
+              <div class="bento-item">
+                <div class="em">🧳</div><div class="lb">Digital Nomad</div>
+                <div style="font-size:.5rem;color:var(--text-3);">Remote work, travel-work</div>
+              </div>
+              <div class="bento-item" style="border-color:rgba(52,199,89,.2);background:var(--green-bg);">
+                <div class="em">✈️</div><div class="lb">Travel</div>
+                <div style="font-size:.5rem;color:var(--text-3);">Destinations, culture</div>
+              </div>
+              <div class="bento-item">
+                <div class="em">🍜</div><div class="lb">Food</div>
+                <div style="font-size:.5rem;color:var(--text-3);">Cooking, restaurants</div>
+              </div>
+            </div>
+            <div class="g-light" style="text-align:center;color:var(--accent);font-weight:500;font-size:.65rem;">+ Add custom pillar</div>
+            <div class="nav">
+              <div class="btn-g">Back</div>
+              <div class="btn" style="flex:2;">Next (4 selected)</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes">
+          <strong>v0.1 changes:</strong> Bento grid (was chips). Each card has emoji + name + description. Emoji auto-suggest on custom pillar exit. Native emoji picker on tap.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PLATFORMS + TONE ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>03 — Platforms + Tone <span class="tag">NEW v0.1</span></h2>
+        <div class="path">Views/Onboarding/OnboardingPlatformsView + ToneView</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4.5rem;">
+            <div class="title">How do you talk on Instagram?</div>
+            <div class="sub">Select 1-3 tones. Same phrase, different voices.</div>
+            <div class="dots"><div class="dot d"></div><div class="dot d"></div><div class="dot a"></div><div class="dot"></div><div class="dot"></div></div>
+            <div style="display:flex;gap:.3rem;margin-bottom:.5rem;">
+              <span style="font-size:.55rem;padding:.15rem .35rem;background:rgba(0,0,0,0.04);border-radius:100px;color:var(--text-3);">📸 1/3</span>
+              <span style="font-size:.55rem;padding:.15rem .35rem;background:rgba(0,0,0,0.04);border-radius:100px;color:var(--text-4);">💼 2/3</span>
+              <span style="font-size:.55rem;padding:.15rem .35rem;background:rgba(0,0,0,0.04);border-radius:100px;color:var(--text-4);">𝕏 3/3</span>
+            </div>
+            <div class="g" style="border-color:rgba(0,122,255,.15);background:rgba(0,122,255,.04);">
+              <div style="font-weight:600;font-size:.7rem;">🎯 Professional</div>
+              <div style="font-size:.58rem;color:var(--text-3);font-style:italic;">"Just shipped a new AI feature from our Bangkok office. Here's what I learned."</div>
+            </div>
+            <div class="g" style="border-color:rgba(0,122,255,.15);background:rgba(0,122,255,.04);">
+              <div style="font-weight:600;font-size:.7rem;">📖 Storyteller</div>
+              <div style="font-size:.58rem;color:var(--text-3);font-style:italic;">"5am. Bangkok rooftop. The code finally compiled. Let me tell you about that moment."</div>
+            </div>
+            <div class="g-light">
+              <div style="font-weight:600;font-size:.7rem;">😎 Casual</div>
+              <div style="font-size:.58rem;color:var(--text-3);font-style:italic;">"Broo just shipped this thing from a rooftop in BKK, check it out 🔥"</div>
+            </div>
+            <div class="g-light">
+              <div style="font-weight:600;font-size:.7rem;">🔥 Inspirational</div>
+              <div style="font-size:.58rem;color:var(--text-3);font-style:italic;">"The view from the top is earned, not given. New feature, new milestone."</div>
+            </div>
+            <div class="g-light">
+              <div style="font-weight:600;font-size:.7rem;">✂️ Minimal</div>
+              <div style="font-size:.58rem;color:var(--text-3);font-style:italic;">"New feature. Bangkok. Shipped."</div>
+            </div>
+            <div class="nav">
+              <div class="btn-g">Back</div>
+              <div class="btn" style="flex:2;">Next — LinkedIn</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes">
+          <strong>v0.1:</strong> Merged Tone + Platforms. Multi-step: select platforms first, then tone per platform. Same phrase in 5 tones. Max 2-3 per platform. No "Mix" option.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BRAND BRAINSTORMING ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>04 — Brand Brainstorming <span class="tag">NEW v0.1</span></h2>
+        <div class="path">Views/Onboarding/PersonaBrainstormView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4.5rem;">
+            <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.4rem;font-size:.6rem;color:var(--text-3);">
+              <span>🧠</span>
+              <div style="flex:1;height:3px;background:rgba(0,0,0,0.06);border-radius:2px;"><div style="width:37%;height:100%;background:var(--accent);border-radius:2px;"></div></div>
+              <span>11/30</span>
+            </div>
+            <div style="font-size:.58rem;color:var(--accent);background:var(--accent-bg);padding:.2rem .4rem;border-radius:6px;display:inline-block;margin-bottom:.3rem;">Great story! Now let's go deeper...</div>
+            <div class="card-stack">
+              <div class="card-bg2"></div>
+              <div class="card-bg1"></div>
+              <div class="card-main">
+                <div style="font-size:.55rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:.03em;">Voice — 1/5</div>
+                <div style="font-size:.78rem;font-weight:600;margin:.3rem 0 .4rem;line-height:1.35;">How do you address your audience? What register feels like "you"?</div>
+                <div class="mc-opt sel">Tu / You — like a friend, peer to peer</div>
+                <div class="mc-opt">Vous / Formal — professional distance</div>
+                <div class="mc-opt">We — building together, community</div>
+                <div class="mc-opt">Depends on the platform</div>
+                <div class="expand-hint">✎ Tap to add a personal note...</div>
+              </div>
+            </div>
+            <div class="nav">
+              <div class="btn-g" style="flex:1;">←</div>
+              <div class="btn-g" style="flex:1.3;color:var(--green);border-color:rgba(52,199,89,.2);">✓ Enough</div>
+              <div class="btn" style="flex:1;">→</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes">
+          <strong>v0.1:</strong> Stacked cards (variant A). MC + expandable free text. AI reaction between questions. 6 categories x 5 questions. "That's enough" after q10.
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== PERSONA SYNTHESIS ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>04b — Persona Synthesis <span class="tag">NEW v0.1</span></h2>
+        <div class="path">Views/Onboarding/PersonaSynthesisView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4.5rem;">
+            <div class="title">Your Brand Persona</div>
+            <div class="sub">Generated from your answers. Tap any section to edit.</div>
+            <div class="g">
+              <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin-bottom:.15rem;">BIO</div>
+              <div style="font-size:.65rem;">Solo founder shipping AI products from Bangkok. Lives between code, cars, and street food.</div>
+            </div>
+            <div class="g">
+              <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin-bottom:.15rem;">VOICE</div>
+              <div style="font-size:.65rem;">Direct, peer-to-peer. Uses "you/tu". Technical but accessible. Avoids corporate speak.</div>
+            </div>
+            <div class="g">
+              <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin-bottom:.15rem;">AUDIENCE</div>
+              <div style="font-size:.65rem;">Indie devs, aspiring founders, tech-curious nomads aged 25-40.</div>
+            </div>
+            <div class="g">
+              <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin-bottom:.15rem;">VALUES</div>
+              <div style="font-size:.65rem;">Ship fast, stay honest. No fake guru energy. Show the real process.</div>
+            </div>
+            <div class="g">
+              <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin-bottom:.15rem;">THEMES</div>
+              <div style="font-size:.65rem;">Build in public, nomad life, automotive passion, AI tools, daily hustle.</div>
+            </div>
+            <div class="nav">
+              <div class="btn-g">← Redo</div>
+              <div class="btn" style="flex:2;">Save & Continue</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== HOME DASHBOARD v0.1 ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>Home — Dashboard <span class="tag">Updated v0.1</span></h2>
+        <div class="path">Views/Home/HomeView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;">
+              <div><div style="font-size:.58rem;color:var(--text-3);">Good morning</div><div style="font-size:.95rem;font-weight:700;">Nico</div></div>
+              <div style="font-size:1rem;">⚙️</div>
+            </div>
+            <div class="g" style="border-color:rgba(0,122,255,.12);text-align:center;">
+              <div style="font-size:.65rem;font-weight:600;">12 classified items to review</div>
+              <div style="font-size:.55rem;color:var(--text-3);">Last scan 14:32 · <span style="color:var(--accent);">Review now</span></div>
+            </div>
+            <div style="font-size:.72rem;font-weight:600;margin:.4rem 0 .3rem;">Your Pillars</div>
+            <div class="bento">
+              <div class="bento-item">
+                <div style="display:flex;align-items:center;gap:.25rem;justify-content:center;">
+                  <span style="font-size:.85rem;">💻</span>
+                  <span style="font-size:.6rem;font-weight:600;">Dev</span>
+                  <span style="font-size:.5rem;padding:.1rem .3rem;background:var(--accent-bg);color:var(--accent);border-radius:100px;">342</span>
+                </div>
+                <div class="mini-grid"><div></div><div style="background:linear-gradient(135deg,#c8e8d0,#d8e8c0);"></div><div></div><div style="background:linear-gradient(135deg,#f0d8c8,#e8d0c0);"></div><div></div><div style="background:linear-gradient(135deg,#e0c8f0,#d0d0f0);"></div></div>
+              </div>
+              <div class="bento-item">
+                <div style="display:flex;align-items:center;gap:.25rem;justify-content:center;">
+                  <span style="font-size:.85rem;">🚗</span>
+                  <span style="font-size:.6rem;font-weight:600;">Auto</span>
+                  <span style="font-size:.5rem;padding:.1rem .3rem;background:var(--orange-bg);color:var(--orange);border-radius:100px;">89</span>
+                </div>
+                <div class="mini-grid"><div style="background:linear-gradient(135deg,#f0d8c8,#e8d0c0);"></div><div></div><div style="background:linear-gradient(135deg,#e0d8c0,#f0e8d0);"></div><div></div><div style="background:linear-gradient(135deg,#d0d8e8,#c8d0e0);"></div><div></div></div>
+              </div>
+              <div class="bento-item">
+                <div style="display:flex;align-items:center;gap:.25rem;justify-content:center;">
+                  <span style="font-size:.85rem;">🧳</span>
+                  <span style="font-size:.6rem;font-weight:600;">Nomad</span>
+                  <span style="font-size:.5rem;padding:.1rem .3rem;background:var(--green-bg);color:var(--green);border-radius:100px;">215</span>
+                </div>
+                <div class="mini-grid"><div style="background:linear-gradient(135deg,#c8e8d0,#d8e8c0);"></div><div></div><div></div><div style="background:linear-gradient(135deg,#d8e0c8,#e8f0d0);"></div><div></div><div style="background:linear-gradient(135deg,#c8d8f0,#d0e0f0);"></div></div>
+              </div>
+              <div class="bento-item">
+                <div style="display:flex;align-items:center;gap:.25rem;justify-content:center;">
+                  <span style="font-size:.85rem;">🤖</span>
+                  <span style="font-size:.6rem;font-weight:600;">AI</span>
+                  <span style="font-size:.5rem;padding:.1rem .3rem;background:var(--cyan-bg);color:var(--cyan);border-radius:100px;">67</span>
+                </div>
+                <div class="mini-grid"><div></div><div style="background:linear-gradient(135deg,#c8d8f0,#d0e0f0);"></div><div></div><div></div><div style="background:linear-gradient(135deg,#d0d8f0,#c8e0f0);"></div><div></div></div>
+              </div>
+            </div>
+            <div style="font-size:.72rem;font-weight:600;margin:.3rem 0 .3rem;">Quick Actions</div>
+            <div class="bento">
+              <div class="bento-item" style="background:var(--accent-bg);border-color:rgba(0,122,255,.15);">
+                <div class="em">👆</div><div class="lb" style="color:var(--accent);">Review</div>
+              </div>
+              <div class="bento-item">
+                <div class="em">📝</div><div class="lb">Compose</div>
+              </div>
+              <div class="bento-item" style="grid-column:span 2;">
+                <div class="em">📐</div><div class="lb">Create Template</div>
+              </div>
+            </div>
+          </div>
+          <div class="phone-tab">
+            <div class="ti a"><div class="ic">🏠</div>Home</div>
+            <div class="ti"><div class="ic">🔍</div>Explore</div>
+            <div class="ti"><div class="ic">👆</div>Swipe</div>
+            <div class="ti"><div class="ic">📝</div>Posts</div>
+            <div class="ti"><div class="ic">👤</div>Profile</div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes"><strong>v0.1:</strong> Bento grids (no h-scroll). Pillars with mini thumbnail grids. Smart scan status (4 states). Quick actions rephrased.</div>
+      </div>
+    </div>
+
+    <!-- ===== SWIPE SELECTOR v0.1 ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>Swipe — Selector <span class="tag">Updated v0.1</span></h2>
+        <div class="path">Views/Swipe/SwipeView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div class="title">Swipe to classify</div>
+            <div class="sub">Pick a pillar to review</div>
+            <div class="bento">
+              <div class="bento-item" style="position:relative;">
+                <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;">
+                  <span style="font-size:.85rem;">💻</span>
+                  <span style="font-size:.6rem;font-weight:600;">Dev</span>
+                </div>
+                <div class="mini-grid"><div></div><div style="background:linear-gradient(135deg,#c8e8d0,#d8e8c0);"></div><div></div><div style="background:linear-gradient(135deg,#f0d8c8,#e8d0c0);"></div><div></div><div></div></div>
+                <div style="position:absolute;top:4px;right:4px;font-size:.5rem;background:var(--accent);color:#fff;padding:.1rem .3rem;border-radius:100px;font-weight:600;">42</div>
+              </div>
+              <div class="bento-item" style="position:relative;">
+                <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;">
+                  <span style="font-size:.85rem;">🚗</span>
+                  <span style="font-size:.6rem;font-weight:600;">Auto</span>
+                </div>
+                <div class="mini-grid"><div style="background:linear-gradient(135deg,#f0d8c8,#e8d0c0);"></div><div></div><div></div><div></div><div style="background:linear-gradient(135deg,#e0d8c0,#f0e8d0);"></div><div></div></div>
+                <div style="position:absolute;top:4px;right:4px;font-size:.5rem;background:var(--orange);color:#fff;padding:.1rem .3rem;border-radius:100px;font-weight:600;">18</div>
+              </div>
+              <div class="bento-item" style="position:relative;">
+                <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;">
+                  <span style="font-size:.85rem;">✈️</span>
+                  <span style="font-size:.6rem;font-weight:600;">Travel</span>
+                </div>
+                <div class="mini-grid"><div style="background:linear-gradient(135deg,#c8e8d0,#d8e8c0);"></div><div></div><div style="background:linear-gradient(135deg,#d8e0c8,#e8f0d0);"></div><div></div><div></div><div style="background:linear-gradient(135deg,#c8d8f0,#d0e0f0);"></div></div>
+                <div style="position:absolute;top:4px;right:4px;font-size:.5rem;background:var(--green);color:#fff;padding:.1rem .3rem;border-radius:100px;font-weight:600;">65</div>
+              </div>
+              <div class="bento-item" style="border-color:rgba(52,199,89,.2);">
+                <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;">
+                  <span style="font-size:.85rem;">🤖</span>
+                  <span style="font-size:.6rem;font-weight:600;">AI</span>
+                </div>
+                <div style="font-size:.55rem;color:var(--green);margin-top:.3rem;">✓ All reviewed!</div>
+              </div>
+            </div>
+          </div>
+          <div class="phone-tab">
+            <div class="ti"><div class="ic">🏠</div>Home</div>
+            <div class="ti"><div class="ic">🔍</div>Explore</div>
+            <div class="ti a"><div class="ic">👆</div>Swipe</div>
+            <div class="ti"><div class="ic">📝</div>Posts</div>
+            <div class="ti"><div class="ic">👤</div>Profile</div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes"><strong>v0.1:</strong> Bento grid with mini thumbnails + quantity overlay badge. Was a simple list with counters.</div>
+      </div>
+    </div>
+
+    <!-- ===== POST EDITOR v0.1 (SLOTS) ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>Post Editor — Slots <span class="tag">Updated v0.1</span></h2>
+        <div class="path">Views/Posts/PostEditorView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div style="font-size:.68rem;color:var(--accent);margin-bottom:.3rem;">← Posts</div>
+            <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:.3rem .45rem;font-size:.7rem;font-weight:600;margin-bottom:.25rem;">Bangkok Morning Hustle</div>
+            <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:.3rem .45rem;font-size:.62rem;color:var(--text-2);margin-bottom:.35rem;">Sunrise coding session at rooftop cafe.</div>
+            <div style="font-size:.62rem;font-weight:600;margin-bottom:.25rem;">Slots (2/4 filled)</div>
+            <div class="slot-grid">
+              <div class="slot slot-filled">
+                <div class="slot-tags">
+                  <span class="st">POV</span><span class="st">☕</span><span class="st">BKK</span>
+                </div>
+              </div>
+              <div class="slot slot-filled" style="background:linear-gradient(135deg,#c8e8d0,#d8e8c0);">
+                <div class="slot-tags">
+                  <span class="st">Detail</span><span class="st">💻</span>
+                </div>
+              </div>
+              <div class="slot slot-empty">
+                <div class="slot-req">Wide</div>
+                <div style="font-size:.45rem;color:var(--text-4);">Morning + Nomad</div>
+                <div style="font-size:.5rem;color:var(--accent);margin-top:.2rem;">+ Browse</div>
+              </div>
+              <div class="slot slot-empty">
+                <div class="slot-req">Portrait</div>
+                <div style="font-size:.45rem;color:var(--text-4);">Dev pillar</div>
+                <div style="font-size:.5rem;color:var(--accent);margin-top:.2rem;">+ Browse</div>
+              </div>
+            </div>
+            <div class="btn" style="width:100%;text-align:center;margin-bottom:.25rem;">📁 Export to Album</div>
+            <div class="btn-g" style="width:100%;text-align:center;margin-bottom:.25rem;">✨ Suggest Hook</div>
+            <div style="display:flex;gap:.25rem;">
+              <div class="btn-g" style="flex:1;text-align:center;">📤 Share</div>
+              <div class="btn" style="flex:1;text-align:center;background:var(--green);">Publish</div>
+            </div>
+            <div style="text-align:center;font-size:.6rem;color:var(--red);margin-top:.5rem;">Cancel Post</div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes"><strong>v0.1:</strong> Slot-based assembly. Empty slots show template requirements. Filled slots show asset + tags/loc. Tap empty slot → contextual explorer pre-filtered.</div>
+      </div>
+    </div>
+
+    <!-- ===== TEMPLATE BUILDER ===== -->
+    <div class="screen-card">
+      <div class="sc-header">
+        <h2>Template Builder <span class="tag">NEW v0.1</span></h2>
+        <div class="path">Views/Posts/TemplateBuilderView.swift</div>
+      </div>
+      <div class="sc-body">
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div class="title">New Template</div>
+            <div style="background:rgba(0,0,0,0.03);border:1px solid rgba(0,0,0,0.08);border-radius:8px;padding:.3rem .45rem;font-size:.7rem;font-weight:600;margin-bottom:.35rem;">Bangkok Morning</div>
+            <div style="font-size:.62rem;font-weight:600;margin-bottom:.25rem;">Slots (4)</div>
+            <div class="g">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:.65rem;font-weight:600;">Slot 1 — POV</div>
+                  <div style="font-size:.55rem;color:var(--text-3);">Pillar: any · Tags: morning</div>
+                </div>
+                <span style="color:var(--text-4);">≡</span>
+              </div>
+            </div>
+            <div class="g">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:.65rem;font-weight:600;">Slot 2 — Detail</div>
+                  <div style="font-size:.55rem;color:var(--text-3);">Pillar: Dev · Tags: any</div>
+                </div>
+                <span style="color:var(--text-4);">≡</span>
+              </div>
+            </div>
+            <div class="g">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:.65rem;font-weight:600;">Slot 3 — Wide</div>
+                  <div style="font-size:.55rem;color:var(--text-3);">Pillar: Nomad · Tags: morning</div>
+                </div>
+                <span style="color:var(--text-4);">≡</span>
+              </div>
+            </div>
+            <div class="g">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                  <div style="font-size:.65rem;font-weight:600;">Slot 4 — Portrait</div>
+                  <div style="font-size:.55rem;color:var(--text-3);">Pillar: Dev · Tags: any</div>
+                </div>
+                <span style="color:var(--text-4);">≡</span>
+              </div>
+            </div>
+            <div class="btn-g" style="width:100%;text-align:center;margin-top:.3rem;">+ Add Slot</div>
+            <div class="btn" style="width:100%;text-align:center;margin-top:.3rem;">Save Template</div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+        <div class="notes"><strong>v0.1:</strong> New screen. Define slots with cadrage, pillar, tags requirements. Drag to reorder. Templates used in Create Post flow.</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

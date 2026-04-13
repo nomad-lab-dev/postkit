@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>02 — Pillars</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>02 — Pillars Setup</h1>
+  <div class="path">Views/Onboarding/OnboardingPillarsView.swift</div>
+  <div class="refs"><span class="ref">PB-022</span><span class="ref">PB-016</span><span class="ref">Step 2 of 5</span><span class="ref">REQUIRED</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Flat chip tags. No descriptions. SF Symbol icons. No emoji auto-suggest.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Bento grid with emoji + name + brief description. Emoji auto-suggest via AI on textfield exit (micro-animation). Native emoji picker on tap to override. Only REQUIRED onboarding step.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 12</span><span class="vh-desc">Custom pillar creation moved to partial sheet. More focused input, iOS-native pattern.</span></div>
+</div>
+<div class="section">
+  <div class="section-title">Default State (v0.2 — 4 selected)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:4.5rem;">
+    <div class="m-title">What do you create content about?</div>
+    <div class="m-sub">Tap to toggle. Add your own.</div>
+    <div class="m-dots"><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-active"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div></div>
+    <div class="m-bento">
+      <div class="m-bento-item" style="border-color:rgba(0,122,255,.15);background:var(--accent-bg);"><div class="emoji">💻</div><div class="name">Developer</div><div class="desc">Code, tools, building</div></div>
+      <div class="m-bento-item" style="border-color:rgba(50,173,230,.15);background:var(--cyan-bg);"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div class="desc">ML, prompts, automation</div></div>
+      <div class="m-bento-item" style="border-color:rgba(255,149,0,.15);background:var(--orange-bg);"><div class="emoji">🚗</div><div class="name">Automotive</div><div class="desc">Cars, tracks, driving</div></div>
+      <div class="m-bento-item"><div class="emoji">🧳</div><div class="name">Digital Nomad</div><div class="desc">Remote, travel-work</div></div>
+      <div class="m-bento-item" style="border-color:rgba(52,199,89,.15);background:var(--green-bg);"><div class="emoji">✈️</div><div class="name">Travel</div><div class="desc">Destinations, culture</div></div>
+      <div class="m-bento-item"><div class="emoji">🍜</div><div class="name">Food</div><div class="desc">Cooking, restaurants</div></div>
+    </div>
+    <div class="m-glass-light" style="text-align:center;color:var(--accent);font-weight:500;font-size:.62rem;">+ Add custom pillar</div>
+    <div class="m-nav"><div class="m-btn-glass">Back</div><div class="m-btn" style="flex:2;">Next (4 selected)</div></div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- PARTIAL SHEET: CUSTOM PILLAR (v0.2) -->
+<div class="section">
+  <div class="section-title">Custom Pillar Sheet (v0.2 — Partial Sheet)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+    <!-- Dimmed background hint -->
+    <div style="opacity:.35;pointer-events:none;">
+      <div class="m-title" style="font-size:.7rem;">What do you create content about?</div>
+      <div class="m-bento" style="margin-top:.2rem;">
+        <div class="m-bento-item" style="padding:.25rem;"><div class="emoji" style="font-size:.7rem;">💻</div><div class="name" style="font-size:.45rem;">Developer</div></div>
+        <div class="m-bento-item" style="padding:.25rem;"><div class="emoji" style="font-size:.7rem;">🤖</div><div class="name" style="font-size:.45rem;">AI / Tech</div></div>
+      </div>
+    </div>
+    <!-- Partial sheet -->
+    <div style="background:var(--glass-strong);backdrop-filter:blur(20px);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.6rem .6rem .8rem;margin:0 -.7rem;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+      <div style="width:28px;height:4px;background:var(--text-4);border-radius:2px;margin:0 auto .4rem;opacity:.3;"></div>
+      <div style="font-size:.72rem;font-weight:700;margin-bottom:.35rem;">New Pillar</div>
+      <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Pillar name</div>
+      <div class="m-input" style="font-size:.6rem;">Surfing</div>
+      <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Emoji</div>
+      <div style="display:flex;align-items:center;gap:.3rem;margin-bottom:.3rem;">
+        <div style="font-size:1.3rem;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);border-radius:8px;width:2rem;height:2rem;display:flex;align-items:center;justify-content:center;">🏄</div>
+        <div style="font-size:.48rem;color:var(--text-3);">Auto-suggested · tap to change</div>
+      </div>
+      <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Color</div>
+      <div style="display:flex;gap:.25rem;margin-bottom:.35rem;">
+        <div style="width:20px;height:20px;border-radius:50%;background:#007aff;border:2px solid var(--accent);"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#34c759;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#ff9500;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#af52de;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#ff3b30;"></div>
+        <div style="width:20px;height:20px;border-radius:50%;background:#32ade6;"></div>
+      </div>
+      <div class="m-btn" style="width:100%;text-align:center;font-size:.58rem;">Add Pillar</div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">0 selected — disabled</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:3.5rem;">
+        <div style="font-size:.68rem;font-weight:600;margin-bottom:.2rem;">No pillar selected</div>
+        <div class="m-bento"><div class="m-bento-item"><div class="emoji">💻</div><div class="name">Dev</div></div><div class="m-bento-item"><div class="emoji">🚗</div><div class="name">Auto</div></div></div>
+        <div class="m-nav"><div class="m-btn-glass">Back</div><div class="m-btn-disabled" style="flex:2;">Select at least 1</div></div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">11+ pillars — nudge</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:3.5rem;">
+        <div style="font-size:.52rem;padding:.12rem .3rem;background:var(--yellow-bg);border-radius:5px;color:var(--yellow);margin-bottom:.2rem;">Pro tip: fewer pillars = stronger brand</div>
+        <div class="m-chips"><span class="m-chip m-chip-sel" style="font-size:.45rem;">💻</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">🤖</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">🚗</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">✈️</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">🍜</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">💼</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">💪</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">👗</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">🎵</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">📸</span><span class="m-chip m-chip-sel" style="font-size:.45rem;">🏋️</span></div>
+        <div class="m-nav"><div class="m-btn-glass">Back</div><div class="m-btn" style="flex:2;">Next (11)</div></div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Duplicate name (in sheet)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+        <div style="opacity:.25;pointer-events:none;font-size:.5rem;color:var(--text-3);margin-bottom:.3rem;">· · · bento grid behind · · ·</div>
+        <div style="background:var(--glass-strong);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.5rem .5rem .6rem;margin:0 -.55rem;">
+          <div style="width:24px;height:3px;background:var(--text-4);border-radius:2px;margin:0 auto .3rem;opacity:.3;"></div>
+          <div style="font-size:.62rem;font-weight:700;margin-bottom:.25rem;">New Pillar</div>
+          <div class="m-input" style="border-color:var(--red);font-size:.52rem;">Developer</div>
+          <div style="font-size:.45rem;color:var(--red);margin-top:-.15rem;">This pillar already exists</div>
+          <div class="m-btn-disabled" style="width:100%;text-align:center;margin-top:.3rem;font-size:.48rem;">Add Pillar</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">Emoji auto-suggest (in sheet)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+        <div style="opacity:.25;pointer-events:none;font-size:.5rem;color:var(--text-3);margin-bottom:.3rem;">· · · bento grid behind · · ·</div>
+        <div style="background:var(--glass-strong);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.5rem .5rem .6rem;margin:0 -.55rem;">
+          <div style="width:24px;height:3px;background:var(--text-4);border-radius:2px;margin:0 auto .3rem;opacity:.3;"></div>
+          <div style="font-size:.62rem;font-weight:700;margin-bottom:.25rem;">New Pillar</div>
+          <div class="m-input" style="font-size:.52rem;">Surfing</div>
+          <div style="display:flex;align-items:center;gap:.2rem;margin-bottom:.2rem;">
+            <div style="font-size:1rem;background:rgba(0,0,0,.03);border:1px solid rgba(0,0,0,.06);border-radius:6px;width:1.6rem;height:1.6rem;display:flex;align-items:center;justify-content:center;">🏄</div>
+            <span style="font-size:.42rem;color:var(--text-3);">Auto-suggested · tap to change</span>
+          </div>
+          <div class="m-btn" style="width:100%;text-align:center;font-size:.48rem;">Add Pillar</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap bento card</td><td>Toggle on/off with animation</td></tr>
+    <tr><td>Tap "+ Add custom"</td><td>Partial sheet slides up with name field, emoji picker, color picker, and "Add" button</td></tr>
+    <tr><td>Type pillar name in sheet</td><td>Emoji auto-suggested via AI on textfield exit (slide-in micro-animation)</td></tr>
+    <tr><td>Tap auto-suggested emoji in sheet</td><td>Open native iOS emoji picker to override</td></tr>
+    <tr><td>Tap color swatch in sheet</td><td>Select pillar color (visual highlight on selected swatch)</td></tr>
+    <tr><td>Tap "Add Pillar" in sheet</td><td>Sheet dismisses, new card added to grid, auto-selected</td></tr>
+    <tr><td>Swipe down on sheet</td><td>Dismiss sheet, discard input</td></tr>
+    <tr><td>Tap Next (>= 1 pillar)</td><td>Save pillars → Step 3</td></tr>
+    <tr><td>Tap Next (0 pillars)</td><td>Disabled — "Select at least 1"</td></tr>
+    <tr><td>Tap Back</td><td>Step 1, selections preserved</td></tr>
+  </table>
+</div>
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Duplicate custom name: inline error "This pillar already exists" shown inside partial sheet, "Add" button disabled</li>
+    <li>Empty name in sheet: "Add Pillar" button disabled until name is entered</li>
+    <li>Long name (>30 chars): truncate in card with ellipsis, full name stored</li>
+    <li>11+ pillars: nudge banner shown, but doesn't block</li>
+    <li>Back then Forward: selections preserved in ViewModel</li>
+    <li>AI emoji suggestion fails (network): default to star emoji ⭐</li>
+    <li>Special characters in name: allowed, whitespace trimmed</li>
+  </ul>
+</div>
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Bento grid 2 columns with emoji + name + brief description per card</li>
+    <li>Toggle on/off with clear visual feedback (border color + background)</li>
+    <li>Custom pillar: partial sheet with name field, emoji picker, color picker, and "Add" button</li>
+    <li>Emoji auto-suggest on textfield exit inside sheet (micro-animation)</li>
+    <li>Native emoji picker opens on emoji tap inside sheet</li>
+    <li>Color picker with 6+ swatches in sheet</li>
+    <li>Minimum 1 pillar enforced (Next disabled at 0)</li>
+    <li>> 10 pillars shows nudge banner</li>
+    <li>Duplicate detection with inline error</li>
+    <li>Nav buttons in same fixed position as all other onboarding steps</li>
+    <li>Step dots show 2/5</li>
+  </ul>
+</div>
+</body></html>

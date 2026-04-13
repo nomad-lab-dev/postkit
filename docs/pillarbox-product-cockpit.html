@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — Product Cockpit</title>
+<style>
+  :root {
+    --bg:#f2f2f7;--surface:rgba(255,255,255,0.72);--glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.78);--glass-border:rgba(0,0,0,0.08);
+    --glass-shadow:0 2px 16px rgba(0,0,0,0.06);
+    --text:#1c1c1e;--text-2:#3c3c43;--text-3:#8e8e93;
+    --accent:#007aff;--accent-bg:rgba(0,122,255,0.08);
+    --green:#34c759;--green-bg:rgba(52,199,89,0.1);
+    --purple:#af52de;--purple-bg:rgba(175,82,222,0.08);
+    --orange:#ff9500;--orange-bg:rgba(255,149,0,0.1);
+    --cyan:#32ade6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+  .cockpit{max-width:720px;width:100%;padding:2rem;}
+  .header{text-align:center;margin-bottom:2.5rem;}
+  .header h1{font-size:2.2rem;font-weight:700;letter-spacing:-0.03em;}
+  .header p{color:var(--text-3);font-size:.9rem;margin-top:.3rem;}
+  .header .v{display:inline-block;margin-top:.6rem;padding:.25rem .75rem;background:var(--accent-bg);color:var(--accent);border-radius:100px;font-size:.8rem;font-weight:600;}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  @media(max-width:600px){.grid{grid-template-columns:1fr;}}
+
+  .card{
+    background:var(--glass-strong);backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid var(--glass-border);border-radius:20px;
+    padding:1.5rem;box-shadow:var(--glass-shadow);
+    text-decoration:none;color:var(--text);
+    transition:all .2s;display:flex;flex-direction:column;gap:.5rem;
+  }
+  .card:hover{transform:translateY(-3px);box-shadow:0 8px 32px rgba(0,0,0,0.1);border-color:rgba(0,122,255,0.15);}
+  .card .icon{font-size:2rem;}
+  .card h2{font-size:1.05rem;font-weight:600;}
+  .card p{font-size:.8rem;color:var(--text-3);line-height:1.5;}
+  .card .meta{display:flex;gap:.5rem;margin-top:.25rem;}
+  .card .tag{font-size:.65rem;padding:.15rem .45rem;border-radius:100px;font-weight:500;}
+
+  .card-screens .tag{background:var(--accent-bg);color:var(--accent);}
+  .card-backlog .tag{background:var(--green-bg);color:var(--green);}
+  .card-brainstorm .tag{background:var(--purple-bg);color:var(--purple);}
+  .card-asc .tag{background:var(--orange-bg);color:var(--orange);}
+
+  .footer{text-align:center;margin-top:2rem;font-size:.75rem;color:var(--text-3);}
+</style>
+</head>
+<body>
+<div class="cockpit">
+  <div class="header">
+    <h1>📦 PillarBox</h1>
+    <p>Product Cockpit</p>
+    <div class="v">v0.1 — Apr 12, 2026</div>
+  </div>
+
+  <div class="grid">
+    <a href="pillarbox-screens.html" class="card card-screens">
+      <div class="icon">📱</div>
+      <h2>Screens & Mockups</h2>
+      <p>Screen architecture, Liquid Glass mockups, edge cases, interaction specs. Version history per screen.</p>
+      <div class="meta">
+        <span class="tag">16 screens</span>
+        <span class="tag">v0.0 + v0.1</span>
+      </div>
+    </a>
+
+    <a href="pillarbox-backlog.html" class="card card-backlog">
+      <div class="icon">📋</div>
+      <h2>Product Backlog</h2>
+      <p>User stories, acceptance criteria, version tracking, changelog. Filterable by epic and phase.</p>
+      <div class="meta">
+        <span class="tag">38 stories</span>
+        <span class="tag">24 MVP</span>
+      </div>
+    </a>
+
+    <a href="brainstorm-variants.html" class="card card-brainstorm">
+      <div class="icon">🧠</div>
+      <h2>Brainstorm Variants</h2>
+      <p>3 UI options for the brand persona Q&A flow. Stacked cards, chat bubbles, typeform step.</p>
+      <div class="meta">
+        <span class="tag">3 variants</span>
+        <span class="tag">Chosen: A</span>
+      </div>
+    </a>
+
+    <a href="pillarbox-backlog.html#asc" class="card card-asc" onclick="sessionStorage.setItem('tab','asc')">
+      <div class="icon">🚀</div>
+      <h2>App Store Connect</h2>
+      <p>Metadata EN/FR, keywords, descriptions, categories. TestFlight ready. 10 icon prompts.</p>
+      <div class="meta">
+        <span class="tag">EN + FR</span>
+        <span class="tag">10 icon prompts</span>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">
+    PillarBox — Personal Branding Asset Manager<br>
+    Nicolas Lucchetta · SwiftUI + MVVM + Protocols
+  </div>
+</div>
+</body>
+</html>

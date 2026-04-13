@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Asset Detail</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Asset Detail</h1>
+  <div class="path">Views/Explore/AssetDetailSheet.swift</div>
+  <div class="refs"><span class="ref">PB-036</span><span class="ref">TabBar / Explore / Asset Detail</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Basic image view. Read-only metadata. No editing. No sheet.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Slide-up sheet. All metadata editable inline. Mark non-pertinent. 3 asset states. Swipe between assets. Auto-save.</span></div>
+</div>
+
+<!-- 3 ASSET STATES -->
+<div class="section">
+  <div class="section-title">3 Asset States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Active</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;">
+        <!-- Photo area -->
+        <div style="width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:10px;margin-bottom:.3rem;position:relative;">
+          <span class="m-badge" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;font-size:.42rem;">AI: 92%</span>
+        </div>
+        <!-- Pillar badges -->
+        <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Pillars</div>
+        <div class="m-chips">
+          <span class="m-chip m-chip-sel">💻 Developer</span>
+          <span class="m-chip m-chip-sel">🤖 AI</span>
+          <span class="m-chip" style="border-style:dashed;color:var(--accent);">+ Add</span>
+        </div>
+        <!-- Tags -->
+        <div style="font-size:.5rem;color:var(--text-3);margin-top:.15rem;margin-bottom:.1rem;">Tags</div>
+        <div class="m-chips">
+          <span class="m-chip">coding</span>
+          <span class="m-chip">workspace</span>
+          <span class="m-chip">laptop</span>
+          <span class="m-chip" style="border-style:dashed;color:var(--accent);">+ tag</span>
+        </div>
+        <!-- Metadata -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.15rem;margin-top:.2rem;font-size:.52rem;">
+          <div class="m-glass-light" style="padding:.2rem .3rem;">
+            <div style="color:var(--text-3);font-size:.42rem;">Location</div>
+            <div style="font-weight:500;">Bangkok</div>
+          </div>
+          <div class="m-glass-light" style="padding:.2rem .3rem;">
+            <div style="color:var(--text-3);font-size:.42rem;">Cadrage</div>
+            <div style="font-weight:500;">Wide</div>
+          </div>
+          <div class="m-glass-light" style="padding:.2rem .3rem;">
+            <div style="color:var(--text-3);font-size:.42rem;">Time of day</div>
+            <div style="font-weight:500;">Morning</div>
+          </div>
+          <div class="m-glass-light" style="padding:.2rem .3rem;">
+            <div style="color:var(--text-3);font-size:.42rem;">AI confidence</div>
+            <div style="font-weight:500;color:var(--green);">92%</div>
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;gap:.2rem;margin-top:.25rem;">
+          <div class="m-btn" style="flex:1;font-size:.5rem;">Add to Post</div>
+          <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">Share</div>
+        </div>
+        <div style="text-align:center;margin-top:.15rem;">
+          <span style="font-size:.5rem;color:var(--orange);cursor:pointer;">Mark non-pertinent</span>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">Non-pertinent</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;">
+        <div style="width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#d0d0d0,#c0c0c0);border-radius:10px;margin-bottom:.3rem;position:relative;opacity:.6;">
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+            <span class="m-badge" style="background:var(--orange-bg);color:var(--orange);font-size:.52rem;">Non-pertinent</span>
+          </div>
+        </div>
+        <div style="font-size:.52rem;color:var(--text-3);text-align:center;margin-bottom:.2rem;">This asset is excluded from grid and suggestions.</div>
+        <div class="m-chips" style="justify-content:center;">
+          <span class="m-chip">coding</span>
+          <span class="m-chip">workspace</span>
+        </div>
+        <div style="text-align:center;margin-top:.3rem;">
+          <div class="m-btn" style="font-size:.52rem;">Restore to Active</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--purple-bg);color:var(--purple);">Used (post-MVP)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;">
+        <div style="width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:10px;margin-bottom:.3rem;position:relative;">
+          <span class="m-badge" style="position:absolute;top:4px;left:4px;background:var(--purple-bg);color:var(--purple);font-size:.42rem;">In post</span>
+          <span class="m-badge" style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,.5);color:#fff;font-size:.42rem;">AI: 88%</span>
+        </div>
+        <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.1rem;">Pillars</div>
+        <div class="m-chips">
+          <span class="m-chip m-chip-sel">🚗 Automotive</span>
+        </div>
+        <div class="m-glass-light" style="padding:.2rem .3rem;margin-top:.15rem;font-size:.52rem;">
+          <div style="color:var(--purple);font-weight:500;">Used in: "Track Day Collection"</div>
+        </div>
+        <div style="display:flex;gap:.2rem;margin-top:.2rem;">
+          <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">View Post</div>
+          <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">Share</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT CLASSIFIED STATE -->
+<div class="section">
+  <div class="section-title">Edge Case — Not Classified</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">Unclassified asset</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;">
+        <div style="width:100%;aspect-ratio:4/3;background:linear-gradient(135deg,#e0d8c8,#d0c8b8);border-radius:10px;margin-bottom:.3rem;"></div>
+        <div class="m-glass" style="text-align:center;border-color:rgba(255,159,10,.15);">
+          <div style="font-size:.6rem;font-weight:600;">Not classified yet</div>
+          <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.15rem;">This asset hasn't been scanned.</div>
+          <div class="m-btn" style="font-size:.52rem;">Classify Now</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Deleted photo</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:.2rem;">🗑️</div>
+        <div style="font-size:.62rem;font-weight:600;color:var(--red);">Photo deleted</div>
+        <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.2rem;">Original no longer exists in your library.</div>
+        <div class="m-btn-glass" style="font-size:.5rem;color:var(--red);border-color:rgba(255,59,48,.2);">Remove from PillarBox</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--cyan-bg);color:var(--cyan);">Video asset</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:.4rem;">
+        <div style="width:100%;aspect-ratio:16/9;background:linear-gradient(135deg,#708090,#506070);border-radius:10px;margin-bottom:.3rem;position:relative;display:flex;align-items:center;justify-content:center;">
+          <div style="width:24px;height:24px;background:rgba(255,255,255,.8);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;">▶</div>
+          <span class="m-badge" style="position:absolute;bottom:4px;right:4px;background:rgba(0,0,0,.6);color:#fff;font-size:.4rem;">0:34</span>
+        </div>
+        <div class="m-chips">
+          <span class="m-chip m-chip-sel">🚗 Automotive</span>
+          <span class="m-chip" style="border-style:dashed;color:var(--accent);">+ Add</span>
+        </div>
+        <div style="font-size:.5rem;color:var(--text-3);margin-top:.1rem;">Tags, location, and cadrage editable as usual</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Swipe down on sheet</td><td>Dismiss sheet, return to grid</td></tr>
+    <tr><td>Swipe left/right on photo</td><td>Navigate to previous/next asset in current grid context</td></tr>
+    <tr><td>Pinch to zoom</td><td>Zoom into photo (standard gesture)</td></tr>
+    <tr><td>Tap pillar badge</td><td>Remove pillar tag from asset</td></tr>
+    <tr><td>Tap "+ Add" pillar</td><td>Open pillar picker to assign additional pillars</td></tr>
+    <tr><td>Tap tag</td><td>Remove tag from asset</td></tr>
+    <tr><td>Tap "+ tag"</td><td>Inline text field to add new tag</td></tr>
+    <tr><td>Tap location</td><td>Open location editor to change city</td></tr>
+    <tr><td>Tap cadrage</td><td>Cycle through: POV, Detail, Wide, Portrait</td></tr>
+    <tr><td>Tap "Add to Post"</td><td>Open post picker to assign asset to a post slot</td></tr>
+    <tr><td>Tap "Mark non-pertinent"</td><td>Move asset to non-pertinent state, removed from grid/suggestions</td></tr>
+    <tr><td>Tap "Share"</td><td>Open native Share Sheet</td></tr>
+    <tr><td>Tap "Restore to Active"</td><td>Restore non-pertinent asset back to active state</td></tr>
+    <tr><td>Any edit</td><td>Auto-save immediately to SwiftData</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Video asset: Show video player with controls. First frame displayed as thumbnail. Duration badge.</li>
+    <li>Not classified: Show "Classify Now" button instead of metadata fields</li>
+    <li>Deleted photo: Error state with cleanup option to remove orphaned record from PillarBox</li>
+    <li>Restore from non-pertinent: Action available in non-pertinent gallery, asset returns to active grid</li>
+    <li>All pillars removed: Asset still exists but is untagged, visible in "no pillar" filter</li>
+    <li>Very long tag list: Tags wrap to multiple lines, scrollable within the chips area</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Sheet slides up from bottom with swipe-to-dismiss</li>
+    <li>All metadata fields editable inline (pillars, tags, location, cadrage)</li>
+    <li>Auto-save on every edit (no manual save button needed)</li>
+    <li>"Mark non-pertinent" moves asset out of grid and suggestions</li>
+    <li>Swipe left/right navigates between assets in current grid context</li>
+    <li>Video playback works with standard controls</li>
+    <li>3 states clearly distinguished: Active, Non-pertinent, Used</li>
+    <li>"Classify Now" available for unclassified assets</li>
+  </ul>
+</div>
+</body></html>

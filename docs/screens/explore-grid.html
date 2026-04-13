@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Explore Grid</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Explore Grid</h1>
+  <div class="path">Views/Explore/ExploreView.swift</div>
+  <div class="refs"><span class="ref">PB-013</span><span class="ref">TabBar / Explore</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Basic grid. Pillar filter only. No multi-select. No rich cards.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Enriched filters (pillar, cadrage, location, moment, media, status). Multi-select with 2 action buttons. Rich cards with pillar badge + cadrage icon. Pagination 50/page.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 13</span><span class="vh-desc">Added discrete "Select" button top-right for explicit multi-select entry. Long-press still works as alternative.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1 — Filtered)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;gap:.25rem;align-items:center;margin-bottom:.2rem;">
+      <div class="m-input" style="flex:1;font-size:.55rem;color:var(--text-3);margin:0;">Search assets...</div>
+      <div style="font-size:.55rem;color:var(--accent);font-weight:500;white-space:nowrap;cursor:pointer;">Select</div>
+    </div>
+    <!-- Filter chips -->
+    <div class="m-chips">
+      <span class="m-chip m-chip-sel">💻 Dev</span>
+      <span class="m-chip">🤖 AI</span>
+      <span class="m-chip">🚗 Auto</span>
+      <span class="m-chip">✈️ Travel</span>
+    </div>
+    <div class="m-chips">
+      <span class="m-chip m-chip-sel">Wide</span>
+      <span class="m-chip">POV</span>
+      <span class="m-chip">Detail</span>
+      <span class="m-chip">Portrait</span>
+    </div>
+    <div class="m-chips">
+      <span class="m-chip">Bangkok</span>
+      <span class="m-chip">Morning</span>
+      <span class="m-chip">Photo</span>
+      <span class="m-chip m-chip-sel">Active</span>
+    </div>
+    <!-- Asset grid -->
+    <div class="m-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:.25rem;">
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#b0d0e8);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+        <span class="m-badge" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.4);color:#fff;font-size:.35rem;">W</span>
+      </div>
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#c8d8f0,#d0e0f0);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+        <span class="m-badge" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.4);color:#fff;font-size:.35rem;">D</span>
+      </div>
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a8d0e0);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+        <span class="m-badge" style="position:absolute;bottom:2px;right:2px;background:rgba(0,0,0,.4);color:#fff;font-size:.35rem;">P</span>
+      </div>
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#c0d0f0,#b8d8e8);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+      </div>
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+      </div>
+      <div class="m-grid-item" style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#a0b8e0,#b0c8e8);border-radius:4px;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.38rem;">💻</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:.45rem;color:var(--text-4);margin-top:.15rem;">87 assets — Page 1 of 2</div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti ac"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- MULTI-SELECT STATE -->
+<div class="section">
+  <div class="section-title">Multi-Select State</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+      <div style="font-size:.62rem;font-weight:600;">3 selected</div>
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">Cancel</div>
+    </div>
+    <div class="m-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;">
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#b0d0e8);border-radius:4px;border:2px solid var(--accent);">
+        <div style="position:absolute;top:2px;right:2px;width:14px;height:14px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.4rem;color:#fff;">✓</div>
+      </div>
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#c8d8f0,#d0e0f0);border-radius:4px;border:2px solid var(--accent);">
+        <div style="position:absolute;top:2px;right:2px;width:14px;height:14px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.4rem;color:#fff;">✓</div>
+      </div>
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a8d0e0);border-radius:4px;"></div>
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#c0d0f0,#b8d8e8);border-radius:4px;border:2px solid var(--accent);">
+        <div style="position:absolute;top:2px;right:2px;width:14px;height:14px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.4rem;color:#fff;">✓</div>
+      </div>
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);border-radius:4px;"></div>
+      <div style="position:relative;aspect-ratio:1;background:linear-gradient(135deg,#a0b8e0,#b0c8e8);border-radius:4px;"></div>
+    </div>
+    <!-- Action buttons -->
+    <div style="display:flex;gap:.25rem;margin-top:.35rem;">
+      <div class="m-btn" style="flex:1;font-size:.55rem;">Create Post</div>
+      <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.55rem;">Add to Existing</div>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti ac"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">Zero results</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;">
+        <div class="m-input" style="font-size:.5rem;">sunset beach</div>
+        <div class="m-chips"><span class="m-chip m-chip-sel">🍜 Food</span><span class="m-chip m-chip-sel">Night</span></div>
+        <div style="margin-top:1.5rem;">
+          <div style="font-size:1.2rem;">🔍</div>
+          <div style="font-size:.62rem;font-weight:600;margin-top:.15rem;">No assets found</div>
+          <div style="font-size:.5rem;color:var(--text-3);">Try different filters.</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Deleted photo</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;">
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#b0d0e8);border-radius:4px;"></div>
+          <div style="aspect-ratio:1;background:repeating-linear-gradient(45deg,var(--red-bg),var(--red-bg) 3px,transparent 3px,transparent 6px);border-radius:4px;display:flex;align-items:center;justify-content:center;">
+            <div style="font-size:.4rem;color:var(--red);text-align:center;">Deleted<br>photo</div>
+          </div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c8d8f0,#d0e0f0);border-radius:4px;"></div>
+        </div>
+        <div style="font-size:.48rem;color:var(--red);margin-top:.15rem;">1 deleted photo detected. Clean up?</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">Scan running</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.48rem;color:var(--accent);margin-bottom:.15rem;">Scanning... new assets appearing in real-time</div>
+        <div class="m-progress"><div class="m-progress-fill" style="width:45%;"></div></div>
+        <div class="m-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:.15rem;">
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#b0d0e8);border-radius:4px;"></div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c8d8f0,#d0e0f0);border-radius:4px;"></div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a8d0e0);border-radius:4px;opacity:.5;border:1px dashed var(--accent);"></div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap filter chip</td><td>Toggle filter on/off, grid updates in real-time</td></tr>
+    <tr><td>Tap location chip</td><td>Opens location picker populated from EXIF city data</td></tr>
+    <tr><td>Tap asset card</td><td>Open Asset Detail sheet (slide-up)</td></tr>
+    <tr><td>Tap "Select" button (top-right)</td><td>Enter multi-select mode, cards show selection circles</td></tr>
+    <tr><td>Long press asset card</td><td>Alternative: enter multi-select mode, asset checked</td></tr>
+    <tr><td>Tap additional assets (in multi-select)</td><td>Toggle selection on/off</td></tr>
+    <tr><td>Tap "Create Post"</td><td>Create new post with selected assets pre-filled</td></tr>
+    <tr><td>Tap "Add to Existing"</td><td>Open post picker to add selected assets to an existing post</td></tr>
+    <tr><td>Tap "Cancel"</td><td>Exit multi-select mode, deselect all</td></tr>
+    <tr><td>Scroll to bottom</td><td>Load next 50 assets (pagination)</td></tr>
+    <tr><td>Type in search bar</td><td>Filter assets by tag, location, or description text</td></tr>
+    <tr><td>Switch tab during multi-select</td><td>Exit multi-select mode automatically</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>15K+ assets: LazyVGrid with pagination (50 per page), scroll-to-load for smooth performance</li>
+    <li>Zero filter results: Friendly empty state with "No assets found. Try different filters."</li>
+    <li>Deleted photo in library: Placeholder stripe pattern + "Clean up?" link for database cleanup</li>
+    <li>Multi-select + tab switch: Automatically exits multi-select mode, deselects all</li>
+    <li>Scan running: New assets appear in real-time with fade-in animation as they are classified</li>
+    <li>Location picker with no EXIF data: "No location data available" message in picker</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>All 6 filter types functional: pillar, cadrage, location, moment, media, status</li>
+    <li>Location picker auto-populated from EXIF city data across the library</li>
+    <li>Grid renders smoothly with 1000+ items (LazyVGrid + pagination)</li>
+    <li>Rich cards show thumbnail + pillar badge + cadrage icon</li>
+    <li>Multi-select entry: "Select" button top-right OR long press on card</li>
+    <li>Multi-select shows 2 action buttons (Create Post, Add to Existing)</li>
+    <li>Search bar filters by tag, location, and description</li>
+    <li>3-second rule: grid loads and scrolls within 3 seconds</li>
+    <li>3-column layout on iPhone, 4-5 columns on Mac</li>
+  </ul>
+</div>
+</body></html>

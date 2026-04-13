@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Post Editor</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Post Editor</h1>
+  <div class="path">Views/Posts/PostEditorView.swift</div>
+  <div class="refs"><span class="ref">PB-021</span><span class="ref">PB-024</span><span class="ref">PB-038</span><span class="ref">TabBar / Posts / {Post}</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Simple asset list. No slots. No template. No contextual explorer.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Slot-based assembly with template requirements. Contextual explorer pre-filtered by slot needs. Publish/Cancel/Export actions. Auto-save.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1 — Slot-based editor)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Posts</div>
+      <span class="m-badge" style="background:rgba(0,0,0,.05);color:var(--text-3);">Draft</span>
+    </div>
+    <div class="m-input" style="font-size:.65rem;font-weight:600;border:none;background:transparent;padding:0;">Track Day Collection</div>
+    <div class="m-input" style="font-size:.52rem;color:var(--text-3);border:none;background:transparent;padding:0;margin-top:-.1rem;">Barcelona track day with the Porsche crew</div>
+    <!-- Slot grid -->
+    <div style="font-size:.55rem;font-weight:600;margin:.3rem 0 .15rem;">Slots</div>
+    <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:.25rem;">
+      <!-- Filled slot -->
+      <div class="m-slot m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:8px;position:relative;">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);border-radius:0 0 8px 8px;">
+          <div style="font-size:.4rem;color:#fff;">📍 Barcelona</div>
+          <div style="font-size:.4rem;color:rgba(255,255,255,.7);">🖼 Wide</div>
+        </div>
+      </div>
+      <!-- Filled slot -->
+      <div class="m-slot m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c8d8);border-radius:8px;position:relative;">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);border-radius:0 0 8px 8px;">
+          <div style="font-size:.4rem;color:#fff;">📍 Barcelona</div>
+          <div style="font-size:.4rem;color:rgba(255,255,255,.7);">🖼 Detail</div>
+        </div>
+      </div>
+      <!-- Empty slot with requirements -->
+      <div class="m-slot m-slot-empty" style="aspect-ratio:1;border:2px dashed rgba(0,0,0,.12);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;">
+        <div style="font-size:.8rem;color:var(--text-4);">+</div>
+        <div style="font-size:.42rem;color:var(--text-3);text-align:center;">
+          <div>🖼 Portrait</div>
+          <div>🚗 Automotive</div>
+        </div>
+      </div>
+      <!-- Empty slot with requirements -->
+      <div class="m-slot m-slot-empty" style="aspect-ratio:1;border:2px dashed rgba(0,0,0,.12);border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.1rem;">
+        <div style="font-size:.8rem;color:var(--text-4);">+</div>
+        <div style="font-size:.42rem;color:var(--text-3);text-align:center;">
+          <div>🖼 POV</div>
+          <div>🚗 Automotive</div>
+        </div>
+      </div>
+    </div>
+    <!-- Actions -->
+    <div style="display:flex;gap:.2rem;margin-top:.35rem;">
+      <div class="m-btn-disabled" style="flex:1;text-align:center;font-size:.52rem;">Publish (2/4 filled)</div>
+      <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.52rem;">Export</div>
+    </div>
+    <div style="text-align:center;margin-top:.15rem;">
+      <span style="font-size:.5rem;color:var(--red);cursor:pointer;">Cancel post</span>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti ac"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- CONTEXTUAL EXPLORER -->
+<div class="section">
+  <div class="section-title">Contextual Explorer (opens on empty slot tap)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem;">
+      <div style="font-size:.58rem;font-weight:600;">Fill Slot 3</div>
+      <div style="font-size:.48rem;color:var(--accent);cursor:pointer;">Cancel</div>
+    </div>
+    <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.15rem;">Pre-filtered by slot requirements</div>
+    <!-- Active filters (editable) -->
+    <div class="m-chips">
+      <span class="m-chip m-chip-sel">🚗 Automotive</span>
+      <span class="m-chip m-chip-sel">Portrait</span>
+      <span class="m-chip">Bangkok</span>
+    </div>
+    <div class="m-input" style="font-size:.5rem;color:var(--text-3);margin-top:.1rem;">Search assets...</div>
+    <!-- Filtered grid -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:.15rem;">
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:4px;position:relative;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
+      </div>
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8b8d0,#98a8c0);border-radius:4px;position:relative;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
+      </div>
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c0d0);border-radius:4px;position:relative;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
+      </div>
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#98b0d0,#88a0c0);border-radius:4px;position:relative;">
+        <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
+      </div>
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#b8c8e0,#a8b8d0);border-radius:4px;"></div>
+      <div style="aspect-ratio:1;background:linear-gradient(135deg,#a0b8d0,#90a8c0);border-radius:4px;"></div>
+    </div>
+    <div style="font-size:.45rem;color:var(--text-3);text-align:center;margin-top:.1rem;">Tap an asset to fill this slot</div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti ac"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">No template (free-form)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-input" style="font-size:.62rem;font-weight:600;border:none;background:transparent;padding:0;">My Free-form Post</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.2rem;">No template — add slots manually</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.2rem;">
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;border:2px dashed rgba(0,0,0,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-4);">+</div>
+        </div>
+        <div style="text-align:center;margin-top:.15rem;">
+          <div class="m-btn-glass" style="font-size:.48rem;">+ Add slot</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">Explorer — 0 results</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;">
+        <div style="font-size:.58rem;font-weight:600;margin-bottom:.1rem;text-align:left;">Fill Slot 3</div>
+        <div class="m-chips" style="justify-content:flex-start;"><span class="m-chip m-chip-sel">🚗 Auto</span><span class="m-chip m-chip-sel">Portrait</span></div>
+        <div style="margin-top:1rem;">
+          <div style="font-size:1rem;">🔍</div>
+          <div style="font-size:.58rem;font-weight:500;margin-top:.1rem;">No matching assets</div>
+          <div style="font-size:.48rem;color:var(--text-3);">Try broadening your filters.</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">All slots filled — Ready</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.1rem;">
+          <div style="font-size:.52rem;color:var(--accent);">← Posts</div>
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);">Ready</span>
+        </div>
+        <div style="font-size:.62rem;font-weight:600;">Track Day Collection</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.2rem;margin-top:.15rem;">
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c8d8);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;background:linear-gradient(135deg,#98b0d0,#88a0c0);border-radius:8px;"></div>
+        </div>
+        <div class="m-btn" style="width:100%;text-align:center;margin-top:.25rem;font-size:.55rem;">Publish</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Edit post name/description</td><td>Auto-save on change</td></tr>
+    <tr><td>Tap empty slot</td><td>Open contextual explorer pre-filtered by slot requirements</td></tr>
+    <tr><td>Tap filled slot</td><td>Open contextual explorer to replace the asset</td></tr>
+    <tr><td>Long press filled slot</td><td>Remove asset, slot reverts to empty. Asset returns to "non-utilise".</td></tr>
+    <tr><td>Tap asset in explorer</td><td>Fills slot, return to editor</td></tr>
+    <tr><td>Edit filters in explorer</td><td>Broaden or narrow search beyond template requirements</td></tr>
+    <tr><td>Tap "Publish"</td><td>Mark post as Published (requires all slots filled)</td></tr>
+    <tr><td>Tap "Cancel post"</td><td>Confirmation dialog, delete post, all assets return to "non-utilise"</td></tr>
+    <tr><td>Tap "Export"</td><td>Export filled assets to native Photos album</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>No template: Free-form mode, "+" button to add slots manually without cadrage/pillar constraints</li>
+    <li>Slot requirements match 0 assets: Explorer shows empty state with editable filters to broaden search</li>
+    <li>All assets removed from post: Cannot publish (minimum 1 asset required)</li>
+    <li>Export album already exists: Update existing album, don't create duplicate</li>
+    <li>Photo library permission denied for export: Show Settings link to enable access</li>
+    <li>Template with many slots (8+): Slot grid scrolls vertically</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Slots show template requirements (cadrage, pillar) when empty, thumbnail when filled</li>
+    <li>Contextual explorer opens pre-filtered by slot requirements</li>
+    <li>Explorer filters are editable (user can broaden or narrow)</li>
+    <li>Tags/location visible on filled slots as small overlay</li>
+    <li>Publish/Cancel flow works correctly with appropriate confirmations</li>
+    <li>Export to native Photos album works</li>
+    <li>Auto-save on all edits (name, description, slot changes)</li>
+    <li>Free-form mode available when no template is attached</li>
+  </ul>
+</div>
+</body></html>

@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Home Dashboard</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Home Dashboard</h1>
+  <div class="path">Views/Home/HomeView.swift</div>
+  <div class="refs"><span class="ref">PB-012</span><span class="ref">PB-015</span><span class="ref">TabBar / Home</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Flat pillar list. Stats inline. No scan status card. No quick actions.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Smart scan status (4 states). Bento pillar grid with mini thumbnails. Quick actions bento. Stats removed from dashboard (moved to Profile/Stats).</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 12</span><span class="vh-desc">Pillar cards redesigned: mini thumbnail grid + count overlay + "to review" badge. Inspired by category card UI.</span></div>
+</div>
+
+<!-- SCAN STATUS: 4 STATES -->
+<div class="section">
+  <div class="section-title">Scan Status Card — 4 States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">Scanning</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-glass" style="border-left:3px solid var(--accent);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:.62rem;font-weight:600;">Scanning...</div>
+            <div class="m-btn-glass" style="font-size:.48rem;padding:.15rem .3rem;">Pause</div>
+          </div>
+          <div class="m-progress" style="margin-top:.15rem;"><div class="m-progress-fill" style="width:28%;"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:.48rem;color:var(--text-3);margin-top:.08rem;">
+            <span>342 / 1,204</span>
+            <span>~4 min left</span>
+          </div>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;margin:.35rem 0 .2rem;">Your Pillars</div>
+        <div class="m-bento">
+          <div class="m-bento-item"><div class="emoji">💻</div><div class="name">Developer</div><div style="font-size:.42rem;color:var(--text-3);">87 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div style="font-size:.42rem;color:var(--text-3);">52 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">🚗</div><div class="name">Automotive</div><div style="font-size:.42rem;color:var(--text-3);">124 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">✈️</div><div class="name">Travel</div><div style="font-size:.42rem;color:var(--text-3);">79 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Idle</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-glass-light" style="border-left:3px solid var(--green);">
+          <div style="font-size:.58rem;color:var(--text-3);">Last scan 14:32 — All good</div>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;margin:.35rem 0 .2rem;">Your Pillars</div>
+        <div class="m-bento">
+          <div class="m-bento-item"><div class="emoji">💻</div><div class="name">Developer</div><div style="font-size:.42rem;color:var(--text-3);">87 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div style="font-size:.42rem;color:var(--text-3);">52 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">New items</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-glass" style="border-left:3px solid var(--yellow);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.62rem;font-weight:600;">47 new photos</div>
+              <div style="font-size:.48rem;color:var(--text-3);">Ready to classify</div>
+            </div>
+            <div class="m-btn" style="font-size:.5rem;padding:.2rem .4rem;">Scan Now</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;margin:.35rem 0 .2rem;">Your Pillars</div>
+        <div class="m-bento">
+          <div class="m-bento-item"><div class="emoji">💻</div><div class="name">Developer</div><div style="font-size:.42rem;color:var(--text-3);">87 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">✈️</div><div class="name">Travel</div><div style="font-size:.42rem;color:var(--text-3);">79 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--purple-bg);color:var(--purple);">Items to review</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-glass" style="border-left:3px solid var(--purple);">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <div style="font-size:.62rem;font-weight:600;">12 items to review</div>
+              <div style="font-size:.48rem;color:var(--text-3);">Classified, needs validation</div>
+            </div>
+            <div class="m-btn" style="font-size:.5rem;padding:.2rem .4rem;">Review</div>
+          </div>
+        </div>
+        <div style="font-size:.7rem;font-weight:700;margin:.35rem 0 .2rem;">Your Pillars</div>
+        <div class="m-bento">
+          <div class="m-bento-item"><div class="emoji">🚗</div><div class="name">Automotive</div><div style="font-size:.42rem;color:var(--text-3);">124 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+          <div class="m-bento-item"><div class="emoji">🍜</div><div class="name">Food</div><div style="font-size:.42rem;color:var(--text-3);">34 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- FULL DASHBOARD VIEW -->
+<div class="section">
+  <div class="section-title">Full Dashboard (Idle + Pillars + Quick Actions)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div class="m-glass-light" style="border-left:3px solid var(--green);">
+      <div style="font-size:.58rem;color:var(--text-3);">Last scan 14:32 — All good</div>
+    </div>
+    <div style="font-size:.7rem;font-weight:700;margin:.4rem 0 .2rem;">Your Pillars</div>
+    <div class="m-bento">
+      <div class="m-bento-item"><div class="emoji">💻</div><div class="name">Developer</div><div style="font-size:.42rem;color:var(--text-3);">87 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+      <div class="m-bento-item"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div style="font-size:.42rem;color:var(--text-3);">52 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+      <div class="m-bento-item"><div class="emoji">🚗</div><div class="name">Automotive</div><div style="font-size:.42rem;color:var(--text-3);">124 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+      <div class="m-bento-item"><div class="emoji">✈️</div><div class="name">Travel</div><div style="font-size:.42rem;color:var(--text-3);">79 assets</div><div class="m-mini-grid"><div></div><div></div><div></div></div></div>
+    </div>
+    <div style="font-size:.7rem;font-weight:700;margin:.4rem 0 .2rem;">Quick Actions</div>
+    <div class="m-bento">
+      <div class="m-bento-item" style="cursor:pointer;"><div class="emoji">👆</div><div class="name">Review</div><div class="desc">Swipe to classify</div></div>
+      <div class="m-bento-item" style="cursor:pointer;"><div class="emoji">📝</div><div class="name">Compose</div><div class="desc">Create a post</div></div>
+      <div class="m-bento-item" style="cursor:pointer;grid-column:span 2;"><div class="emoji">📋</div><div class="name">Create Template</div><div class="desc">Define a reusable post format</div></div>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">No pillars (skipped onboarding)</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:.2rem;">📦</div>
+        <div style="font-size:.68rem;font-weight:600;">Set up your brand</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-bottom:.3rem;">Create pillars to start organizing your photos.</div>
+        <div class="m-btn" style="font-size:.55rem;">Set up now</div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">All classified, no posts</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div class="m-glass-light" style="border-left:3px solid var(--green);">
+          <div style="font-size:.58rem;color:var(--green);font-weight:500;">All 342 assets classified ✓</div>
+        </div>
+        <div style="font-size:.65rem;font-weight:700;margin:.3rem 0 .15rem;">Your Pillars</div>
+        <div class="m-bento">
+          <div class="m-bento-item"><div class="emoji">💻</div><div class="name">Dev</div><div style="font-size:.42rem;color:var(--text-3);">87</div></div>
+          <div class="m-bento-item"><div class="emoji">🚗</div><div class="name">Auto</div><div style="font-size:.42rem;color:var(--text-3);">124</div></div>
+        </div>
+        <div class="m-glass" style="text-align:center;margin-top:.3rem;border-color:rgba(0,122,255,.12);">
+          <div style="font-size:.6rem;font-weight:600;">Ready to create your first post?</div>
+          <div class="m-btn" style="margin-top:.15rem;font-size:.52rem;">Compose a post</div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">Zero assets</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:.2rem;">📷</div>
+        <div style="font-size:.68rem;font-weight:600;">No assets yet</div>
+        <div style="font-size:.52rem;color:var(--text-3);">Take some photos and trigger a scan to get started.</div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti ac"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap pillar card</td><td>Navigate to Explore tab, pre-filtered by that pillar</td></tr>
+    <tr><td>Tap "Scan Now"</td><td>Start scan, card transitions to Scanning state with progress bar</td></tr>
+    <tr><td>Tap "Pause"</td><td>Pause active scan, button changes to "Resume"</td></tr>
+    <tr><td>Tap "Review"</td><td>Navigate to Swipe tab</td></tr>
+    <tr><td>Tap "Compose"</td><td>Navigate to Posts tab, trigger new post creation flow</td></tr>
+    <tr><td>Tap "Create Template"</td><td>Navigate to Template Builder screen</td></tr>
+    <tr><td>Pull to refresh</td><td>Check for new assets since last scan</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>First launch (scan running): Scan card prominent at top with progress, placeholder thumbnails in pillar grid</li>
+    <li>No pillars (skipped onboarding): Show "Set up your brand" CTA instead of pillar grid</li>
+    <li>Zero assets in library: Empty state illustration, no pillar grid</li>
+    <li>Scan paused + app killed: Show "Resume scan?" prompt on relaunch</li>
+    <li>All classified, no posts yet: Nudge card "Ready to create your first post?"</li>
+    <li>New items detected: Yellow-bordered scan card with "Scan Now" CTA</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Scan status card reflects correct state among 4 variants (scanning, idle, new items, items to review)</li>
+    <li>Pillar bento cards show real thumbnails from SwiftData query (mini grid of 3-4 most recent)</li>
+    <li>Pillar cards show emoji, name, and asset count</li>
+    <li>Bento grid layout renders correctly (2 columns, no horizontal scroll)</li>
+    <li>Quick actions (Review, Compose, Create Template) navigate to correct destinations</li>
+    <li>Pull to refresh triggers new-asset check</li>
+    <li>3-second rule: Home loads in under 3 seconds including thumbnails</li>
+  </ul>
+</div>
+</body></html>

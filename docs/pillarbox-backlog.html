@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — Product Backlog v0.2</title>
+<style>
+  :root {
+    --bg: #f2f2f7; --surface: rgba(255,255,255,0.72); --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.78); --glass-border: rgba(0,0,0,0.08);
+    --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --text: #1c1c1e; --text-2: #3c3c43; --text-3: #8e8e93; --text-4: #aeaeb2;
+    --accent: #007aff; --accent-bg: rgba(0,122,255,0.08);
+    --green: #34c759; --green-bg: rgba(52,199,89,0.1);
+    --yellow: #ff9f0a; --yellow-bg: rgba(255,159,10,0.1);
+    --orange: #ff9500; --orange-bg: rgba(255,149,0,0.1);
+    --red: #ff3b30; --red-bg: rgba(255,59,48,0.08);
+    --purple: #af52de; --purple-bg: rgba(175,82,222,0.08);
+    --pink: #ff2d55; --cyan: #32ade6; --cyan-bg: rgba(50,173,230,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+
+  .header { text-align:center; padding:2rem; background:var(--surface); backdrop-filter:blur(20px) saturate(180%); border:1px solid var(--glass-border); border-radius:20px; box-shadow:var(--glass-shadow); margin-bottom:1.5rem; }
+  .header h1 { font-size:2rem; font-weight:700; }
+  .header p { color:var(--text-3); font-size:.9rem; }
+  .header .version-badge { display:inline-block; margin-top:.5rem; padding:.25rem .75rem; background:var(--accent-bg); color:var(--accent); border-radius:100px; font-size:.8rem; font-weight:600; }
+
+  /* Stats */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.75rem; margin-bottom:1.5rem; }
+  .stat { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1rem; text-align:center; box-shadow:var(--glass-shadow); }
+  .stat-num { font-size:1.8rem; font-weight:700; color:var(--accent); }
+  .stat-label { font-size:.72rem; color:var(--text-3); }
+
+  /* Tabs */
+  .tabs { display:flex; gap:0; background:rgba(0,0,0,0.04); border-radius:10px; padding:3px; margin-bottom:1.5rem; }
+  .tab { flex:1; padding:.55rem; text-align:center; border-radius:8px; font-size:.8rem; font-weight:500; color:var(--text-3); cursor:pointer; transition:all .2s; border:none; background:none; font-family:inherit; }
+  .tab:hover { color:var(--text); }
+  .tab.active { background:var(--glass-strong); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.06); font-weight:600; }
+
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* Filters */
+  .filters { display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:1rem; }
+  .fbtn { padding:.3rem .7rem; border-radius:100px; font-size:.72rem; border:1px solid var(--glass-border); background:var(--glass); color:var(--text-3); cursor:pointer; font-family:inherit; transition:all .15s; }
+  .fbtn:hover,.fbtn.active { border-color:rgba(0,122,255,.2); color:var(--accent); background:var(--accent-bg); }
+
+  /* Story Cards */
+  .story { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1rem 1.25rem; margin-bottom:.5rem; cursor:pointer; transition:all .15s; box-shadow:var(--glass-shadow); }
+  .story:hover { border-color:rgba(0,122,255,.15); transform:translateY(-1px); }
+  .story.expanded .story-expand { display:block; }
+  .story-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; }
+  .story-id { font-size:.7rem; color:var(--text-3); font-family:'SF Mono',monospace; min-width:52px; }
+  .story-title { flex:1; font-weight:500; font-size:.88rem; }
+  .story-badges { display:flex; gap:.3rem; flex-wrap:wrap; flex-shrink:0; }
+  .badge { padding:.15rem .5rem; border-radius:100px; font-size:.62rem; font-weight:500; }
+  .badge-mvp { background:var(--green-bg); color:var(--green); }
+  .badge-post { background:var(--yellow-bg); color:var(--yellow); }
+  .badge-new { background:var(--purple-bg); color:var(--purple); }
+  .badge-v { background:rgba(0,0,0,0.04); color:var(--text-3); font-family:'SF Mono',monospace; font-size:.6rem; }
+
+  .story-expand { display:none; margin-top:.75rem; padding-top:.75rem; border-top:1px solid rgba(0,0,0,0.06); font-size:.82rem; color:var(--text-2); }
+  .story-expand strong { color:var(--text); }
+
+  /* Version history */
+  .version-history { margin-top:.75rem; padding:.6rem; background:var(--bg); border-radius:8px; }
+  .version-history h4 { font-size:.65rem; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); margin-bottom:.4rem; }
+  .vh-entry { display:flex; gap:.5rem; font-size:.72rem; padding:.2rem 0; border-bottom:1px solid rgba(0,0,0,0.04); }
+  .vh-entry:last-child { border:none; }
+  .vh-ver { font-family:'SF Mono',monospace; color:var(--accent); font-weight:600; min-width:32px; }
+  .vh-date { color:var(--text-4); min-width:70px; }
+  .vh-desc { color:var(--text-2); flex:1; }
+
+  /* ASC & Icons sections */
+  .meta-block { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1.25rem; margin-bottom:.75rem; box-shadow:var(--glass-shadow); position:relative; }
+  .meta-block h3 { font-size:.75rem; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.5rem; }
+  .meta-block .val { background:var(--bg); padding:.6rem .75rem; border-radius:8px; font-size:.85rem; line-height:1.6; }
+  .meta-block .cc { font-size:.65rem; color:var(--text-4); text-align:right; margin-top:.15rem; }
+  .copy-btn { position:absolute; top:.75rem; right:.75rem; background:var(--glass); border:1px solid var(--glass-border); color:var(--text-3); padding:.2rem .5rem; border-radius:6px; font-size:.65rem; cursor:pointer; font-family:inherit; }
+  .copy-btn:hover { border-color:rgba(0,122,255,.2); color:var(--accent); }
+
+  .prompt-card { background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:14px; padding:1rem; margin-bottom:.5rem; box-shadow:var(--glass-shadow); counter-increment:p; }
+  .prompt-card::before { content:"#" counter(p); font-size:.65rem; color:var(--accent); font-family:'SF Mono',monospace; }
+  .prompt-card h4 { font-size:.88rem; margin:.3rem 0; }
+  .prompt-card p { font-size:.8rem; color:var(--text-2); background:var(--bg); padding:.6rem; border-radius:8px; line-height:1.5; }
+  .prompts-section { counter-reset:p; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>PillarBox</h1>
+    <p>Product Backlog — Personal Branding Asset Manager</p>
+    <div class="version-badge">v0.2 — Post-Challenge Round 2</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-num">38</div><div class="stat-label">User Stories</div></div>
+    <div class="stat"><div class="stat-num">24</div><div class="stat-label">MVP (v0.x)</div></div>
+    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Post-MVP</div></div>
+    <div class="stat"><div class="stat-num">8</div><div class="stat-label">New in v0.1</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="stories">User Stories</button>
+    <button class="tab" data-tab="changelog">Changelog</button>
+    <button class="tab" data-tab="asc">App Store Connect</button>
+    <button class="tab" data-tab="icons">Icon Prompts</button>
+  </div>
+
+  <!-- ======================== STORIES ======================== -->
+  <div class="section active" id="stories">
+    <div class="filters">
+      <button class="fbtn active" data-filter="all">All (38)</button>
+      <button class="fbtn" data-filter="mvp">MVP (24)</button>
+      <button class="fbtn" data-filter="post">Post-MVP (14)</button>
+      <button class="fbtn" data-filter="new">New in v0.1 (8)</button>
+      <button class="fbtn" data-filter="epic-onboard">Onboarding</button>
+      <button class="fbtn" data-filter="epic-scan">Scan</button>
+      <button class="fbtn" data-filter="epic-ui">Core UI</button>
+      <button class="fbtn" data-filter="epic-swipe">Swipe</button>
+      <button class="fbtn" data-filter="epic-post">Posts</button>
+      <button class="fbtn" data-filter="epic-explore">Explore</button>
+      <button class="fbtn" data-filter="epic-arch">Architecture</button>
+    </div>
+
+    <div id="storyList">
+
+      <!-- ===== ARCHITECTURE ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-001</span>
+          <span class="story-title">Setup SwiftUI multiplatform project (macOS + iOS)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> developer, <strong>I want</strong> a clean Xcode project with shared SwiftUI codebase, <strong>so that</strong> I have a solid MVVM foundation.<br><br>
+          <strong>AC:</strong> Compiles on both platforms. MVVM folder structure. No warnings.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec — project scaffold</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-002</span>
+          <span class="story-title">PersistenceService protocol + SwiftData implementation</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> developer, <strong>I want</strong> an abstract PersistenceService protocol with SwiftData impl, <strong>so that</strong> persistence is swappable and testable via DI.<br><br>
+          <strong>AC:</strong> Protocol with CRUD for all models. SwiftData impl passes tests. MockPersistenceService for previews.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-003</span>
+          <span class="story-title">SwiftData models (Pillar, Tag, Asset, Post, Persona)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> developer, <strong>I want</strong> all data models with proper relationships, <strong>so that</strong> data integrity is enforced.<br><br>
+          <strong>AC:</strong> All @Model classes. Asset has 3 states: active, non-pertinent, used. Persona stores onboardingAnswers + synthesized fields. PostTemplate model added.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial models: Pillar, Tag, Asset, Post, Persona</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added Asset.state (active/non-pertinent/used), PostTemplate model, Persona.synthesizedProfile fields, Platform-to-Tone mapping</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-004</span>
+          <span class="story-title">ImageClassifier protocol + Gemini Flash implementation</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>AC:</strong> Protocol defined. Gemini Flash calls working. MockClassifier for tests. Error handling.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-005</span>
+          <span class="story-title">PhotoLibraryService protocol + PhotoKit implementation</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>AC:</strong> Permission flow. Fetch by date. Read EXIF. Create album. Mock for simulator.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SCAN PIPELINE ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-006</span>
+          <span class="story-title">Core ML on-device pre-classification (objects, scene, framing)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>AC:</strong> Vision framework detects objects/scenes. Framing heuristic (POV/detail/wide/portrait). ~50ms/photo. Also suggests emoji for custom pillars.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial: objects, scenes, framing detection</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added emoji auto-suggest for custom pillars at textfield exit</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-007</span>
+          <span class="story-title">Gemini Flash cloud classification (pillars, semantic tags, mood)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Deep prompt with persona context. Multi-pillar. Confidence score. Batch calls.</div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-008</span>
+          <span class="story-title">Batch scan pipeline (30-day windows, incremental, recent-first)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Recent 30 days first. Tracks classified vs unclassified. Resumes. 15K in 15-30 min.</div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-009</span>
+          <span class="story-title">Auto-detect new unclassified assets on app launch</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Compare last scan date. Show count. Offer scan. Non-blocking.</div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-010</span>
+          <span class="story-title">EXIF metadata extraction (date, location, time of day)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Location reverse-geocoded to city. Time from capture hour. Auto-tagged without API.</div>
+      </div>
+
+      <!-- ===== ONBOARDING (REORDERED v0.1) ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-022</span>
+          <span class="story-title">Onboarding flow: 5-step guided setup</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Flow:</strong> 1.Welcome (before/after) → 2.Pillars (bento on/off) → 3.Platforms+Tone (multi-step) → 4.Bio/Brainstorm (dual path) → 5.First Scan (recap inline)<br><br>
+          <strong>AC:</strong> 5 steps. Nav buttons fixed position on all steps. Step dots consistent. All optional except Pillars. Skip available.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">7-step flow: Welcome, Pillars, Bio, Tone, Platforms, Summary, Scan</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Reordered to 5 steps. Removed Summary. Merged Platforms+Tone. Bio moved before scan. All optional except Pillars. Fixed nav position. Before/after on Welcome.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-033</span>
+          <span class="story-title">Brand Brainstorming Q&A (stacked cards, ~30 questions)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> an AI-guided brainstorming that asks me ~30 questions to deeply define my persona, <strong>so that</strong> classification and content generation match my brand perfectly.<br><br>
+          <strong>UI:</strong> Stacked cards (variant A). MC options + expandable free text on each card. 6 categories (Identity/Audience/Voice/Values/Content/Goals). "That's enough" after q10. AI synthesizes persona doc.<br><br>
+          <strong>AC:</strong> Stacked cards with peek animation. Mix of MC + free text. Expandable input on tap. Answers persist across kills. Fallback to hardcoded questions. Synthesis editable. Skips tone step (already covered).
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — dual path Bio screen with brainstorming option</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Chosen variant A (stacked cards). Added MC + free text expandable. AI reaction/rebond between questions.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-034</span>
+          <span class="story-title">Persona Synthesis result screen (editable before save)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> to review and edit the AI-generated persona before saving, <strong>so that</strong> I stay in control of my brand identity.<br><br>
+          <strong>Sections:</strong> Bio, Voice guidelines, Audience profile, Content themes, Brand values — all editable. "Regenerate" button available.<br><br>
+          <strong>AC:</strong> All fields inline editable. Regenerate calls Gemini again. Save persists to SwiftData.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — synthesis review screen</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-035</span>
+          <span class="story-title">Platforms + Tone multi-step (tone per platform with examples)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> to assign 1-3 tones per platform with real examples of the same phrase in each tone, <strong>so that</strong> my content voice matches each platform's culture.<br><br>
+          <strong>Flow:</strong> 3.1 Select platforms (bento grid) → 3.2 Instagram tones → 3.3 LinkedIn tones → etc. Multi-select 2-3 max per platform. "Mix" removed. Tooltip on 3rd: "A strong brand speaks in 2-3 voices max."<br><br>
+          <strong>AC:</strong> Bento platform selector. Sub-progress dots. Same phrase shown in 5 tones per platform. 2-3 max enforced. Back/Next fixed position.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Was separate Tone (radio single) + Platforms screens</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Merged into multi-step. Tone per platform. Removed "Mix". Multi-select 2-3 max. Real phrase examples.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-023</span>
+          <span class="story-title">Photo library permission request flow</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Pre-permission explanation. Handles denied/limited. Re-request from settings.</div>
+      </div>
+
+      <!-- ===== CORE UI ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-011</span>
+          <span class="story-title">TabBar navigation (Home, Explore, Swipe, Posts, Profile)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> 5 tabs SF Symbols. Sidebar on Mac, tab bar on iPhone. Liquid Glass.</div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-012</span>
+          <span class="story-title">Home dashboard (smart scan status, pillar grids, quick actions)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Sections:</strong><br>
+          1. <strong>Scan status</strong> — 4 states: scanning (progress), idle (last scan time), new items to classify, items to review<br>
+          2. <strong>Pillars</strong> — bento cards: icon + title + count tag + mini thumbnail grid underneath<br>
+          3. <strong>Quick actions</strong> — "Review classifications", "Compose a post", "Create template"<br><br>
+          <strong>AC:</strong> Scan card shows correct state. Pillar cards show real thumbnails. Quick actions navigate correctly. Vertical scroll, no horizontal lists.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Horizontal scroll pillars, basic quick actions (Swipe/New Post/Rescan/Stats)</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Bento grids (no h-scroll). Smart scan status (4 states). Pillars with mini thumbnail grids. Quick actions rephrased (Review/Compose/Template). Removed Stats. Rescan integrated in status card.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-015</span>
+          <span class="story-title">Scan progress + background indicator</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Progress bar, count, estimated time. Pill indicator on other tabs. Pause/resume.</div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-016</span>
+          <span class="story-title">Pillar management (CRUD, color, emoji, reorder)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>AC:</strong> Add/edit/delete. Emoji auto-suggest on textfield exit (micro-animation slide-in). Tap emoji to open native picker. Color picker. Drag reorder. Nudge >10.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Basic CRUD with SF Symbol + color picker</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Emoji auto-suggest via AI on textfield exit. Native emoji picker on tap. Micro-animation slide-in. Bento grid layout in onboarding.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EXPLORE ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-013</span>
+          <span class="story-title">Explore: asset grid with rich filters</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Filters:</strong> Pillars (chips), Cadrage (POV/Detail/Wide/Portrait), Location (picker from gallery cities), Moment (Morning/Afternoon/Evening/Night), Media (Photo/Video), Status (Active/Non-pertinent)<br><br>
+          <strong>AC:</strong> Flat grid, LazyVGrid. All filter types. Location picker populated from EXIF data. Multi-select → 2 action buttons. 3-second rule.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Grid with pillar chips + basic filters</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added cadrage filter, location picker menu, moment filter. Multi-select → 2 action buttons (post + TBD).</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-036</span>
+          <span class="story-title">Asset detail: slide-up sheet, fully editable, "non pertinent" marking</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> to view and edit all metadata inline (pillars, tags, loc, cadrage) and mark irrelevant assets, <strong>so that</strong> I curate my library without leaving the explorer.<br><br>
+          <strong>UI:</strong> Sheet (not full push). Dismiss by swipe down. All fields editable. 3 asset states: active, non-pertinent, used.<br><br>
+          <strong>AC:</strong> Sheet slide-up. Tap tag to remove. + to add. Loc editable. Cadrage editable. "Mark non-pertinent" action. Auto-save.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full-screen push. Tags editable. Actions: Add to Post, Reclassify, Share.</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Changed to sheet. All metadata editable. Added "non-pertinent" state. 3 asset states (active/non-pertinent/used).</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-014</span>
+          <span class="story-title">Multi-select assets → Create Post + second action</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>AC:</strong> Long press enters multi-select. Two action buttons at bottom. "Create Post" opens post sheet. Second action TBD.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Single "Create Post" action</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Duo buttons: Create Post + second action (TBD)</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== SWIPE ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-swipe" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-017</span>
+          <span class="story-title">Swipe mode: bento selector with mini-grids + card editor</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Selector:</strong> Bento grid per pillar: icon + name + mini thumbnail grid + overlay quantity to review. Tap → enter swipe.<br>
+          <strong>Card:</strong> Full-screen photo + AI score + tags overlay (editable) + loc editable + cadrage editable + add/remove tags. Swipe right = validate for pillar. Swipe left = reject. Each card is a micro-editor.<br><br>
+          <strong>AC:</strong> Bento selector with thumbnails. Card shows photo + score + all tags. Tags tappable to remove. + to add. Loc/cadrage editable. Undo. Batch save every 10 swipes.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">List selector with counters. Card = photo + AI badge only.</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Selector → bento grid with mini thumbnail grids. Card → full editor (tags/loc/cadrage editable). Each swipe is also an edit session.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-swipe" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-019</span>
+          <span class="story-title">Manual retrigger scan</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Button in settings + integrated in Home scan status card. Scan all or unclassified only.</div>
+      </div>
+
+      <!-- ===== POSTS ===== -->
+      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-020</span>
+          <span class="story-title">Posts list with visual slots per post</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Card:</strong> Shows 4 visual slots (filled or empty) + post name + status badge + asset count.<br>
+          <strong>Interactions:</strong> Tap → post detail. Long press → context menu (duplicate, delete, etc.). No swipe status change.<br><br>
+          <strong>AC:</strong> Slots visible on card. Tap opens detail. Long press context menu. Cancel action returns assets to "non-utilise".
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Thumbnail strip. Swipe right to advance status. Filter tabs.</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Visual slots per post. Removed swipe status. Long press context menu. Cancel returns assets to non-utilise.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-021</span>
+          <span class="story-title">Post editor with slot-based assembly + contextual explorer</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>Slots:</strong> Named slots showing requirements from template. Filled slots show asset + tags/loc overlay. Empty slots show requirements.<br>
+          <strong>Tap empty slot:</strong> Opens contextual asset explorer pre-filtered by slot requirements. Filters editable. Search bar available.<br>
+          <strong>Actions:</strong> Publish, Cancel (assets → non-utilise), Export to Album, Suggest Hook.<br><br>
+          <strong>AC:</strong> Slots show requirements or filled asset. Contextual explorer opens pre-filtered. Filters editable in explorer. Publish/Cancel work correctly.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Name + description + reorderable asset grid + status picker + export album</span></div>
+            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Slot-based assembly. Slots show template requirements. Contextual explorer pre-filtered by slot requirements. Filters editable.</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-037</span>
+          <span class="story-title">Post Template Builder (define format, slots, requirements)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> to create reusable post templates that define how many assets, what cadrages, what tags/pillars are needed, <strong>so that</strong> assembling content is guided and consistent.<br><br>
+          <strong>Fields:</strong> Template name. Number of slots. Per slot: cadrage type, required pillar(s), required tags, description.<br><br>
+          <strong>AC:</strong> CRUD for templates. Each slot configurable. Templates available in "Create Post" flow. Templates shown in Home quick actions.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — template system for post assembly</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-038</span>
+          <span class="story-title">Contextual asset explorer (from post slots, pre-filtered)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> the asset explorer to open pre-filtered when I tap an empty post slot, <strong>so that</strong> I see matching assets immediately but can still browse freely.<br><br>
+          <strong>AC:</strong> Opens with slot requirements as active filters. Filters editable/removable. Search bar available. Tap asset → fills slot. Back → return to post editor.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — contextual explorer from post editor slots</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-039</span>
+          <span class="story-title">Export post as native Photos album</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Creates album with post name. Updates if exists. Handles broken refs. Permission flow.</div>
+      </div>
+
+      <!-- ===== POST-MVP ===== -->
+      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-024</span>
+          <span class="story-title">Post builder: AI "Suggest" button (hook + caption)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Button triggers Gemini with persona + assets. Pre-fills hook + caption. Editable.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-025</span>
+          <span class="story-title">Advanced search: natural language + structured filters</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Free text parsed into tag queries. "morning + car + Bangkok". Results live.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-027</span>
+          <span class="story-title">iCloud sync via CloudKit</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> SwiftData CloudKit container. Conflict resolution. Offline-first.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-028</span>
+          <span class="story-title">Multiple post templates (carousel, story, thread)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Template CRUD. Each defines required assets/types. Post builder adapts per template.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-029</span>
+          <span class="story-title">Advice/tips bank (curated + AI-generated)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> CRUD for advice. Pillar association. AI generation. Used/unused tracking.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-030</span>
+          <span class="story-title">Instagram/TikTok API export</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> OAuth. Push photos+caption. API limitations handled. Fallback Share Sheet.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-031</span>
+          <span class="story-title">Gemma on Hetzner as classification backend</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> GemmaClassifier conforming to protocol. Server endpoint. Toggle in settings. Fallback to Gemini.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-032</span>
+          <span class="story-title">Asset usage tracking (don't re-suggest used assets)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> "Used" badge. Filter to hide. Suggestion engine excludes.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-026</span>
+          <span class="story-title">Apple Notes integration (read + classify by pillar)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
+        </div>
+        <div class="story-expand"><strong>AC:</strong> Read notes via native API. Text classification. Notes in search alongside photos.</div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-explore" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-040</span>
+          <span class="story-title">Non-pertinent assets gallery (excluded but accessible)</span>
+          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> user, <strong>I want</strong> a dedicated view for assets I marked non-pertinent, <strong>so that</strong> I can still find random/off-brand content if I need it for something unexpected.<br><br>
+          <strong>AC:</strong> Accessible from Explore filter or Profile. Grid view. Can restore to active. Can bulk delete.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — non-pertinent gallery concept</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="story" data-phase="post" data-epic="epic-ui" data-new="true" onclick="this.classList.toggle('expanded')">
+        <div class="story-top">
+          <span class="story-id">PB-041</span>
+          <span class="story-title">BrainstormService protocol (question generation + synthesis)</span>
+          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
+        </div>
+        <div class="story-expand">
+          <strong>As a</strong> developer, <strong>I want</strong> a BrainstormService protocol abstracting AI question generation and persona synthesis, <strong>so that</strong> the brainstorm flow is testable and the AI provider swappable.<br><br>
+          <strong>AC:</strong> Protocol with generateNextQuestion() and synthesizePersona(). GeminiBrainstormService implementation. MockBrainstormService. Fallback to hardcoded questions on failure.
+          <div class="version-history"><h4>Iteration History</h4>
+            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — brainstorm service architecture</span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ======================== CHANGELOG ======================== -->
+  <div class="section" id="changelog">
+    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">Version History</div>
+
+    <div class="meta-block">
+      <h3>v0.2 — Post-Challenge Round 2 <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 13, 2026</span></h3>
+      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
+        <strong>Onboarding:</strong><br>
+        - Pillars: custom pillar creation via partial sheet (was inline textfield)<br>
+        - Bio/Brainstorm: more fun and didactic presentation, illustrations, playful copy<br>
+        - First Scan: redesigned as progressive permission checklist (each permission activates one by one)<br><br>
+
+        <strong>Home Dashboard:</strong><br>
+        - Pillar cards redesigned: mini thumbnail grid + count overlay + "to review" badge<br>
+        - Inspired by category/course card UI pattern<br><br>
+
+        <strong>Explore:</strong><br>
+        - Added discrete "Select" button top-right for explicit multi-select entry<br><br>
+
+        <strong>Swipe → Review:</strong><br>
+        - Renamed SwipeView to ReviewQueueView — screen is about reviewing AI classifications<br><br>
+
+        <strong>Posts:</strong><br>
+        - Template Builder: added description field + "Validate & Share" button for social sharing<br><br>
+
+        <strong>Profile:</strong><br>
+        - Persona Editor: removed global tone. Tone now per-platform (each platform card shows its tones, tap to edit)<br><br>
+
+        <strong>8 screens updated</strong>
+      </div>
+    </div>
+
+    <div class="meta-block">
+      <h3>v0.1 — Post-Challenge Round 1 <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 12, 2026</span></h3>
+      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
+        <strong>Onboarding redesign:</strong><br>
+        - Reordered from 7 to 5 steps. Removed Summary screen.<br>
+        - Merged Platforms + Tone into multi-step (tone per platform, 2-3 max, "Mix" removed)<br>
+        - Bio moved to step 4 (before scan) with dual-path: Quick Bio or Brand Brainstorming<br>
+        - Brand Brainstorming: stacked cards UI with MC + expandable free text<br>
+        - Welcome: added before/after value preview<br>
+        - Pillars: bento grid on/off, emoji auto-suggest, native picker<br>
+        - Fixed nav button position across all steps<br><br>
+
+        <strong>Home Dashboard:</strong><br>
+        - Bento grids replace horizontal scrolls<br>
+        - Smart scan status card (4 states)<br>
+        - Pillars show mini thumbnail grids<br>
+        - Quick actions rephrased: Review / Compose / Template<br><br>
+
+        <strong>Explore:</strong><br>
+        - Enriched filters: cadrage, location picker, moment, media<br>
+        - Asset detail → slide-up sheet (was full push)<br>
+        - All metadata editable inline<br>
+        - "Non pertinent" asset state added<br>
+        - Multi-select → 2 action buttons<br><br>
+
+        <strong>Swipe Mode:</strong><br>
+        - Selector → bento grid with mini thumbnails + quantity overlay<br>
+        - Swipe card = full micro-editor (tags, loc, cadrage editable)<br><br>
+
+        <strong>Posts:</strong><br>
+        - Visual slots per post card (filled/empty)<br>
+        - Slot-based assembly with template requirements<br>
+        - Contextual explorer pre-filtered by slot<br>
+        - Post Template Builder (new screen)<br>
+        - Removed swipe-to-advance status<br>
+        - Cancel returns assets to non-utilise<br><br>
+
+        <strong>New stories:</strong> PB-033 to PB-041 (8 stories)
+      </div>
+    </div>
+
+    <div class="meta-block">
+      <h3>v0.0 — Initial Spec <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 12, 2026</span></h3>
+      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
+        Initial product spec from 30-question brainstorming session.<br>
+        32 user stories. 7-step onboarding. Basic grid explore. Simple swipe mode.<br>
+        App Store Connect metadata (EN/FR). 10 icon prompts.
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================== ASC ======================== -->
+  <div class="section" id="asc">
+    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">App Store Connect Metadata</div>
+    <div class="meta-block">
+      <h3>App Name</h3>
+      <div class="val">PillarBox - Brand Asset Manager</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Subtitle</h3>
+      <div class="val">Organize Photos by Brand Pillar</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Promotional Text</h3>
+      <div class="val">Classify your photo library by content pillars using AI. Swipe to organize, search by theme, and assemble ready-to-publish posts. Your personal branding command center.</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Keywords (100 chars)</h3>
+      <div class="val">personal branding,content pillars,photo organizer,creator tools,AI classify,social media,asset manager</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Category</h3>
+      <div class="val">Primary: Photo & Video — Secondary: Productivity</div>
+    </div>
+  </div>
+
+  <!-- ======================== ICONS ======================== -->
+  <div class="section" id="icons">
+    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">App Icon — 10 AI Prompts</div>
+    <div class="prompts-section">
+      <div class="prompt-card"><h4>Minimal Pillar Columns</h4><p>Three vertical columns (pillars) in gradient indigo to purple, arranged like a building facade, on clean dark background. Middle pillar taller. Glass reflection. No text. 1024x1024 iOS icon.</p></div>
+      <div class="prompt-card"><h4>Open Box with Pillars</h4><p>Sleek open box from above, colorful vertical pillars rising from inside (indigo, cyan, green, orange, pink). Metallic finish. Dark bg. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Grid of Categorized Photos</h4><p>2x2 grid of abstract photo thumbnails, each with different colored tag overlay (indigo, green, orange, pink). Rounded corners. Dark charcoal bg. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Prism Light Split</h4><p>White light beam entering geometric prism, splitting into 5 colorful beams (indigo, cyan, green, orange, pink). Black bg. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Compass Rose</h4><p>Modern compass rose, 7 points in different colors. Center has camera lens motif. Indigo-purple gradient bg. Flat with depth. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Stacked Cards with Tags</h4><p>Three overlapping photo cards fanned out, colored dot badges (indigo, orange, green). Top card shows abstract landscape. Frosted glass. Dark bg. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Letter P as Pillar</h4><p>Bold geometric "P" designed as classical pillar. Vertical stroke = fluted column, curve = modern arch. Indigo gradient on dark bg. Premium. No other text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Neural Network Nodes</h4><p>Abstract neural network: 7 glowing nodes (different colors = pillars) connected by luminous lines. Constellation pattern. Deep dark bg. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Liquid Glass Pillars</h4><p>Apple Liquid Glass style: three translucent vertical pillars with glass morphism, light refracting through. Soft white/silver bg. iOS 26 feel. No text. 1024x1024.</p></div>
+      <div class="prompt-card"><h4>Pillar Box Hybrid</h4><p>British "pillar box" (mailbox) concept: modern mailbox shape, slot replaced by camera aperture. Indigo instead of red. Metallic. Dark bg. Clever, memorable. No text. 1024x1024.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Tabs
+  document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(t.dataset.tab).classList.add('active');
+    });
+  });
+
+  // Filters
+  document.querySelectorAll('.fbtn').forEach(b => {
+    b.addEventListener('click', () => {
+      const f = b.dataset.filter;
+      document.querySelectorAll('.fbtn').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      document.querySelectorAll('.story').forEach(s => {
+        if (f === 'all') s.style.display = '';
+        else if (f === 'mvp') s.style.display = s.dataset.phase === 'mvp' ? '' : 'none';
+        else if (f === 'post') s.style.display = s.dataset.phase === 'post' ? '' : 'none';
+        else if (f === 'new') s.style.display = s.dataset.new === 'true' ? '' : 'none';
+        else s.style.display = s.dataset.epic === f ? '' : 'none';
+      });
+    });
+  });
+
+  function copyText(btn) {
+    const v = btn.parentElement.querySelector('.val').innerText;
+    navigator.clipboard.writeText(v).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); });
+  }
+</script>
+</body>
+</html>

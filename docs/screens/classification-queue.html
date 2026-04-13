@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Classification Queue</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Classification Queue</h1>
+  <div class="path">Views/Classification/ClassificationQueueView.swift</div>
+  <div class="refs"><span class="ref">PB-017</span><span class="ref">TabBar / Classify</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Named "SwipeView". Simple pillar list with counts.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Bento grid per pillar with mini thumbnails, quantity overlay badge.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 13</span><span class="vh-desc">Renamed to ReviewQueueView. Title: "What needs your review".</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.3</span><span class="vh-date">Apr 13</span><span class="vh-desc">Renamed to ClassificationQueueView. Tab renamed from "Swipe" to "Classify". Screen shows classification queue per pillar, not a swipe action.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div class="m-title">What needs your review</div>
+    <div class="m-sub">Tap a pillar to start reviewing its assets.</div>
+    <div class="m-bento" style="margin-top:.35rem;">
+      <div class="m-bento-item" style="position:relative;cursor:pointer;">
+        <div class="emoji">💻</div>
+        <div class="name">Developer</div>
+        <div class="m-mini-grid" style="margin-top:.1rem;"><div></div><div></div><div></div></div>
+        <span class="m-badge" style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:.42rem;">23</span>
+      </div>
+      <div class="m-bento-item" style="position:relative;cursor:pointer;">
+        <div class="emoji">🤖</div>
+        <div class="name">AI / Tech</div>
+        <div class="m-mini-grid" style="margin-top:.1rem;"><div></div><div></div><div></div></div>
+        <span class="m-badge" style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:.42rem;">14</span>
+      </div>
+      <div class="m-bento-item" style="position:relative;cursor:pointer;">
+        <div class="emoji">🚗</div>
+        <div class="name">Automotive</div>
+        <div class="m-mini-grid" style="margin-top:.1rem;"><div></div><div></div><div></div></div>
+        <span class="m-badge" style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:.42rem;">38</span>
+      </div>
+      <div class="m-bento-item" style="position:relative;cursor:pointer;">
+        <div class="emoji">✈️</div>
+        <div class="name">Travel</div>
+        <div style="display:flex;align-items:center;justify-content:center;margin-top:.15rem;gap:.15rem;">
+          <span style="color:var(--green);font-size:.7rem;">✓</span>
+          <span style="font-size:.45rem;color:var(--green);">All reviewed!</span>
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:.48rem;color:var(--text-3);margin-top:.15rem;">75 total items to review</div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti ac"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">All reviewed</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">🎉</div>
+        <div style="font-size:.72rem;font-weight:700;">All caught up!</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-top:.1rem;">Every asset has been reviewed. Check back after your next scan.</div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti ac"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">No pillars</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.5rem;margin-bottom:.2rem;">📦</div>
+        <div style="font-size:.68rem;font-weight:600;">No pillars yet</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-bottom:.3rem;">Create your first pillar to start classifying photos.</div>
+        <div class="m-btn" style="font-size:.55rem;">Create a pillar</div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti ac"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">Scan running</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.72rem;font-weight:700;margin-bottom:.1rem;">What needs your review</div>
+        <div style="font-size:.48rem;color:var(--accent);margin-bottom:.15rem;">Scanning... counts updating live</div>
+        <div class="m-progress" style="margin-bottom:.2rem;"><div class="m-progress-fill" style="width:35%;"></div></div>
+        <div class="m-bento">
+          <div class="m-bento-item" style="position:relative;">
+            <div class="emoji">💻</div><div class="name">Developer</div>
+            <span class="m-badge" style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:.42rem;">23+</span>
+          </div>
+          <div class="m-bento-item" style="position:relative;">
+            <div class="emoji">🤖</div><div class="name">AI / Tech</div>
+            <span class="m-badge" style="position:absolute;top:4px;right:4px;background:var(--accent);color:#fff;font-size:.42rem;">14+</span>
+          </div>
+        </div>
+      </div>
+      <div class="phone-tab">
+        <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+        <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+        <div class="ti ac"><div class="ti-ic">👆</div>Swipe</div>
+        <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+        <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+      </div>
+      <div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap pillar card (with items)</td><td>Enter swipe card mode for that pillar</td></tr>
+    <tr><td>Tap pillar card (0 items)</td><td>No action, card shows "All reviewed!" with green checkmark</td></tr>
+    <tr><td>Tap "Create a pillar" (no pillars)</td><td>Navigate to Pillars Management screen</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>No pillars created: Show "Create your first pillar" CTA instead of grid</li>
+    <li>All pillars fully reviewed: Celebration state "All caught up!" with confetti emoji</li>
+    <li>Scan running: Counts update in real-time with "+" suffix to indicate more coming</li>
+    <li>Pillar with 0 to review: Green checkmark icon and "All reviewed!" text</li>
+    <li>Very many pillars (10+): Grid scrolls vertically, all pillars accessible</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Bento grid (2 columns) with emoji icon, pillar name, and mini thumbnail grid per card</li>
+    <li>Quantity overlay badge shows number of assets to review per pillar</li>
+    <li>Tap pillar card enters swipe card mode for that pillar</li>
+    <li>Pillar with 0 items shows green checkmark "All reviewed!"</li>
+    <li>Live count updates during active scan</li>
+    <li>No pillars state shows creation CTA</li>
+    <li>3-second rule: selector loads within 3 seconds including thumbnails</li>
+  </ul>
+</div>
+</body></html>

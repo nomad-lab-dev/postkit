@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Classification View</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Classification View</h1>
+  <div class="path">Views/Classification/ClassificationView.swift</div>
+  <div class="refs"><span class="ref">PB-017</span><span class="ref">PB-018</span><span class="ref">TabBar / Classify / {Pillar}</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Named "SwipeCardView". Basic swipe yes/no. No metadata editing.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full-screen micro-editor: photo + AI score + editable tags/loc/cadrage overlays. Undo. Batch save.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.3</span><span class="vh-date">Apr 13</span><span class="vh-desc">Renamed to ClassificationView. Added toggle: Swipe mode (1-by-1) vs Grid mode (batch elimination). Grid mode for high-volume pillars (10K+ photos). Both modes allow metadata editing.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1 — Full-screen micro-editor)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:0;position:relative;">
+    <!-- Header overlay -->
+    <div style="position:absolute;top:0;left:0;right:0;z-index:2;padding:.4rem .5rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.4),transparent);">
+      <div style="display:flex;align-items:center;gap:.2rem;">
+        <span style="font-size:.7rem;">🚗</span>
+        <span style="font-size:.6rem;font-weight:600;color:#fff;">Automotive</span>
+      </div>
+      <span style="font-size:.5rem;color:rgba(255,255,255,.8);">7 / 38 remaining</span>
+    </div>
+    <!-- Progress bar -->
+    <div style="position:absolute;top:28px;left:.5rem;right:.5rem;z-index:2;">
+      <div class="m-progress" style="background:rgba(255,255,255,.2);"><div class="m-progress-fill" style="width:82%;background:#fff;"></div></div>
+    </div>
+    <!-- Full-screen photo -->
+    <div style="width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#506070,#708090,#607080);position:relative;">
+      <!-- AI confidence badge -->
+      <span class="m-badge" style="position:absolute;top:40px;right:8px;background:rgba(0,0,0,.5);color:#fff;font-size:.45rem;z-index:2;">AI: 87%</span>
+      <!-- Tags overlay (bottom) -->
+      <div style="position:absolute;bottom:0;left:0;right:0;padding:.4rem .5rem .5rem;background:linear-gradient(to top,rgba(0,0,0,.6),transparent);z-index:2;">
+        <div class="m-chips" style="margin-bottom:.1rem;">
+          <span style="display:inline-block;padding:.1rem .3rem;border-radius:100px;font-size:.46rem;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.2);">track day</span>
+          <span style="display:inline-block;padding:.1rem .3rem;border-radius:100px;font-size:.46rem;background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.2);">porsche</span>
+          <span style="display:inline-block;padding:.1rem .3rem;border-radius:100px;font-size:.46rem;background:rgba(255,255,255,.15);color:rgba(255,255,255,.7);border:1px dashed rgba(255,255,255,.3);">+ tag</span>
+        </div>
+        <div style="display:flex;gap:.3rem;font-size:.46rem;color:rgba(255,255,255,.8);">
+          <span>📍 Barcelona</span>
+          <span>🖼 Wide</span>
+        </div>
+      </div>
+    </div>
+    <!-- Action buttons -->
+    <div class="m-swipe-actions" style="display:flex;justify-content:space-around;align-items:center;padding:.5rem .7rem;background:var(--bg);">
+      <div class="m-swipe-btn" style="width:44px;height:44px;border-radius:50%;background:var(--red-bg);display:flex;align-items:center;justify-content:center;font-size:1rem;border:2px solid rgba(255,59,48,.3);">✕</div>
+      <div class="m-swipe-btn" style="width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:.7rem;border:1px solid rgba(0,0,0,.08);">↩</div>
+      <div class="m-swipe-btn" style="width:44px;height:44px;border-radius:50%;background:var(--green-bg);display:flex;align-items:center;justify-content:center;font-size:1rem;border:2px solid rgba(52,199,89,.3);">✓</div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- SWIPE FEEDBACK STATES -->
+<div class="section">
+  <div class="section-title">Swipe Feedback States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Swipe Right — YES</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:0;">
+        <div style="width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#506070,#708090);position:relative;border:3px solid var(--green);">
+          <div style="position:absolute;inset:0;background:rgba(52,199,89,.15);display:flex;align-items:center;justify-content:center;">
+            <div style="font-size:2rem;background:var(--green-bg);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--green);">✓</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:.3rem;font-size:.52rem;color:var(--green);font-weight:600;">Belongs to Automotive</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Swipe Left — NO</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding:0;">
+        <div style="width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,#506070,#708090);position:relative;border:3px solid var(--red);">
+          <div style="position:absolute;inset:0;background:rgba(255,59,48,.15);display:flex;align-items:center;justify-content:center;">
+            <div style="font-size:2rem;background:var(--red-bg);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:2px solid var(--red);">✕</div>
+          </div>
+        </div>
+        <div style="text-align:center;padding:.3rem;font-size:.52rem;color:var(--red);font-weight:600;">Skipped</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Done state</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">🎉</div>
+        <div style="font-size:.72rem;font-weight:700;">All done!</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin:.1rem 0 .4rem;">38 Automotive assets reviewed.</div>
+        <div style="display:flex;gap:.2rem;">
+          <div class="m-btn" style="font-size:.52rem;">Pick another pillar</div>
+          <div class="m-btn-glass" style="font-size:.52rem;">Explore</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Swipe right</td><td>Tag asset with current pillar + save edits, green flash, next card</td></tr>
+    <tr><td>Swipe left</td><td>Skip/untag from pillar + save edits, red flash, next card</td></tr>
+    <tr><td>Tap ✓ button</td><td>Same as swipe right (accessibility)</td></tr>
+    <tr><td>Tap ✕ button</td><td>Same as swipe left (accessibility)</td></tr>
+    <tr><td>Tap ↩ (undo)</td><td>Restore last card, undo the previous swipe decision</td></tr>
+    <tr><td>Tap tag</td><td>Remove tag from asset</td></tr>
+    <tr><td>Tap "+ tag"</td><td>Add tag inline (field appears over photo)</td></tr>
+    <tr><td>Tap location (📍)</td><td>Edit location (inline picker)</td></tr>
+    <tr><td>Tap cadrage (🖼)</td><td>Cycle through: POV, Detail, Wide, Portrait</td></tr>
+    <tr><td>Tap photo</td><td>Full-screen zoom view</td></tr>
+    <tr><td>Tap Back / pillar name</td><td>Exit swipe mode, return to pillar selector</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Video asset: Display first frame with play icon. Tap to preview short clip before swiping.</li>
+    <li>Undo at first card: Undo button disabled (no previous card to restore)</li>
+    <li>Fast swiping: Batch SwiftData write every 10 swipes for performance</li>
+    <li>App killed mid-swipe: All previous swipes + edits are saved. Resume where left off.</li>
+    <li>AI override: User decision always takes priority over AI classification</li>
+    <li>0 assets to review for a pillar: Don't enter card mode, show checkmark on selector</li>
+    <li>Very long tag list on photo: Tags wrap within overlay, still tappable</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Full-screen photo with AI confidence score overlay (top-right badge)</li>
+    <li>Tags editable (add/remove) directly on the photo overlay</li>
+    <li>Location editable by tapping the location indicator</li>
+    <li>Cadrage editable by tapping the cadrage badge (cycle through 4 types)</li>
+    <li>Swipe gestures with green/red flash animation on accept/reject</li>
+    <li>Undo works (1-level, restores last card with its original state)</li>
+    <li>Batch save every 10 swipes to SwiftData for performance</li>
+    <li>All edits (tags, location, cadrage) persist even after swipe</li>
+    <li>Progress bar and counter update in real-time</li>
+    <li>"All done!" state leads to pillar picker or explore</li>
+  </ul>
+</div>
+</body></html>

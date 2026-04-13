@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PillarBox — Brainstorming Q&A — 3 Variants</title>
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --surface: rgba(255,255,255,0.72);
+    --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.78);
+    --glass-border: rgba(0,0,0,0.08);
+    --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --text: #1c1c1e;
+    --text-2: #3c3c43;
+    --text-3: #8e8e93;
+    --text-4: #aeaeb2;
+    --accent: #007aff;
+    --accent-bg: rgba(0,122,255,0.08);
+    --green: #34c759;
+    --green-bg: rgba(52,199,89,0.1);
+    --orange: #ff9500;
+    --purple: #af52de;
+    --purple-bg: rgba(175,82,222,0.08);
+    --r-sm: 10px;
+    --r-pill: 100px;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; }
+
+  .page { max-width:1200px; margin:0 auto; padding:2rem; }
+  .header { text-align:center; margin-bottom:2rem; }
+  .header h1 { font-size:1.6rem; font-weight:700; }
+  .header p { color:var(--text-3); font-size:.9rem; margin-top:.3rem; }
+
+  .grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.5rem; }
+  @media(max-width:1000px) { .grid { grid-template-columns:1fr; } }
+
+  .variant {
+    background:var(--surface); backdrop-filter:blur(20px) saturate(180%);
+    border:1px solid var(--glass-border); border-radius:16px;
+    box-shadow:var(--glass-shadow); overflow:hidden;
+  }
+  .variant-header {
+    padding:1rem 1.25rem; border-bottom:1px solid rgba(0,0,0,0.06);
+    background:rgba(255,255,255,0.5);
+  }
+  .variant-header h2 { font-size:1rem; font-weight:600; display:flex; align-items:center; gap:.4rem; }
+  .variant-header .tag { font-size:.6rem; padding:.15rem .4rem; border-radius:var(--r-pill); font-weight:500; }
+  .variant-header p { font-size:.75rem; color:var(--text-3); margin-top:.3rem; line-height:1.5; }
+
+  .variant-body { padding:1.25rem; }
+
+  /* Pros/Cons */
+  .pro-con { display:grid; grid-template-columns:1fr 1fr; gap:.5rem; margin-top:1rem; }
+  .pro-con h4 { font-size:.65rem; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.3rem; }
+  .pro-con ul { list-style:none; padding:0; font-size:.72rem; color:var(--text-2); }
+  .pro-con li { margin-bottom:.2rem; display:flex; gap:.3rem; align-items:flex-start; }
+  .pro-col h4 { color:var(--green); }
+  .con-col h4 { color:var(--orange); }
+
+  /* Phone */
+  .phone {
+    width:100%; max-width:280px; margin:0 auto;
+    background:var(--bg); border:1px solid rgba(0,0,0,0.1);
+    border-radius:24px; overflow:hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06), inset 0 0 0 1px rgba(255,255,255,0.5);
+  }
+  .phone-bar { height:18px; display:flex; align-items:center; justify-content:center; font-size:.55rem; color:var(--text-3); background:rgba(255,255,255,0.3); }
+  .phone-body { min-height:400px; padding:.7rem; position:relative; overflow:hidden; }
+  .phone-home { height:4px; width:34%; margin:3px auto 2px; background:var(--text-4); border-radius:2px; opacity:.25; }
+
+  /* Shared */
+  .q-progress { display:flex; align-items:center; gap:.4rem; margin-bottom:.6rem; font-size:.6rem; color:var(--text-3); }
+  .q-progress-bar { flex:1; height:3px; background:rgba(0,0,0,0.06); border-radius:2px; }
+  .q-progress-fill { height:100%; background:var(--accent); border-radius:2px; }
+  .q-category { font-size:.55rem; font-weight:600; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.15rem; }
+  .q-text { font-size:.78rem; font-weight:600; color:var(--text); line-height:1.4; }
+  .q-input {
+    width:100%; background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.08);
+    border-radius:8px; padding:.35rem .5rem; font-size:.65rem; color:var(--text); resize:none;
+  }
+  .q-btn { display:inline-flex; align-items:center; justify-content:center; background:var(--accent); color:#fff; padding:.35rem .6rem; border-radius:var(--r-pill); font-size:.62rem; font-weight:600; box-shadow:0 2px 8px rgba(0,122,255,0.2); }
+  .q-btn-ghost { display:inline-flex; align-items:center; justify-content:center; background:rgba(255,255,255,0.55); border:1px solid rgba(0,0,0,0.08); color:var(--text-2); padding:.35rem .6rem; border-radius:var(--r-pill); font-size:.62rem; }
+  .q-nav { position:absolute; bottom:.7rem; left:.7rem; right:.7rem; display:flex; gap:.35rem; }
+  .q-nav > * { flex:1; text-align:center; }
+
+  /* ===== VARIANT A: Stacked Cards ===== */
+  .card-stack { position:relative; width:92%; margin:0 auto; }
+  .card-main {
+    background:var(--glass-strong); backdrop-filter:blur(16px);
+    border:1px solid rgba(255,255,255,0.6); border-radius:14px;
+    padding:1rem; box-shadow:0 4px 16px rgba(0,0,0,0.06);
+    position:relative; z-index:3;
+  }
+  .card-behind-1 {
+    position:absolute; top:6px; left:6px; right:6px; bottom:-8px;
+    background:rgba(255,255,255,0.4); border-radius:14px;
+    border:1px solid rgba(0,0,0,0.04); z-index:2;
+  }
+  .card-behind-2 {
+    position:absolute; top:12px; left:12px; right:12px; bottom:-16px;
+    background:rgba(255,255,255,0.25); border-radius:14px;
+    border:1px solid rgba(0,0,0,0.03); z-index:1;
+  }
+  .card-main .q-category { margin-bottom:.4rem; }
+  .card-main .q-text { margin-bottom:.6rem; }
+  .card-main .q-input { min-height:50px; margin-bottom:.4rem; }
+  .card-swipe-hint { text-align:center; font-size:.55rem; color:var(--text-4); margin-top:1.5rem; }
+
+  /* Multi-choice in cards */
+  .mc-options { display:flex; flex-direction:column; gap:.25rem; margin-bottom:.4rem; }
+  .mc-opt {
+    padding:.35rem .5rem; border-radius:8px; font-size:.65rem;
+    background:rgba(0,0,0,0.03); border:1px solid rgba(0,0,0,0.06);
+    color:var(--text-2); cursor:pointer;
+  }
+  .mc-opt.sel { background:var(--accent-bg); border-color:rgba(0,122,255,0.2); color:var(--accent); font-weight:500; }
+
+  /* ===== VARIANT B: Chat Bubbles ===== */
+  .chat-scroll { display:flex; flex-direction:column; gap:.4rem; padding-bottom:3.5rem; }
+  .chat-bubble-ai {
+    max-width:82%; align-self:flex-start;
+    background:var(--glass-strong); backdrop-filter:blur(12px);
+    border:1px solid rgba(255,255,255,0.5);
+    border-radius:14px 14px 14px 4px;
+    padding:.45rem .6rem; font-size:.68rem; color:var(--text);
+    box-shadow:0 1px 4px rgba(0,0,0,0.04);
+  }
+  .chat-bubble-user {
+    max-width:78%; align-self:flex-end;
+    background:var(--accent); color:#fff;
+    border-radius:14px 14px 4px 14px;
+    padding:.45rem .6rem; font-size:.68rem;
+  }
+  .chat-bubble-ai .sender { font-size:.55rem; font-weight:600; color:var(--accent); margin-bottom:.15rem; }
+  .chat-typing {
+    align-self:flex-start; display:flex; gap:3px; padding:.4rem .6rem;
+    background:var(--glass); border-radius:14px 14px 14px 4px;
+  }
+  .chat-typing span { width:5px; height:5px; border-radius:50%; background:var(--text-4); animation:bounce .6s infinite alternate; }
+  .chat-typing span:nth-child(2) { animation-delay:.15s; }
+  .chat-typing span:nth-child(3) { animation-delay:.3s; }
+  @keyframes bounce { to { transform:translateY(-3px); opacity:.5; } }
+  .chat-input-bar {
+    position:absolute; bottom:.7rem; left:.7rem; right:.7rem;
+    display:flex; gap:.3rem; align-items:flex-end;
+  }
+  .chat-input-bar .q-input { flex:1; min-height:32px; margin:0; border-radius:16px; padding:.3rem .6rem; }
+  .chat-input-bar .send-btn {
+    width:32px; height:32px; border-radius:50%; background:var(--accent);
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:.8rem;
+    flex-shrink:0; box-shadow:0 2px 6px rgba(0,122,255,0.3);
+  }
+
+  /* ===== VARIANT C: Typeform Step ===== */
+  .tf-container { display:flex; flex-direction:column; align-items:center; text-align:center; padding-top:.5rem; }
+  .tf-number { font-size:1.8rem; font-weight:800; color:rgba(0,122,255,0.12); margin-bottom:.1rem; }
+  .tf-category { margin-bottom:.5rem; }
+  .tf-question { font-size:.85rem; font-weight:600; line-height:1.4; margin-bottom:.75rem; max-width:95%; }
+  .tf-input { width:100%; min-height:60px; margin-bottom:.3rem; text-align:left; }
+  .tf-helper { font-size:.55rem; color:var(--text-4); margin-bottom:.3rem; }
+  .tf-keyboard-hint { font-size:.5rem; color:var(--text-4); margin-top:.3rem; }
+
+  /* Second state mockups */
+  .state-label {
+    font-size:.6rem; font-weight:600; text-transform:uppercase; letter-spacing:.04em;
+    padding:.15rem .45rem; border-radius:var(--r-pill); display:inline-block; margin:1rem 0 .4rem;
+  }
+  .state-label.mc { background:var(--purple-bg); color:var(--purple); }
+  .state-label.enough { background:var(--green-bg); color:var(--green); }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>Brand Brainstorming — 3 UI Variants</h1>
+    <p>Compare les 3 approches pour le Q&A persona (step 4 onboarding)</p>
+  </div>
+
+  <div class="grid">
+
+    <!-- ==================== VARIANT A: STACKED CARDS ==================== -->
+    <div class="variant">
+      <div class="variant-header">
+        <h2>A. Stacked Cards <span class="tag" style="background:var(--accent-bg);color:var(--accent);">Recommande</span></h2>
+        <p>Une question par card plein ecran. Les cards suivantes sont empilees derriere, visibles en peek. Swipe ou tap Next pour avancer.</p>
+      </div>
+      <div class="variant-body">
+
+        <!-- Default: text libre -->
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:23%;"></div></div>
+              <span>7/30</span>
+            </div>
+            <div class="card-stack">
+              <div class="card-behind-2"></div>
+              <div class="card-behind-1"></div>
+              <div class="card-main">
+                <div class="q-category">Identity — 2/5</div>
+                <div class="q-text">What moment made you realize this was your path?</div>
+                <textarea class="q-input" style="min-height:55px;">When I shipped my first SaaS from a cafe in Chiang Mai and got my first paying customer while eating pad thai...</textarea>
+                <div style="display:flex;justify-content:space-between;align-items:center;">
+                  <span style="font-size:.55rem;color:var(--text-4);">Press Enter or tap →</span>
+                </div>
+              </div>
+            </div>
+            <div class="card-swipe-hint">← swipe to go back · swipe to continue →</div>
+            <div class="q-nav">
+              <div class="q-btn-ghost">← Back</div>
+              <div class="q-btn" style="flex:2;">Next →</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- State: Multi-choice question -->
+        <div class="state-label mc">Multi-choice variant</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:40%;"></div></div>
+              <span>12/30</span>
+            </div>
+            <div class="card-stack">
+              <div class="card-behind-2"></div>
+              <div class="card-behind-1"></div>
+              <div class="card-main">
+                <div class="q-category">Voice — 2/5</div>
+                <div class="q-text">How do you address your audience?</div>
+                <div class="mc-options">
+                  <div class="mc-opt sel">Tu / You — like a friend</div>
+                  <div class="mc-opt">Vous / Formal — professional distance</div>
+                  <div class="mc-opt">We — building together</div>
+                  <div class="mc-opt">It depends on the platform</div>
+                </div>
+              </div>
+            </div>
+            <div class="q-nav">
+              <div class="q-btn-ghost">← Back</div>
+              <div class="q-btn" style="flex:2;">Next →</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- State: "That's enough" -->
+        <div class="state-label enough">"That's enough" (after q10)</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:53%;"></div></div>
+              <span>16/30</span>
+            </div>
+            <div class="card-stack">
+              <div class="card-behind-2"></div>
+              <div class="card-behind-1"></div>
+              <div class="card-main">
+                <div class="q-category">Values — 1/5</div>
+                <div class="q-text">What's one thing you refuse to do in your content?</div>
+                <textarea class="q-input" style="min-height:45px;"></textarea>
+              </div>
+            </div>
+            <div class="q-nav">
+              <div class="q-btn-ghost" style="flex:1;">← Back</div>
+              <div class="q-btn-ghost" style="flex:1.2;color:var(--green);border-color:rgba(52,199,89,.2);">✓ That's enough</div>
+              <div class="q-btn" style="flex:1;">→</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <div class="pro-con">
+          <div class="pro-col">
+            <h4>+ Pros</h4>
+            <ul>
+              <li>✓ Focus total sur 1 question</li>
+              <li>✓ Peek des cards = progression visible</li>
+              <li>✓ Coherent avec le swipe mode de l'app</li>
+              <li>✓ Portfolio piece (custom gesture)</li>
+              <li>✓ Marche bien pour texte + multi-choice</li>
+            </ul>
+          </div>
+          <div class="con-col">
+            <h4>− Cons</h4>
+            <ul>
+              <li>! Pas de scroll back facile (historique)</li>
+              <li>! Le swipe peut conflicter avec le clavier</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIANT B: CHAT BUBBLES ==================== -->
+    <div class="variant">
+      <div class="variant-header">
+        <h2>B. Chat Bubbles</h2>
+        <p>Style iMessage. L'IA pose une question en bulle, tu reponds en dessous. Scroll up pour revoir l'historique. Naturel et conversationnel.</p>
+      </div>
+      <div class="variant-body">
+
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div class="q-progress" style="margin-bottom:.4rem;">
+              <span>🧠 Identity</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:23%;"></div></div>
+              <span>7/30</span>
+            </div>
+            <div class="chat-scroll">
+              <div class="chat-bubble-ai">
+                <div class="sender">PillarBox AI</div>
+                Nice! So you started coding young. What pushed you from employee to founder?
+              </div>
+              <div class="chat-bubble-user">
+                I realized I was building other people's dreams. I wanted to own what I build.
+              </div>
+              <div class="chat-bubble-ai">
+                <div class="sender">PillarBox AI</div>
+                That's a strong founding story. What moment made you realize you were on the right path?
+              </div>
+              <div class="chat-bubble-user">
+                When I got my first paying customer while eating pad thai at a cafe in Chiang Mai 😄
+              </div>
+              <div class="chat-bubble-ai">
+                <div class="sender">PillarBox AI</div>
+                Love that. Pad thai + revenue = peak nomad. If someone asks "what do you do?", what's your one-liner?
+              </div>
+              <div class="chat-typing"><span></span><span></span><span></span></div>
+            </div>
+            <div class="chat-input-bar">
+              <textarea class="q-input" placeholder="Type your answer..."></textarea>
+              <div class="send-btn">↑</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- Multi-choice in chat -->
+        <div class="state-label mc">Multi-choice in chat</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div class="q-progress" style="margin-bottom:.4rem;">
+              <span>🧠 Voice</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:40%;"></div></div>
+              <span>12/30</span>
+            </div>
+            <div class="chat-scroll">
+              <div class="chat-bubble-ai">
+                <div class="sender">PillarBox AI</div>
+                How do you address your audience?
+              </div>
+              <div style="display:flex;flex-direction:column;gap:.2rem;max-width:82%;">
+                <div class="mc-opt sel" style="border-radius:10px;">Tu / You — like a friend</div>
+                <div class="mc-opt" style="border-radius:10px;">Vous / Formal — distance</div>
+                <div class="mc-opt" style="border-radius:10px;">We — building together</div>
+                <div class="mc-opt" style="border-radius:10px;">Depends on platform</div>
+              </div>
+            </div>
+            <div style="position:absolute;bottom:.7rem;left:.7rem;right:.7rem;text-align:center;">
+              <span style="font-size:.55rem;color:var(--text-4);">Tap to select · or type a custom answer below</span>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- "That's enough" -->
+        <div class="state-label enough">"That's enough" button</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body">
+            <div class="q-progress" style="margin-bottom:.4rem;">
+              <span>🧠 Values</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:53%;"></div></div>
+              <span>16/30</span>
+            </div>
+            <div class="chat-scroll">
+              <div class="chat-bubble-ai">
+                <div class="sender">PillarBox AI</div>
+                What's one thing you refuse to do in your content?
+              </div>
+            </div>
+            <div class="chat-input-bar" style="flex-direction:column;gap:.3rem;align-items:stretch;">
+              <div style="display:flex;gap:.3rem;">
+                <textarea class="q-input" placeholder="Type..." style="flex:1;"></textarea>
+                <div class="send-btn">↑</div>
+              </div>
+              <div class="q-btn-ghost" style="text-align:center;color:var(--green);border-color:rgba(52,199,89,.2);width:100%;font-size:.6rem;">✓ That's enough — generate my persona</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <div class="pro-con">
+          <div class="pro-col">
+            <h4>+ Pros</h4>
+            <ul>
+              <li>✓ Tres naturel, familier (iMessage)</li>
+              <li>✓ Historique visible en scroll</li>
+              <li>✓ L'IA peut rebondir sur les reponses</li>
+              <li>✓ Se prete bien aux reponses courtes</li>
+            </ul>
+          </div>
+          <div class="con-col">
+            <h4>− Cons</h4>
+            <ul>
+              <li>! Le clavier mange 50% de l'ecran</li>
+              <li>! Moins "premium", plus utilitaire</li>
+              <li>! Pas de structure visible (categories)</li>
+              <li>! Dur de mixer texte libre + MC</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== VARIANT C: TYPEFORM STEP ==================== -->
+    <div class="variant">
+      <div class="variant-header">
+        <h2>C. Typeform Step</h2>
+        <p>Une question centree, grand champ de reponse, navigation par Next/Enter. Minimaliste, concentre, respirant. Style Typeform/Tally.</p>
+      </div>
+      <div class="variant-body">
+
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:23%;"></div></div>
+              <span>7 of 30</span>
+            </div>
+            <div class="tf-container">
+              <div class="tf-number">07</div>
+              <div class="q-category tf-category">Identity — 2/5</div>
+              <div class="tf-question">What moment made you realize this was your path?</div>
+              <textarea class="q-input tf-input">When I shipped my first SaaS from a cafe in Chiang Mai...</textarea>
+              <div class="tf-helper">Take your time. There's no wrong answer.</div>
+            </div>
+            <div class="q-nav">
+              <div class="q-btn-ghost">↑ Back</div>
+              <div class="q-btn" style="flex:2;">OK ✓</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- Multi-choice -->
+        <div class="state-label mc">Multi-choice variant</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:40%;"></div></div>
+              <span>12 of 30</span>
+            </div>
+            <div class="tf-container">
+              <div class="tf-number">12</div>
+              <div class="q-category tf-category">Voice — 2/5</div>
+              <div class="tf-question">How do you address your audience?</div>
+              <div class="mc-options" style="width:100%;text-align:left;">
+                <div class="mc-opt"><span style="font-weight:600;color:var(--accent);margin-right:.3rem;">A</span> Tu / You — like a friend</div>
+                <div class="mc-opt sel"><span style="font-weight:600;color:var(--accent);margin-right:.3rem;">B</span> Vous / Formal — distance</div>
+                <div class="mc-opt"><span style="font-weight:600;color:var(--accent);margin-right:.3rem;">C</span> We — building together</div>
+                <div class="mc-opt"><span style="font-weight:600;color:var(--accent);margin-right:.3rem;">D</span> Depends on platform</div>
+              </div>
+              <div class="tf-keyboard-hint">Press A, B, C, D or tap</div>
+            </div>
+            <div class="q-nav">
+              <div class="q-btn-ghost">↑ Back</div>
+              <div class="q-btn" style="flex:2;">OK ✓</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <!-- "That's enough" -->
+        <div class="state-label enough">"That's enough"</div>
+        <div class="phone">
+          <div class="phone-bar">9:41</div>
+          <div class="phone-body" style="padding-bottom:4rem;">
+            <div class="q-progress">
+              <span>🧠</span>
+              <div class="q-progress-bar"><div class="q-progress-fill" style="width:53%;"></div></div>
+              <span>16 of 30</span>
+            </div>
+            <div class="tf-container">
+              <div class="tf-number">16</div>
+              <div class="q-category tf-category">Values — 1/5</div>
+              <div class="tf-question">What's one thing you refuse to do in your content?</div>
+              <textarea class="q-input tf-input" placeholder="Type your answer..."></textarea>
+            </div>
+            <div class="q-nav">
+              <div class="q-btn-ghost" style="flex:1;">↑ Back</div>
+              <div class="q-btn-ghost" style="flex:1.3;color:var(--green);border-color:rgba(52,199,89,.2);">✓ Enough</div>
+              <div class="q-btn" style="flex:1;">OK ✓</div>
+            </div>
+          </div>
+          <div class="phone-home"></div>
+        </div>
+
+        <div class="pro-con">
+          <div class="pro-col">
+            <h4>+ Pros</h4>
+            <ul>
+              <li>✓ Ultra clean, zero distraction</li>
+              <li>✓ Le grand numero = progression claire</li>
+              <li>✓ Regle des 3 sec respectee</li>
+              <li>✓ Keyboard shortcuts (A/B/C/D)</li>
+              <li>✓ Tres bon sur Mac aussi</li>
+            </ul>
+          </div>
+          <div class="con-col">
+            <h4>− Cons</h4>
+            <ul>
+              <li>! Pas d'historique visible</li>
+              <li>! Moins conversationnel</li>
+              <li>! L'IA ne peut pas rebondir visuellement</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- grid -->
+
+  <!-- Recommendation -->
+  <div style="margin-top:2rem;background:var(--surface);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;padding:1.5rem;box-shadow:var(--glass-shadow);">
+    <h3 style="font-size:1rem;font-weight:600;margin-bottom:.5rem;">Recommendation</h3>
+    <p style="font-size:.85rem;color:var(--text-2);line-height:1.6;">
+      <strong>Option A (Stacked Cards)</strong> est la plus equilibree : elle garde le focus d'une question a la fois (comme Typeform) tout en donnant le feedback visuel de progression (les cards empilees derriere). Elle est coherente avec le swipe mode de l'app (meme gesture = meme mental model). Et c'est une belle piece portfolio.
+    </p>
+    <p style="font-size:.85rem;color:var(--text-2);line-height:1.6;margin-top:.5rem;">
+      <strong>Hybrid possible :</strong> prendre le layout de A (stacked cards) mais y ajouter le "rebond conversationnel" de B — l'IA affiche un petit commentaire/reaction en haut de la card avant la question suivante ("Nice one! Now..."). Le meilleur des deux mondes.
+    </p>
+  </div>
+
+</div>
+</body>
+</html>

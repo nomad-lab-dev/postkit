@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Scan Settings</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Scan Settings</h1>
+  <div class="path">Views/Profile/ScanSettingsView.swift</div>
+  <div class="refs"><span class="ref">PB-008</span><span class="ref">PB-019</span><span class="ref">TabBar / Profile / Scan Settings</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">No scan settings. Single scan button on Home. No API config. No batch tuning.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full pipeline config: cloud toggle, API key in Keychain, batch window/concurrency, scan triggers (new/rescan/reset), stats section.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.1)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="font-size:.52rem;color:var(--accent);cursor:pointer;margin-bottom:.05rem;">← Profile</div>
+    <div class="m-title">Scan Settings</div>
+    <!-- Classification Engine -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Classification Engine</div>
+    <div class="m-glass">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem;">
+        <div style="font-size:.58rem;font-weight:500;">Use cloud AI</div>
+        <div style="width:32px;height:18px;background:var(--green);border-radius:9px;position:relative;">
+          <div style="width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:2px;right:2px;box-shadow:0 1px 3px rgba(0,0,0,.15);"></div>
+        </div>
+      </div>
+      <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.15rem;">Cloud AI provides better accuracy. Core ML is free and offline.</div>
+      <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.05rem;">API Provider</div>
+      <div class="m-glass-light" style="display:flex;justify-content:space-between;align-items:center;padding:.25rem .35rem;">
+        <span style="font-size:.55rem;">Gemini Flash</span>
+        <span style="font-size:.48rem;color:var(--text-4);">›</span>
+      </div>
+      <div style="font-size:.5rem;color:var(--text-3);margin:.15rem 0 .05rem;">API Key</div>
+      <div class="m-input" style="font-size:.55rem;color:var(--text-3);">••••••••••••••sk-4f</div>
+      <div class="m-btn-glass" style="width:100%;text-align:center;font-size:.5rem;margin-top:.15rem;">Test connection</div>
+    </div>
+    <!-- Batch Settings -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Batch Settings</div>
+    <div class="m-glass">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.12rem;">
+        <div style="font-size:.55rem;">Batch window</div>
+        <div style="display:flex;align-items:center;gap:.15rem;">
+          <div style="width:18px;height:18px;border-radius:4px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:.5rem;">-</div>
+          <span style="font-size:.58rem;font-weight:600;">30 days</span>
+          <div style="width:18px;height:18px;border-radius:4px;background:rgba(0,0,0,.05);display:flex;align-items:center;justify-content:center;font-size:.5rem;">+</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div style="font-size:.55rem;">Concurrent requests</div>
+        <div style="display:flex;align-items:center;gap:.15rem;">
+          <div style="width:60px;height:4px;background:rgba(0,0,0,.06);border-radius:2px;position:relative;">
+            <div style="width:36px;height:4px;background:var(--accent);border-radius:2px;"></div>
+            <div style="width:10px;height:10px;background:#fff;border:2px solid var(--accent);border-radius:50%;position:absolute;top:-3px;left:33px;box-shadow:0 1px 3px rgba(0,0,0,.1);"></div>
+          </div>
+          <span style="font-size:.55rem;font-weight:600;">3</span>
+        </div>
+      </div>
+    </div>
+    <!-- Scan Actions -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Scan Actions</div>
+    <div class="m-glass">
+      <div class="m-btn" style="width:100%;text-align:center;font-size:.52rem;margin-bottom:.15rem;">Scan new assets</div>
+      <div class="m-btn-glass" style="width:100%;text-align:center;font-size:.52rem;margin-bottom:.15rem;">Rescan all assets</div>
+      <div style="text-align:center;">
+        <span style="font-size:.5rem;color:var(--red);cursor:pointer;">Reset all classifications</span>
+      </div>
+    </div>
+    <!-- Stats -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Stats</div>
+    <div class="m-glass-light">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.1rem;font-size:.52rem;">
+        <div><span style="color:var(--text-3);">Total assets:</span> 1,204</div>
+        <div><span style="color:var(--text-3);">Classified:</span> 1,157</div>
+        <div><span style="color:var(--text-3);">Unclassified:</span> 47</div>
+        <div><span style="color:var(--text-3);">Last scan:</span> Apr 11</div>
+        <div style="grid-column:span 2;"><span style="color:var(--text-3);">API calls (session):</span> 342</div>
+      </div>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti ac"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Test connection — success</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.65rem;font-weight:600;margin-bottom:.15rem;">Classification Engine</div>
+        <div class="m-glass" style="border-color:rgba(52,199,89,.2);">
+          <div style="font-size:.52rem;font-weight:500;">API Key</div>
+          <div class="m-input" style="font-size:.52rem;">••••••••••sk-4f</div>
+          <div style="display:flex;align-items:center;gap:.15rem;margin-top:.1rem;">
+            <span style="color:var(--green);font-size:.6rem;">✓</span>
+            <span style="font-size:.5rem;color:var(--green);">Connection successful (Gemini Flash)</span>
+          </div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Test connection — failed</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.65rem;font-weight:600;margin-bottom:.15rem;">Classification Engine</div>
+        <div class="m-glass" style="border-color:rgba(255,59,48,.2);">
+          <div style="font-size:.52rem;font-weight:500;">API Key</div>
+          <div class="m-input" style="font-size:.52rem;border-color:var(--red);">••••••••••invalid</div>
+          <div style="display:flex;align-items:center;gap:.15rem;margin-top:.1rem;">
+            <span style="color:var(--red);font-size:.6rem;">✕</span>
+            <span style="font-size:.5rem;color:var(--red);">Invalid API key. Check and retry.</span>
+          </div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">Cloud AI off</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.65rem;font-weight:600;margin-bottom:.15rem;">Classification Engine</div>
+        <div class="m-glass">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="font-size:.55rem;">Use cloud AI</div>
+            <div style="width:32px;height:18px;background:rgba(0,0,0,.15);border-radius:9px;position:relative;">
+              <div style="width:14px;height:14px;background:#fff;border-radius:50%;position:absolute;top:2px;left:2px;box-shadow:0 1px 3px rgba(0,0,0,.15);"></div>
+            </div>
+          </div>
+          <div style="font-size:.48rem;color:var(--orange);margin-top:.1rem;">Core ML only. Classification may be less accurate but is free and works offline.</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Reset — double confirm</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div class="m-glass" style="max-width:90%;">
+          <div style="font-size:.62rem;font-weight:700;color:var(--red);margin-bottom:.1rem;">Reset ALL classifications?</div>
+          <div style="font-size:.5rem;color:var(--text-3);margin-bottom:.15rem;">This will remove all pillar tags, confidence scores, and metadata from every asset. This is irreversible.</div>
+          <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.1rem;">Type RESET to confirm:</div>
+          <div class="m-input" style="font-size:.55rem;text-align:center;">RESET</div>
+          <div style="display:flex;gap:.2rem;margin-top:.15rem;">
+            <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">Cancel</div>
+            <div class="m-btn" style="flex:1;font-size:.5rem;background:var(--red);">Confirm Reset</div>
+          </div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Toggle "Use cloud AI" off</td><td>Only Core ML used. API fields disabled. Less accurate but free/offline.</td></tr>
+    <tr><td>Toggle "Use cloud AI" on</td><td>API fields enabled. Requires valid API key.</td></tr>
+    <tr><td>Enter API key</td><td>Saved to Keychain (not SwiftData). Masked display.</td></tr>
+    <tr><td>Tap "Test connection"</td><td>API call to validate key. Shows success/failure inline.</td></tr>
+    <tr><td>Adjust batch window (+/-)</td><td>Cycle through 7/14/30/60/90 days. Saved, applies to next scan.</td></tr>
+    <tr><td>Drag concurrency slider</td><td>Set concurrent requests (1-5). Default 3.</td></tr>
+    <tr><td>Tap "Scan new assets"</td><td>Start incremental scan (unclassified only)</td></tr>
+    <tr><td>Tap "Rescan all assets"</td><td>Confirmation dialog, then full rescan of entire library</td></tr>
+    <tr><td>Tap "Reset all classifications"</td><td>Double confirmation (dialog + type "RESET"), then wipe all classification data</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Invalid API key: "Test connection" fails with clear error message. Scan still works with Core ML fallback.</li>
+    <li>Cloud off + rescan: Uses Core ML only. Less accurate but free and fast. No API calls made.</li>
+    <li>Reset all classifications: Double confirmation required (dialog + type "RESET"). Irreversible operation.</li>
+    <li>API rate limit hit during scan: Pause scan, show error toast, offer to resume later with backoff</li>
+    <li>Keychain access denied: Show error explaining Keychain access is needed for secure key storage</li>
+    <li>Batch window larger than library history: Scans everything in one batch (no partial batching needed)</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Cloud AI toggle works and visibly affects available options (API fields disabled when off)</li>
+    <li>API key stored securely in Keychain (not in SwiftData or UserDefaults)</li>
+    <li>"Test connection" validates API key with real API call and shows result</li>
+    <li>Batch settings (window + concurrency) persist and apply to next scan</li>
+    <li>"Scan new assets" starts incremental scan correctly</li>
+    <li>"Rescan all" requires single confirmation before proceeding</li>
+    <li>"Reset all classifications" requires double confirmation (dialog + type RESET)</li>
+    <li>Stats section displays correct numbers from SwiftData</li>
+    <li>API rate limit handling with pause + resume</li>
+  </ul>
+</div>
+</body></html>
