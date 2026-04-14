@@ -23,17 +23,74 @@
   --pink: #ff2d55;
 }
 * { margin:0; padding:0; box-sizing:border-box; }
-body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: var(--bg); color: var(--text); overflow: auto; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-ui, sans-serif; background: #2a2a2e; color: var(--text); overflow: hidden; height: 100vh; }
+
+/* Viewport for pan/zoom */
+.viewport { width: 100vw; height: 100vh; overflow: hidden; position: relative; cursor: grab; }
+.viewport.grabbing { cursor: grabbing; }
+.viewport.grabbing .screen { pointer-events: none; }
 
 /* Canvas */
 .canvas {
-  position: relative;
+  position: absolute;
   width: 2800px;
   height: 1800px;
   background:
-    radial-gradient(circle at 1px 1px, rgba(0,0,0,0.03) 1px, transparent 0);
+    radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
   background-size: 24px 24px;
+  transform-origin: 0 0;
+  transition: none;
 }
+
+/* Zoom controls */
+.zoom-controls {
+  position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 100;
+  display: flex; gap: .4rem; flex-direction: column;
+}
+.zoom-btn {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+  border: 1px solid rgba(0,0,0,0.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem; cursor: pointer; color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.zoom-btn:hover { background: #fff; }
+.zoom-level {
+  text-align: center; font-size: .6rem; color: rgba(255,255,255,0.5);
+  font-weight: 500;
+}
+
+/* Detail panel */
+.detail-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);
+}
+.detail-overlay.open { display: flex; align-items: center; justify-content: center; }
+.detail-panel {
+  background: var(--surface); border-radius: 20px;
+  width: 90%; max-width: 700px; max-height: 85vh;
+  overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  animation: slideUp .2s ease-out;
+}
+@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+.detail-header {
+  padding: 1.5rem; border-bottom: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: flex-start;
+  position: sticky; top: 0; background: var(--surface); border-radius: 20px 20px 0 0; z-index: 1;
+}
+.detail-header h2 { font-size: 1.2rem; font-weight: 700; }
+.detail-header .close { font-size: 1.2rem; cursor: pointer; color: var(--text-3); width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; }
+.detail-header .close:hover { background: rgba(0,0,0,0.1); }
+.detail-body { padding: 1.5rem; }
+.detail-body h3 { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: var(--accent); margin: 1rem 0 .4rem; font-weight: 600; }
+.detail-body h3:first-child { margin-top: 0; }
+.detail-body p { font-size: .88rem; color: var(--text-2); line-height: 1.6; margin-bottom: .5rem; }
+.detail-body ul { padding-left: 1.2rem; font-size: .85rem; color: var(--text-2); line-height: 1.7; }
+.detail-body .tag-row { display: flex; gap: .3rem; flex-wrap: wrap; margin: .3rem 0; }
+.detail-body .tag-sm { font-size: .68rem; padding: .15rem .45rem; border-radius: 100px; font-weight: 500; }
+.detail-body .btn-open { display: inline-block; margin-top: .5rem; font-size: .78rem; color: var(--accent); text-decoration: none; padding: .3rem .7rem; border: 1px solid rgba(0,122,255,.15); border-radius: 100px; background: rgba(0,122,255,.05); }
+.detail-body .btn-open:hover { background: rgba(0,122,255,.1); }
 
 /* Navigation */
 .nav-bar {
@@ -112,7 +169,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
 <div class="nav-bar">
   <div style="display:flex;align-items:center;gap:.75rem;">
     <h1>📱 PostKit — Flow Map</h1>
-    <span style="font-size:.65rem;color:var(--text-3);">v0.5 · 17 screens · drag to navigate</span>
+    <span style="font-size:.65rem;color:rgba(255,255,255,0.5);">v0.5 · 17 screens · drag + scroll zoom · click to detail</span>
   </div>
   <div class="legend">
     <span><div class="dot" style="background:var(--accent);"></div> Flow principal</span>
@@ -122,7 +179,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   <a href="pillarbox-product-cockpit.html">← Cockpit</a>
 </div>
 
-<div class="canvas">
+<div class="viewport" id="viewport">
+<div class="canvas" id="canvas">
 
   <!-- SVG CONNECTIONS -->
   <svg class="connections" viewBox="0 0 2800 1800">
@@ -469,6 +527,289 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   <div style="position:absolute;top:1200px;left:800px;font-size:.5rem;color:var(--pink);font-style:italic;">slot machine → post</div>
 
 </div>
+</div><!-- end viewport -->
+
+<!-- ZOOM CONTROLS -->
+<div class="zoom-controls">
+  <div class="zoom-btn" onclick="zoomIn()">+</div>
+  <div class="zoom-level" id="zoomLevel">100%</div>
+  <div class="zoom-btn" onclick="zoomOut()">−</div>
+  <div class="zoom-btn" onclick="zoomFit()" style="font-size:.6rem;font-weight:600;">Fit</div>
+</div>
+
+<!-- DETAIL OVERLAY -->
+<div class="detail-overlay" id="detailOverlay" onclick="if(event.target===this)closeDetail()">
+  <div class="detail-panel" id="detailPanel"></div>
+</div>
+
+<script>
+// === PAN & ZOOM ===
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+let scale = 0.55;
+let panX = -200;
+let panY = -40;
+let isPanning = false;
+let startX, startY;
+
+function applyTransform() {
+  canvas.style.transform = `translate(${panX}px, ${panY}px) scale(${scale})`;
+  document.getElementById('zoomLevel').textContent = Math.round(scale * 100) + '%';
+}
+applyTransform();
+
+viewport.addEventListener('mousedown', e => {
+  if (e.target.closest('.screen')) return;
+  isPanning = true;
+  startX = e.clientX - panX;
+  startY = e.clientY - panY;
+  viewport.classList.add('grabbing');
+});
+window.addEventListener('mousemove', e => {
+  if (!isPanning) return;
+  panX = e.clientX - startX;
+  panY = e.clientY - startY;
+  applyTransform();
+});
+window.addEventListener('mouseup', () => {
+  isPanning = false;
+  viewport.classList.remove('grabbing');
+});
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.9 : 1.1;
+  const newScale = Math.min(2, Math.max(0.2, scale * delta));
+  const rect = viewport.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  panX = mx - (mx - panX) * (newScale / scale);
+  panY = my - (my - panY) * (newScale / scale);
+  scale = newScale;
+  applyTransform();
+}, { passive: false });
+
+function zoomIn() { scale = Math.min(2, scale * 1.2); applyTransform(); }
+function zoomOut() { scale = Math.max(0.2, scale * 0.8); applyTransform(); }
+function zoomFit() { scale = 0.5; panX = -100; panY = -20; applyTransform(); }
+
+// === SCREEN DETAILS ===
+const screenData = {
+  'welcome': {
+    title: '01 Welcome + Quick Scan',
+    path: 'Views/Onboarding/WelcomeView.swift',
+    file: 'screens/01-welcome.html',
+    tags: ['Onboarding', 'Core ML', 'PhotoKit', 'v0.5'],
+    desc: 'Premier ecran. 3 states sur le meme ecran: hero → scan Core ML (20 photos, 5 sec) → piliers detectes avec thumbnails. Le CTA trigger la permission Photos contextuellement.',
+    features: ['Permission contextuelle (pas abstraite)', 'Core ML VNClassifyImageRequest + EXIF metadata', 'Thumbnails fade-in sequentiel', 'Piliers pre-suggeres pour l etape suivante', '3 @State transitions animes'],
+    edges: ['Permission denied → ecran lock + Settings link', 'Galerie vide → message friendly', '0 piliers detectes → skip vers pillars manuels', 'Limited access → scan le subset'],
+    ac: ['CTA trigger PHPhotoLibrary permission', 'Scan 20 photos < 10 sec', 'Step dots 1/2', 'Un seul ecran SwiftUI, 3 states']
+  },
+  'pillars': {
+    title: '02 Pillars Setup',
+    path: 'Views/Onboarding/PillarsSetupView.swift',
+    file: 'screens/02-pillars.html',
+    tags: ['Onboarding', 'SwiftData', 'v0.5'],
+    desc: 'Piliers pre-remplis par le Quick Scan. Bento grid on/off. Custom pillar via partial sheet avec emoji auto-suggest.',
+    features: ['Pre-rempli par scan (badges "Detecte par l IA")', 'Bento grid 2 colonnes', 'Custom pillar: partial sheet + emoji auto-suggest', 'Native emoji picker on tap', 'Min 1 pilier, nudge > 10'],
+    edges: ['0 selected → Next disabled', '11+ pillars → nudge "fewer = stronger"', 'Duplicate name → inline error', 'AI emoji fail → default star'],
+    ac: ['Step dots 2/2', 'Pre-rempli par scan', 'Emoji auto-suggest on textfield exit', 'Seule etape obligatoire']
+  },
+  'template-nudge': {
+    title: 'Template Nudge',
+    path: 'Views/Templates/TemplateNudgeView.swift',
+    file: 'screens/template-nudge.html',
+    tags: ['Templates', 'Didactique', 'v0.4'],
+    desc: 'Ecran didactique post-onboarding. Mockup widget iOS + post pre-construit. Presets (Carousel 4, Story, Portrait+Hook). Explique la valeur des posts automatiques.',
+    features: ['Mockup widget iOS home screen', 'Mockup post pre-construit avec vraies photos', 'Presets selectionnables en 1 tap', '"Active tes posts quotidiens" ou "Plus tard"'],
+    edges: ['"Plus tard" → nudge persiste dans le dashboard', 'Tap preset → template builder pre-rempli'],
+    ac: ['CTA mene au template builder', '"Plus tard" → dashboard avec nudge card', 'Presets correspondent aux formats les plus courants']
+  },
+  'template-builder': {
+    title: 'Template Builder',
+    path: 'Views/Templates/TemplateBuilderView.swift',
+    file: 'screens/template-builder.html',
+    tags: ['Templates', 'Creatif', 'v0.2'],
+    desc: 'Slots configurables: cadrage, pilier, tags, description. Drag to reorder. Presets. Apercu visuel.',
+    features: ['CRUD slots (add, edit, delete, reorder)', 'Per-slot: cadrage, pilier, tags, description', 'Drag handles pour reorder', 'Apercu 4-slot visual', 'Save + Share'],
+    edges: ['0 slots → can t save', 'Many slots → scrollable'],
+    ac: ['Templates accessibles dans Create Post flow', 'Chaque slot configurable', 'Drag reorder persiste']
+  },
+  'dashboard': {
+    title: 'Home Dashboard',
+    path: 'Views/Home/HomeView.swift',
+    file: 'screens/home-dashboard.html',
+    tags: ['Home', 'Hub central', 'v0.4'],
+    desc: 'Command center. Scan status (4 states), pillar bento grids avec mini thumbnails, quick actions, template nudge card.',
+    features: ['Scan status: scanning / idle / new items / items to review', 'Pillar bento cards avec mini thumbnail grids', 'Quick actions: Review, Compose, Template', 'Template nudge card si 0 templates', 'Etat premier lancement (scan en cours)'],
+    edges: ['No pillars → "Definis ta marque"', 'All classified → checkmark', 'Scan paused + kill → "Resume?"'],
+    ac: ['Scan card reflects correct state', 'Pillar cards show real thumbnails', 'Bento grid (no h-scroll)', '3-second rule']
+  },
+  'slot-machine': {
+    title: 'Slot Machine',
+    path: 'Views/Posts/SlotMachineView.swift',
+    file: 'screens/slot-machine.html',
+    tags: ['Posts', 'Killer feature', 'Animation', 'v0.4'],
+    desc: 'Post-scan wow moment. Les photos shufflent dans les slots du template comme une machine a sous. Haptic click a chaque arret. Remixer / Ajuster / Parfait je garde.',
+    features: ['Animation slot machine (4 slots, shuffle vertical)', 'Haptic feedback "click" a chaque arret', 'Boutons: Remixer / Ajuster / Parfait je garde', 'v1.1: scroll vertical par slot pour changer individuellement'],
+    edges: ['Pas assez d assets → slots partiels + guidance', 'Toutes combinaisons vues → message + redirect', 'No template → redirect template builder'],
+    ac: ['Animation fluide 60fps', 'Haptic sur chaque slot', 'Remixer regenere une nouvelle combinaison', 'Garder cree le post dans SwiftData']
+  },
+  'classification-queue': {
+    title: 'Classification Queue',
+    path: 'Views/Classification/ClassificationQueueView.swift',
+    file: 'screens/classification-queue.html',
+    tags: ['Classify', 'Bento', 'v0.3'],
+    desc: 'Bento grid par pilier avec mini thumbnails et badge de quantite a valider. Tap un pilier → entre en swipe mode.',
+    features: ['Bento grid avec thumbnails par pilier', 'Badge overlay quantite', 'Green checkmark si tout valide', 'Counts live pendant le scan'],
+    edges: ['No pillars → CTA creer', 'All reviewed → celebration', 'Scan running → counts update live'],
+    ac: ['Bento grid avec thumbnails', 'Tap entre en classification view', 'Live count updates']
+  },
+  'classification-view': {
+    title: 'Classification View',
+    path: 'Views/Classification/ClassificationView.swift',
+    file: 'screens/classification-view.html',
+    tags: ['Classify', 'Micro-editeur', 'Haptic', 'v0.5'],
+    desc: 'Full-screen photo + swipe right/left. Chaque card est un micro-editeur: tags (tap ✕ pour remove, + pour add), location (✎ editable), cadrage (✎ editable), moment.',
+    features: ['Swipe right = YES, left = NO', 'Tags overlay avec ✕ pour supprimer', '+ tag pour ajouter', 'Location ✎ editable', 'Cadrage ✎ editable (cycle)', 'Moment ✎ editable', 'Undo (1 level)', 'Batch save every 10'],
+    edges: ['Video → first frame + play', 'Undo at first → disabled', 'Fast swiping → batch save', 'Stack empty → "Bravo!"'],
+    ac: ['Tags/loc/cadrage editables pendant le swipe', 'Haptic feedback', 'Swipe gestures fluides', 'Auto-save edits on swipe']
+  },
+  'explore': {
+    title: 'Explore Grid',
+    path: 'Views/Explore/ExploreView.swift',
+    file: 'screens/explore-grid.html',
+    tags: ['Explore', 'Filtres', 'Discovery', 'v0.2'],
+    desc: 'Grille filtrable. Pilier, cadrage, localisation (picker EXIF), moment, media. Multi-select → compose post. Chemin B vers les posts sans template.',
+    features: ['6 types de filtres', 'Location picker from EXIF cities', 'Bouton "Selectionner" discret top-right', 'Multi-select → 2 action buttons', 'Pagination 50/page', 'LazyVGrid adaptive'],
+    edges: ['15K+ → pagination', 'Zero results → message friendly', 'Deleted photo → cleanup offer', 'Scan running → new assets appear live'],
+    ac: ['All 6 filter types functional', 'Multi-select via button OR long press', 'Smooth with 1000+ items', '3-second rule']
+  },
+  'asset-detail': {
+    title: 'Asset Detail',
+    path: 'Views/Explore/AssetDetailSheet.swift',
+    file: 'screens/asset-detail.html',
+    tags: ['Explore', 'Sheet', 'Editable', 'v0.1'],
+    desc: 'Slide-up sheet. Tout editable: piliers, tags, location, cadrage. 3 etats: active, non-pertinent, used. Mark non-pertinent pour exclure.',
+    features: ['Sheet slide-up (dismiss swipe down)', 'Piliers: tap remove, + add', 'Tags: tap remove, + add', 'Location/cadrage/moment editables', '"Exclure cette photo" action'],
+    edges: ['Video → player', 'Not classified → "Classifier" button', 'Deleted photo → error state'],
+    ac: ['Sheet slide-up', 'All metadata editable inline', 'Auto-save on edit', 'Swipe between assets']
+  },
+  'posts-list': {
+    title: 'Posts List',
+    path: 'Views/Posts/PostsListView.swift',
+    file: 'screens/posts-list.html',
+    tags: ['Posts', 'Pipeline', 'v0.4'],
+    desc: 'Liste des posts avec 4 visual slots (rempli/vide). Badge Auto 🎰 sur les posts slot machine. Filter tabs. Long press context menu.',
+    features: ['4 visual slots par post card', 'Badge "Auto" vs "Manual"', 'Filter tabs: All/Draft/Ready/Published', 'Long press → context menu', 'Tap → post editor'],
+    edges: ['Empty state → "Tes photos classees n attendent que toi"', 'Broken assets → warning badge', 'Cancel → assets return to non-utilise'],
+    ac: ['Visual slots visible on card', 'Long press context menu', 'Filter tabs work', 'Auto badge distinction']
+  },
+  'post-editor': {
+    title: 'Post Editor',
+    path: 'Views/Posts/PostEditorView.swift',
+    file: 'screens/post-editor.html',
+    tags: ['Posts', 'Assembleur', 'AI', 'v0.5'],
+    desc: 'Slot-based assembly. Titre + description + hook/caption/hashtags (section violette). Slots avec requirements du template. Boutons Remixer/Export/Publier.',
+    features: ['Titre et description editables', 'Section "Contenu textuel": Hook, Description, Hashtags', 'Slots avec template requirements', 'Tap slot vide → explore pre-filtre', 'Remixer 🎰 pour regenerer', 'Generer une accroche (trigger just-in-time tone)'],
+    edges: ['No template → free-form slots', '0 results in explorer → editable filters', 'All slots empty → can t publish'],
+    ac: ['Slots show requirements or filled asset', 'Hook/Description/Hashtags editable', 'Remixer works', 'Export to album works']
+  },
+  'first-share': {
+    title: 'First Share Setup',
+    path: 'Views/Share/FirstShareSetupView.swift',
+    file: 'screens/first-share-setup.html',
+    tags: ['Share', 'Just-in-time', 'Brainstorming', 'v0.4'],
+    desc: 'Sheet modal au premier partage. Choix du reseau → tone (1-3 max) → optionnel brainstorming 30Q → hook/caption/hashtags generes.',
+    features: ['Platform picker bento', 'Tone cards avec meme phrase en 5 voix', 'Multi-select 1-3 max', 'Brainstorming trigger optionnel ("Ta voix, en 5 questions")', 'Result: hook + caption + hashtags editables'],
+    edges: ['Tone already set → skip to result', '3 tones max → tooltip', 'Brainstorming refused → default Professional'],
+    ac: ['Sheet modal', 'Tone per platform', 'Brainstorming optionnel', 'Result fully editable']
+  },
+  'brainstorm': {
+    title: 'Brand Voice Brainstorming',
+    path: 'Views/Share/BrandVoiceBrainstormView.swift',
+    file: 'screens/first-share-setup.html',
+    tags: ['Share', 'Stacked Cards', 'AI', 'v0.4'],
+    desc: '30 questions en stacked cards. MC + free text expandable. 6 categories. "That s enough" apres question 10. Synthese persona editable.',
+    features: ['Stacked cards with peek animation', 'MC options + expandable free text', 'AI reaction between questions', '6 categories: Identity/Audience/Voice/Values/Content/Goals', '"That s enough" after q10'],
+    edges: ['API error → fallback hardcoded questions', 'App killed → answers saved per-question', 'Synthesis unsatisfactory → edit or regenerate'],
+    ac: ['Stacked cards UI', 'Mix MC + free text', 'Answers persist across kills', 'Synthesis fully editable']
+  },
+  'persona': {
+    title: 'Persona Editor',
+    path: 'Views/Profile/PersonaEditorView.swift',
+    file: 'screens/persona-editor.html',
+    tags: ['Profile', 'Brand Voice', 'v0.4'],
+    desc: 'Bio → Platforms (avec tones) → Pillars → Brand Voice. Brainstorming accessible ici. Auto-save.',
+    features: ['Bio editable (280 chars)', 'Platforms with nested tones', 'Pillar summary + Manage link', 'Brand Voice section (done/not done)', '"Affine ta brand voice" CTA', 'AI preview paragraph'],
+    edges: ['Empty bio → allowed', '0 platforms → AI defaults', 'Redo onboarding → pre-fills'],
+    ac: ['No global tone (per-platform only)', 'Brand voice section present', 'Auto-save debounced 500ms']
+  },
+  'settings': {
+    title: 'Settings',
+    path: 'Views/Profile/',
+    file: 'screens/scan-settings.html',
+    tags: ['Profile', 'v0.1'],
+    desc: 'Scan settings, Pillars CRUD, Classification stats. API key in Keychain.',
+    features: ['Cloud AI toggle', 'API key masked + test', 'Batch window config', 'Scan triggers', 'Pillar management', 'Stats charts'],
+    edges: ['Invalid API key → test fails', 'Reset all → double confirm'],
+    ac: ['API key in Keychain', 'Scan triggers work', 'Stats accurate']
+  }
+};
+
+// Add click handlers to screen cards
+document.querySelectorAll('.screen').forEach((el, i) => {
+  const keys = Object.keys(screenData);
+  if (i < keys.length) {
+    el.dataset.id = keys[i];
+    el.style.cursor = 'pointer';
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      openDetail(keys[i]);
+    });
+  }
+});
+
+function openDetail(id) {
+  const d = screenData[id];
+  if (!d) return;
+  const panel = document.getElementById('detailPanel');
+  panel.innerHTML = `
+    <div class="detail-header">
+      <div>
+        <h2>${d.title}</h2>
+        <div style="font-size:.72rem;color:var(--text-3);font-family:monospace;margin-top:.15rem;">${d.path}</div>
+        <div class="tag-row" style="margin-top:.3rem;">
+          ${d.tags.map(t => `<span class="tag-sm" style="background:rgba(0,122,255,.06);color:var(--accent);">${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="close" onclick="closeDetail()">✕</div>
+    </div>
+    <div class="detail-body">
+      <h3>Description</h3>
+      <p>${d.desc}</p>
+
+      <h3>Features</h3>
+      <ul>${d.features.map(f => `<li>${f}</li>`).join('')}</ul>
+
+      <h3>Edge Cases</h3>
+      <ul>${d.edges.map(e => `<li>${e}</li>`).join('')}</ul>
+
+      <h3>Acceptance Criteria</h3>
+      <ul>${d.ac.map(a => `<li>☐ ${a}</li>`).join('')}</ul>
+
+      <a class="btn-open" href="${d.file}" target="_blank">Ouvrir le mockup complet →</a>
+    </div>
+  `;
+  document.getElementById('detailOverlay').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('detailOverlay').classList.remove('open');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+</script>
 
 </body>
 </html>
