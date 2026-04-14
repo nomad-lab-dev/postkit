@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>First Share Setup</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>First Share Setup</h1>
+  <div class="path">Views/Share/FirstShareSetupSheet.swift</div>
+  <div class="refs"><span class="ref">PB-042</span><span class="ref">Just-in-time setup</span><span class="ref">Sheet modal</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Initial creation. Just-in-time setup sheet triggered on first Share tap. Platform selection → tone selection (1-3) with examples → optional brainstorming trigger → hook/caption/hashtags generated.</span></div>
+</div>
+
+<!-- STEP 1: PLATFORM SELECTION -->
+<div class="section">
+  <div class="section-title">Step 1 — Platform Selection</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+    <!-- Dimmed background hint -->
+    <div style="opacity:.25;pointer-events:none;">
+      <div style="font-size:.58rem;font-weight:600;">Track Day Collection</div>
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin-top:.1rem;">
+        <div style="aspect-ratio:1;border-radius:4px;overflow:hidden;"><img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:4px;overflow:hidden;"><img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+      </div>
+    </div>
+    <!-- Sheet modal -->
+    <div style="background:var(--glass-strong);backdrop-filter:blur(20px);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.6rem .6rem .8rem;margin:0 -.7rem;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+      <div style="width:28px;height:4px;background:var(--text-4);border-radius:2px;margin:0 auto .4rem;opacity:.3;"></div>
+      <div style="font-size:.72rem;font-weight:700;margin-bottom:.1rem;">Publier sur quel reseau ?</div>
+      <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.3rem;">Choisis ta plateforme pour adapter le ton</div>
+
+      <div class="m-bento" style="grid-template-columns:repeat(3,1fr);gap:.2rem;">
+        <div class="m-bento-item" style="cursor:pointer;padding:.3rem;">
+          <div style="font-size:1.1rem;">📸</div>
+          <div class="name">Instagram</div>
+        </div>
+        <div class="m-bento-item" style="cursor:pointer;padding:.3rem;">
+          <div style="font-size:1.1rem;">💼</div>
+          <div class="name">LinkedIn</div>
+        </div>
+        <div class="m-bento-item" style="cursor:pointer;padding:.3rem;">
+          <div style="font-size:1.1rem;">𝕏</div>
+          <div class="name">X / Twitter</div>
+        </div>
+        <div class="m-bento-item" style="cursor:pointer;padding:.3rem;">
+          <div style="font-size:1.1rem;">🎵</div>
+          <div class="name">TikTok</div>
+        </div>
+        <div class="m-bento-item" style="cursor:pointer;padding:.3rem;">
+          <div style="font-size:1.1rem;">📌</div>
+          <div class="name">Pinterest</div>
+        </div>
+      </div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- STEP 2: TONE SELECTION -->
+<div class="section">
+  <div class="section-title">Step 2 — Tone Selection (after platform tap)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+    <!-- Dimmed background -->
+    <div style="opacity:.15;pointer-events:none;">
+      <div style="font-size:.5rem;color:var(--text-3);">· · · post editor behind · · ·</div>
+    </div>
+    <!-- Sheet modal -->
+    <div style="background:var(--glass-strong);backdrop-filter:blur(20px);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.6rem .6rem .8rem;margin:0 -.7rem;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+      <div style="width:28px;height:4px;background:var(--text-4);border-radius:2px;margin:0 auto .4rem;opacity:.3;"></div>
+      <div style="display:flex;align-items:center;gap:.25rem;margin-bottom:.15rem;">
+        <div style="font-size:.9rem;">📸</div>
+        <div style="font-size:.72rem;font-weight:700;">Quel ton sur Instagram ?</div>
+      </div>
+      <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.3rem;">Choisis 1 a 3 voix — meme phrase, 5 tons :</div>
+
+      <!-- Tone cards with examples (same phrase, different voices) -->
+      <div class="m-glass m-glass-active" style="cursor:pointer;margin-bottom:.15rem;">
+        <div style="font-weight:600;font-size:.58rem;">🎯 Professional & Sharp</div>
+        <div style="font-size:.46rem;color:var(--text-3);font-style:italic;margin-top:.05rem;">"Track day in Barcelona. Porsche GT3 RS on circuit."</div>
+      </div>
+      <div class="m-glass m-glass-active" style="cursor:pointer;margin-bottom:.15rem;">
+        <div style="font-weight:600;font-size:.58rem;">📖 Storyteller</div>
+        <div style="font-size:.46rem;color:var(--text-3);font-style:italic;margin-top:.05rem;">"6am. The tires are cold, but the adrenaline is not."</div>
+      </div>
+      <div class="m-glass-light" style="cursor:pointer;margin-bottom:.15rem;">
+        <div style="font-weight:600;font-size:.58rem;">😎 Casual & Fun</div>
+        <div style="font-size:.46rem;color:var(--text-3);font-style:italic;margin-top:.05rem;">"Send it 🏎️💨 Barcelona track day was insane"</div>
+      </div>
+      <div class="m-glass-light" style="cursor:pointer;margin-bottom:.15rem;">
+        <div style="font-weight:600;font-size:.58rem;">🔥 Inspirational & Bold</div>
+        <div style="font-size:.46rem;color:var(--text-3);font-style:italic;margin-top:.05rem;">"Every curve teaches you something about yourself."</div>
+      </div>
+      <div class="m-glass-light" style="cursor:pointer;margin-bottom:.15rem;">
+        <div style="font-weight:600;font-size:.58rem;">✂️ Minimal & Clean</div>
+        <div style="font-size:.46rem;color:var(--text-3);font-style:italic;margin-top:.05rem;">"Barcelona. Track. GT3. Enough said."</div>
+      </div>
+
+      <!-- Brainstorming callout -->
+      <div class="m-glass" style="border-left:3px solid var(--purple);margin-top:.2rem;">
+        <div style="font-size:.5rem;font-weight:600;color:var(--purple);">Affine ta brand voice</div>
+        <div style="font-size:.42rem;color:var(--text-3);margin:.05rem 0 .15rem;">Pour des textes encore plus personnalises</div>
+        <div style="display:flex;gap:.15rem;">
+          <div class="m-btn" style="font-size:.42rem;padding:.15rem .3rem;background:var(--purple);">Lancer le brainstorming (5-10 min)</div>
+          <div class="m-btn-glass" style="font-size:.42rem;padding:.15rem .3rem;">Plus tard</div>
+        </div>
+      </div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- STEP 3: BRAINSTORMING (OPTIONAL) -->
+<div class="section">
+  <div class="section-title">Step 3 — Brainstorming (optional, if accepted)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+    <div style="opacity:.15;pointer-events:none;">
+      <div style="font-size:.5rem;color:var(--text-3);">· · · post editor behind · · ·</div>
+    </div>
+    <div style="background:var(--glass-strong);backdrop-filter:blur(20px);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.6rem .6rem .8rem;margin:0 -.7rem;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+      <div style="width:28px;height:4px;background:var(--text-4);border-radius:2px;margin:0 auto .4rem;opacity:.3;"></div>
+      <div style="font-size:.72rem;font-weight:700;margin-bottom:.08rem;">Brand Voice Brainstorming</div>
+      <div style="font-size:.46rem;color:var(--text-3);margin-bottom:.3rem;">Question 2 de 5</div>
+      <div class="m-progress" style="margin-bottom:.3rem;"><div class="m-progress-fill" style="width:40%;background:var(--purple);"></div></div>
+
+      <!-- Stacked Q&A card -->
+      <div class="m-glass" style="margin-bottom:.2rem;">
+        <div style="font-size:.58rem;font-weight:600;margin-bottom:.15rem;">Qu'est-ce qui te differencie des autres createurs dans ton domaine ?</div>
+        <div class="m-input" style="min-height:3rem;font-size:.52rem;">Je combine tech et automotive — je code des outils AI pour l'industrie auto depuis Bangkok, un angle que personne d'autre n'a.</div>
+      </div>
+
+      <!-- Previous answer (stacked behind, faded) -->
+      <div class="m-glass-light" style="opacity:.4;transform:scale(.96);margin-top:-.1rem;">
+        <div style="font-size:.48rem;font-weight:600;">Decris ta personnalite en 3 mots</div>
+        <div style="font-size:.42rem;color:var(--text-3);">Curieux, pragmatique, passione</div>
+      </div>
+
+      <div style="display:flex;gap:.2rem;margin-top:.2rem;">
+        <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.5rem;">Passer</div>
+        <div class="m-btn" style="flex:2;text-align:center;font-size:.5rem;background:var(--purple);">Suivant →</div>
+      </div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- STEP 4: RESULT -->
+<div class="section">
+  <div class="section-title">Step 4 — Generated Result</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+    <div style="opacity:.15;pointer-events:none;">
+      <div style="font-size:.5rem;color:var(--text-3);">· · · post editor behind · · ·</div>
+    </div>
+    <div style="background:var(--glass-strong);backdrop-filter:blur(20px);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.6rem .6rem .8rem;margin:0 -.7rem;box-shadow:0 -4px 24px rgba(0,0,0,0.08);">
+      <div style="width:28px;height:4px;background:var(--text-4);border-radius:2px;margin:0 auto .4rem;opacity:.3;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+        <div style="font-size:.72rem;font-weight:700;">Ton post est pret 📸</div>
+        <span class="m-badge" style="background:var(--green-bg);color:var(--green);font-size:.42rem;">Generated</span>
+      </div>
+
+      <!-- Hook -->
+      <div style="font-size:.48rem;font-weight:600;color:var(--accent);margin-bottom:.05rem;">Hook</div>
+      <div class="m-input" style="font-size:.55rem;font-weight:600;line-height:1.3;min-height:1.5rem;">6am on the Barcelona circuit. The GT3 RS purrs, the tires grip.</div>
+
+      <!-- Caption -->
+      <div style="font-size:.48rem;font-weight:600;color:var(--accent);margin:.15rem 0 .05rem;">Caption</div>
+      <div class="m-input" style="font-size:.5rem;line-height:1.3;min-height:2.5rem;">Every track day is a lesson in precision. This morning in Catalunya, the air was still cold when we lined up. Four hours later, the tires told the whole story — grip marks, heat cycles, and one perfect apex at Turn 7.</div>
+
+      <!-- Hashtags -->
+      <div style="font-size:.48rem;font-weight:600;color:var(--accent);margin:.15rem 0 .05rem;">Hashtags</div>
+      <div class="m-input" style="font-size:.48rem;color:var(--accent);">#TrackDay #PorscheGT3RS #Barcelona #Motorsport #CarContent</div>
+
+      <!-- All editable note -->
+      <div style="font-size:.38rem;color:var(--text-4);text-align:center;margin:.1rem 0 .2rem;">Tout est editable — modifie avant de publier</div>
+
+      <div class="m-btn" style="width:100%;text-align:center;font-size:.58rem;">
+        <span style="margin-right:.2rem;">📸</span>Publier via Instagram
+      </div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Tone already configured</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+        <div style="opacity:.15;pointer-events:none;font-size:.5rem;color:var(--text-3);">· · · post editor · · ·</div>
+        <div style="background:var(--glass-strong);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.5rem .5rem .6rem;margin:0 -.55rem;">
+          <div style="width:24px;height:3px;background:var(--text-4);border-radius:2px;margin:0 auto .3rem;opacity:.3;"></div>
+          <div style="font-size:.62rem;font-weight:700;margin-bottom:.1rem;">Publier sur Instagram</div>
+          <div style="font-size:.46rem;color:var(--text-3);margin-bottom:.15rem;">Tones: Professional + Storyteller</div>
+          <div style="font-size:.46rem;font-weight:600;color:var(--accent);margin-bottom:.05rem;">Hook</div>
+          <div class="m-input" style="font-size:.48rem;">6am. Barcelona circuit. The GT3 purrs.</div>
+          <div style="font-size:.46rem;font-weight:600;color:var(--accent);margin:.1rem 0 .05rem;">Caption</div>
+          <div class="m-input" style="font-size:.44rem;min-height:1.5rem;">Every track day teaches precision...</div>
+          <div class="m-btn" style="width:100%;text-align:center;font-size:.48rem;margin-top:.15rem;">📸 Publier</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">3 tones max reached</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:0;">
+        <div style="opacity:.15;pointer-events:none;font-size:.5rem;color:var(--text-3);">· · · post editor · · ·</div>
+        <div style="background:var(--glass-strong);border-radius:14px 14px 0 0;border:1px solid rgba(255,255,255,0.6);border-bottom:none;padding:.5rem .5rem .6rem;margin:0 -.55rem;">
+          <div style="width:24px;height:3px;background:var(--text-4);border-radius:2px;margin:0 auto .3rem;opacity:.3;"></div>
+          <div style="font-size:.62rem;font-weight:700;">Quel ton sur LinkedIn ?</div>
+          <div style="font-size:.42rem;padding:.1rem .2rem;background:var(--yellow-bg);border-radius:4px;color:var(--yellow);margin:.1rem 0;">Max 3 voix pour une marque forte</div>
+          <div class="m-glass m-glass-active" style="font-size:.48rem;padding:.25rem;">🎯 Pro ✓</div>
+          <div class="m-glass m-glass-active" style="font-size:.48rem;padding:.25rem;">📖 Story ✓</div>
+          <div class="m-glass m-glass-active" style="font-size:.48rem;padding:.25rem;">😎 Casual ✓</div>
+          <div class="m-glass-light" style="font-size:.48rem;padding:.25rem;opacity:.4;">🔥 Inspirational (max)</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--purple-bg);color:var(--purple);">Brainstorming skipped</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:.9rem;margin-bottom:.2rem;">📝</div>
+        <div style="font-size:.62rem;font-weight:600;">Generation en cours...</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin-top:.1rem;">Ton: Professional + Storyteller</div>
+        <div style="font-size:.42rem;color:var(--text-4);margin-top:.05rem;">Sans brand voice — resultats generiques</div>
+        <div class="m-progress" style="width:50%;margin:.15rem auto 0;"><div class="m-progress-fill" style="width:70%;"></div></div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap platform card</td><td>Select platform, advance to tone selection step</td></tr>
+    <tr><td>Tap tone card</td><td>Toggle tone on/off (1-3 max). Visual highlight on selected.</td></tr>
+    <tr><td>Tap "Lancer le brainstorming"</td><td>Start stacked Q&A cards (5 questions, 5-10 min). Saves brand voice profile.</td></tr>
+    <tr><td>Tap "Plus tard" on brainstorming</td><td>Skip brainstorming, generate with tones only (generic results)</td></tr>
+    <tr><td>Tap "Suivant" in brainstorming</td><td>Advance to next question. Progress bar updates.</td></tr>
+    <tr><td>Tap "Passer" in brainstorming</td><td>Skip current question, advance to next</td></tr>
+    <tr><td>Edit hook/caption/hashtags</td><td>Inline edit, all fields editable</td></tr>
+    <tr><td>Tap "Publier via [platform]"</td><td>Open native Share Sheet for the selected platform</td></tr>
+    <tr><td>Swipe down on sheet</td><td>Dismiss sheet, return to Post Editor (no publish)</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>Tone already configured for this platform: Skip platform + tone selection, go straight to generated result</li>
+    <li>3 tones max per platform: 4th tone greyed out with tooltip "Max 3 voix pour une marque forte"</li>
+    <li>Brainstorming skipped: AI generates with tones only (lower quality but functional)</li>
+    <li>Brainstorming already done: Brand voice callout hidden, results directly use saved brand voice</li>
+    <li>No internet connection: Show error state, retry button</li>
+    <li>Generation takes too long (>10s): Show timeout message with "Try again" option</li>
+    <li>Platform not installed: Share Sheet shows available sharing options regardless</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>Sheet modal (not full screen) with backdrop blur and swipe-to-dismiss</li>
+    <li>Platform bento grid shows 5 platforms (Instagram, LinkedIn, X, TikTok, Pinterest)</li>
+    <li>Tone cards show same phrase in 5 different voices for comparison</li>
+    <li>Multi-select 1-3 tones max per platform</li>
+    <li>Brainstorming trigger optional via callout card with CTA</li>
+    <li>Brainstorming uses stacked Q&A card design (reuses existing pattern)</li>
+    <li>Generated result shows editable hook + caption + hashtags</li>
+    <li>"Publier via [platform]" opens native Share Sheet</li>
+    <li>If tone already configured, skip directly to generation</li>
+    <li>All state persists: platform + tone saved for future shares</li>
+  </ul>
+</div>
+</body></html>

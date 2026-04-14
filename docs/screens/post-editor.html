@@ -10,11 +10,12 @@
   <h4>Iteration History</h4>
   <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Simple asset list. No slots. No template. No contextual explorer.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Slot-based assembly with template requirements. Contextual explorer pre-filtered by slot needs. Publish/Cancel/Export actions. Auto-save.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Added "Shuffle" button for slot machine re-roll. Added "Auto-generated" badge for slot machine posts. "Suggest Hook" note: triggers just-in-time tone setup if not configured. Empty slots show template requirements.</span></div>
 </div>
 
 <!-- DEFAULT STATE -->
 <div class="section">
-  <div class="section-title">Default State (v0.1 — Slot-based editor)</div>
+  <div class="section-title">Default State (v0.4 — Slot-based editor)</div>
   <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem;">
       <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Posts</div>
@@ -26,15 +27,17 @@
     <div style="font-size:.55rem;font-weight:600;margin:.3rem 0 .15rem;">Slots</div>
     <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:.25rem;">
       <!-- Filled slot -->
-      <div class="m-slot m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:8px;position:relative;">
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);border-radius:0 0 8px 8px;">
+      <div class="m-slot m-slot-filled" style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);">
           <div style="font-size:.4rem;color:#fff;">📍 Barcelona</div>
           <div style="font-size:.4rem;color:rgba(255,255,255,.7);">🖼 Wide</div>
         </div>
       </div>
       <!-- Filled slot -->
-      <div class="m-slot m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c8d8);border-radius:8px;position:relative;">
-        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);border-radius:0 0 8px 8px;">
+      <div class="m-slot m-slot-filled" style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <div style="position:absolute;bottom:0;left:0;right:0;padding:.15rem .2rem;background:linear-gradient(to top,rgba(0,0,0,.5),transparent);">
           <div style="font-size:.4rem;color:#fff;">📍 Barcelona</div>
           <div style="font-size:.4rem;color:rgba(255,255,255,.7);">🖼 Detail</div>
         </div>
@@ -59,9 +62,66 @@
     <!-- Actions -->
     <div style="display:flex;gap:.2rem;margin-top:.35rem;">
       <div class="m-btn-disabled" style="flex:1;text-align:center;font-size:.52rem;">Publish (2/4 filled)</div>
-      <div class="m-btn-glass" style="flex:1;text-align:center;font-size:.52rem;">Export</div>
+      <div class="m-btn-glass" style="text-align:center;font-size:.52rem;">Shuffle 🎰</div>
+      <div class="m-btn-glass" style="text-align:center;font-size:.52rem;">Export</div>
     </div>
-    <div style="text-align:center;margin-top:.15rem;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.15rem;">
+      <span style="font-size:.5rem;color:var(--accent);cursor:pointer;">Suggest Hook</span>
+      <span style="font-size:.5rem;color:var(--red);cursor:pointer;">Cancel post</span>
+    </div>
+    <div style="font-size:.38rem;color:var(--text-4);margin-top:.05rem;">Note: "Suggest Hook" triggers tone setup if not yet configured</div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti ac"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- AUTO-GENERATED POST STATE -->
+<div class="section">
+  <div class="section-title">Auto-generated Post (from Slot Machine)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.15rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Posts</div>
+      <div style="display:flex;gap:.15rem;align-items:center;">
+        <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);">🎰 Auto-generated</span>
+        <span class="m-badge" style="background:rgba(0,0,0,.05);color:var(--text-3);">Draft</span>
+      </div>
+    </div>
+    <div class="m-input" style="font-size:.65rem;font-weight:600;border:none;background:transparent;padding:0;">Bangkok Morning</div>
+    <div class="m-input" style="font-size:.52rem;color:var(--text-3);border:none;background:transparent;padding:0;margin-top:-.1rem;">Auto-generated from Carousel 4 photos template</div>
+    <!-- All slots filled with real photos -->
+    <div style="font-size:.55rem;font-weight:600;margin:.3rem 0 .15rem;">Slots</div>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.25rem;">
+      <div style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-nomad-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">POV</span>
+      </div>
+      <div style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-food-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Detail</span>
+      </div>
+      <div style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-dev-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Wide</span>
+      </div>
+      <div style="aspect-ratio:1;border-radius:8px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-life-2.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+        <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Portrait</span>
+      </div>
+    </div>
+    <!-- Actions for auto-generated -->
+    <div style="display:flex;gap:.2rem;margin-top:.35rem;">
+      <div class="m-btn" style="flex:2;text-align:center;font-size:.52rem;">Publish</div>
+      <div class="m-btn-glass" style="text-align:center;font-size:.52rem;">Shuffle 🎰</div>
+      <div class="m-btn-glass" style="text-align:center;font-size:.52rem;">Export</div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:.15rem;">
+      <span style="font-size:.5rem;color:var(--accent);cursor:pointer;">Suggest Hook</span>
       <span style="font-size:.5rem;color:var(--red);cursor:pointer;">Cancel post</span>
     </div>
   </div>
@@ -93,16 +153,20 @@
     <div class="m-input" style="font-size:.5rem;color:var(--text-3);margin-top:.1rem;">Search assets...</div>
     <!-- Filtered grid -->
     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;margin-top:.15rem;">
-      <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:4px;position:relative;">
+      <div style="aspect-ratio:1;border-radius:4px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
         <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
       </div>
-      <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8b8d0,#98a8c0);border-radius:4px;position:relative;">
+      <div style="aspect-ratio:1;border-radius:4px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-4.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
         <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
       </div>
-      <div style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c0d0);border-radius:4px;position:relative;">
+      <div style="aspect-ratio:1;border-radius:4px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
         <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
       </div>
-      <div style="aspect-ratio:1;background:linear-gradient(135deg,#98b0d0,#88a0c0);border-radius:4px;position:relative;">
+      <div style="aspect-ratio:1;border-radius:4px;position:relative;overflow:hidden;">
+        <img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
         <span class="m-badge" style="position:absolute;top:2px;left:2px;background:rgba(0,122,255,.8);color:#fff;font-size:.35rem;">🚗</span>
       </div>
       <div style="aspect-ratio:1;background:linear-gradient(135deg,#b8c8e0,#a8b8d0);border-radius:4px;"></div>
@@ -130,7 +194,7 @@
         <div class="m-input" style="font-size:.62rem;font-weight:600;border:none;background:transparent;padding:0;">My Free-form Post</div>
         <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.2rem;">No template — add slots manually</div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.2rem;">
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;"><img src="../assets/gallery-nomad-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
           <div style="aspect-ratio:1;border:2px dashed rgba(0,0,0,.12);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.7rem;color:var(--text-4);">+</div>
         </div>
         <div style="text-align:center;margin-top:.15rem;">
@@ -159,12 +223,15 @@
         </div>
         <div style="font-size:.62rem;font-weight:600;">Track Day Collection</div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.2rem;margin-top:.15rem;">
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:8px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c8d8);border-radius:8px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:8px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#98b0d0,#88a0c0);border-radius:8px;"></div>
+          <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;"><img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+          <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;"><img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+          <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;"><img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+          <div style="aspect-ratio:1;border-radius:8px;overflow:hidden;"><img src="../assets/gallery-auto-4.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
         </div>
-        <div class="m-btn" style="width:100%;text-align:center;margin-top:.25rem;font-size:.55rem;">Publish</div>
+        <div style="display:flex;gap:.2rem;margin-top:.2rem;">
+          <div class="m-btn" style="flex:2;text-align:center;font-size:.5rem;">Publish</div>
+          <div class="m-btn-glass" style="text-align:center;font-size:.5rem;">Shuffle 🎰</div>
+        </div>
       </div><div class="phone-home"></div></div>
     </div>
   </div>
@@ -181,6 +248,8 @@
     <tr><td>Long press filled slot</td><td>Remove asset, slot reverts to empty. Asset returns to "non-utilise".</td></tr>
     <tr><td>Tap asset in explorer</td><td>Fills slot, return to editor</td></tr>
     <tr><td>Edit filters in explorer</td><td>Broaden or narrow search beyond template requirements</td></tr>
+    <tr><td>Tap "Shuffle 🎰"</td><td>Re-roll all slots via slot machine algorithm (new combination of photos). Replaces current selection.</td></tr>
+    <tr><td>Tap "Suggest Hook"</td><td>If tone configured: generate hook text. If not configured: triggers First Share Setup sheet for just-in-time tone configuration.</td></tr>
     <tr><td>Tap "Publish"</td><td>Mark post as Published (requires all slots filled)</td></tr>
     <tr><td>Tap "Cancel post"</td><td>Confirmation dialog, delete post, all assets return to "non-utilise"</td></tr>
     <tr><td>Tap "Export"</td><td>Export filled assets to native Photos album</td></tr>
@@ -197,6 +266,8 @@
     <li>Export album already exists: Update existing album, don't create duplicate</li>
     <li>Photo library permission denied for export: Show Settings link to enable access</li>
     <li>Template with many slots (8+): Slot grid scrolls vertically</li>
+    <li>Auto-generated post: "Auto-generated" badge shown. Shuffle button re-rolls the entire slot machine selection.</li>
+    <li>"Suggest Hook" with no tone configured: Triggers First Share Setup sheet for just-in-time tone selection before generating the hook</li>
   </ul>
 </div>
 
@@ -212,6 +283,9 @@
     <li>Export to native Photos album works</li>
     <li>Auto-save on all edits (name, description, slot changes)</li>
     <li>Free-form mode available when no template is attached</li>
+    <li>"Shuffle 🎰" button visible next to Export, re-rolls slot machine selection</li>
+    <li>"Auto-generated" badge visible on posts created by slot machine</li>
+    <li>"Suggest Hook" triggers First Share Setup if tone not yet configured</li>
   </ul>
 </div>
 </body></html>

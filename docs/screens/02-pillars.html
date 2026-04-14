@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>02 — Pillars</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>03 — Pillars Setup</title><link rel="stylesheet" href="screen-template.css"></head><body>
 <div class="screen-header">
-  <h1>02 — Pillars Setup</h1>
+  <h1>03 — Pillars Setup</h1>
   <div class="path">Views/Onboarding/OnboardingPillarsView.swift</div>
-  <div class="refs"><span class="ref">PB-022</span><span class="ref">PB-016</span><span class="ref">Step 2 of 5</span><span class="ref">REQUIRED</span></div>
+  <div class="refs"><span class="ref">PB-022</span><span class="ref">PB-016</span><span class="ref">Step 3 of 3</span><span class="ref">REQUIRED</span></div>
 </div>
 <div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
 <div class="history-block">
@@ -11,13 +11,53 @@
   <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Flat chip tags. No descriptions. SF Symbol icons. No emoji auto-suggest.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Bento grid with emoji + name + brief description. Emoji auto-suggest via AI on textfield exit (micro-animation). Native emoji picker on tap to override. Only REQUIRED onboarding step.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 12</span><span class="vh-desc">Custom pillar creation moved to partial sheet. More focused input, iOS-native pattern.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Step dots changed to 3/3. Added "Pre-filled by scan" state with AI-detected pillars pre-toggled ON and "Detecte par l'IA" badges. Removed back to Tone screen. "Next" now leads to Template Nudge.</span></div>
 </div>
+
+<!-- DEFAULT STATE: PRE-FILLED BY SCAN -->
 <div class="section">
-  <div class="section-title">Default State (v0.2 — 4 selected)</div>
+  <div class="section-title">Default State (v0.4 — Pre-filled by scan)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:4.5rem;">
+    <div class="m-title">What do you create content about?</div>
+    <div class="m-sub">We detected some themes. Toggle off or add your own.</div>
+    <div class="m-dots"><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-active"></div></div>
+    <div class="m-bento">
+      <!-- AI-detected pillars: ON with badge -->
+      <div class="m-bento-item" style="border-color:rgba(0,122,255,.15);background:var(--accent-bg);">
+        <div class="emoji">💻</div>
+        <div class="name">Developer</div>
+        <div class="desc">Code, tools, building</div>
+        <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);font-size:.36rem;margin-top:.1rem;">Detecte par l'IA</span>
+      </div>
+      <div class="m-bento-item" style="border-color:rgba(255,149,0,.15);background:var(--orange-bg);">
+        <div class="emoji">🚗</div>
+        <div class="name">Automotive</div>
+        <div class="desc">Cars, tracks, driving</div>
+        <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);font-size:.36rem;margin-top:.1rem;">Detecte par l'IA</span>
+      </div>
+      <div class="m-bento-item" style="border-color:rgba(52,199,89,.15);background:var(--green-bg);">
+        <div class="emoji">🍜</div>
+        <div class="name">Food</div>
+        <div class="desc">Cooking, restaurants</div>
+        <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);font-size:.36rem;margin-top:.1rem;">Detecte par l'IA</span>
+      </div>
+      <!-- Non-detected pillars: OFF -->
+      <div class="m-bento-item"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div class="desc">ML, prompts, automation</div></div>
+      <div class="m-bento-item"><div class="emoji">🧳</div><div class="name">Digital Nomad</div><div class="desc">Remote, travel-work</div></div>
+      <div class="m-bento-item"><div class="emoji">✈️</div><div class="name">Travel</div><div class="desc">Destinations, culture</div></div>
+    </div>
+    <div class="m-glass-light" style="text-align:center;color:var(--accent);font-weight:500;font-size:.62rem;">+ Add custom pillar</div>
+    <div class="m-nav"><div class="m-btn-glass">Back</div><div class="m-btn" style="flex:2;">Next (3 selected)</div></div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- MANUAL SELECTION STATE (no scan results) -->
+<div class="section">
+  <div class="section-title">Manual Selection (no scan results — user picks manually)</div>
   <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:4.5rem;">
     <div class="m-title">What do you create content about?</div>
     <div class="m-sub">Tap to toggle. Add your own.</div>
-    <div class="m-dots"><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-active"></div><div class="m-dot"></div><div class="m-dot"></div><div class="m-dot"></div></div>
+    <div class="m-dots"><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-active"></div></div>
     <div class="m-bento">
       <div class="m-bento-item" style="border-color:rgba(0,122,255,.15);background:var(--accent-bg);"><div class="emoji">💻</div><div class="name">Developer</div><div class="desc">Code, tools, building</div></div>
       <div class="m-bento-item" style="border-color:rgba(50,173,230,.15);background:var(--cyan-bg);"><div class="emoji">🤖</div><div class="name">AI / Tech</div><div class="desc">ML, prompts, automation</div></div>
@@ -122,21 +162,23 @@
   <div class="section-title">Interactions</div>
   <table class="int-table">
     <tr><th>Action</th><th>Result</th></tr>
-    <tr><td>Tap bento card</td><td>Toggle on/off with animation</td></tr>
+    <tr><td>Tap bento card</td><td>Toggle on/off with animation. AI-detected badge disappears on toggle off.</td></tr>
     <tr><td>Tap "+ Add custom"</td><td>Partial sheet slides up with name field, emoji picker, color picker, and "Add" button</td></tr>
     <tr><td>Type pillar name in sheet</td><td>Emoji auto-suggested via AI on textfield exit (slide-in micro-animation)</td></tr>
     <tr><td>Tap auto-suggested emoji in sheet</td><td>Open native iOS emoji picker to override</td></tr>
     <tr><td>Tap color swatch in sheet</td><td>Select pillar color (visual highlight on selected swatch)</td></tr>
     <tr><td>Tap "Add Pillar" in sheet</td><td>Sheet dismisses, new card added to grid, auto-selected</td></tr>
     <tr><td>Swipe down on sheet</td><td>Dismiss sheet, discard input</td></tr>
-    <tr><td>Tap Next (>= 1 pillar)</td><td>Save pillars → Step 3</td></tr>
+    <tr><td>Tap Next (>= 1 pillar)</td><td>Save pillars → Template Nudge screen</td></tr>
     <tr><td>Tap Next (0 pillars)</td><td>Disabled — "Select at least 1"</td></tr>
-    <tr><td>Tap Back</td><td>Step 1, selections preserved</td></tr>
+    <tr><td>Tap Back</td><td>Step 2 (Quick Scan Preview), selections preserved</td></tr>
   </table>
 </div>
 <div class="section">
   <div class="section-title">Edge Cases</div>
   <ul class="edge-list">
+    <li>Pre-filled by scan: 3-4 pillars pre-toggled ON with "Detecte par l'IA" badge. User can toggle off AI suggestions and add their own.</li>
+    <li>No scan results (0 piliers detectes): All pillars shown in OFF state, user selects manually</li>
     <li>Duplicate custom name: inline error "This pillar already exists" shown inside partial sheet, "Add" button disabled</li>
     <li>Empty name in sheet: "Add Pillar" button disabled until name is entered</li>
     <li>Long name (>30 chars): truncate in card with ellipsis, full name stored</li>
@@ -149,7 +191,9 @@
 <div class="section">
   <div class="section-title">Acceptance Criteria</div>
   <ul class="ac-list">
+    <li>Step dots show 3/3 (2 done + 1 active)</li>
     <li>Bento grid 2 columns with emoji + name + brief description per card</li>
+    <li>AI-detected pillars pre-toggled ON with "Detecte par l'IA" purple badge</li>
     <li>Toggle on/off with clear visual feedback (border color + background)</li>
     <li>Custom pillar: partial sheet with name field, emoji picker, color picker, and "Add" button</li>
     <li>Emoji auto-suggest on textfield exit inside sheet (micro-animation)</li>
@@ -159,7 +203,8 @@
     <li>> 10 pillars shows nudge banner</li>
     <li>Duplicate detection with inline error</li>
     <li>Nav buttons in same fixed position as all other onboarding steps</li>
-    <li>Step dots show 2/5</li>
+    <li>"Next" leads to Template Nudge (not Platforms/Tone)</li>
+    <li>"Back" leads to Quick Scan Preview (Step 2)</li>
   </ul>
 </div>
 </body></html>

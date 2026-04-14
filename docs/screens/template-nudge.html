@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Template Nudge</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<div class="screen-header">
+  <h1>Template Nudge</h1>
+  <div class="path">Views/Onboarding/TemplateNudgeView.swift</div>
+  <div class="refs"><span class="ref">PB-040</span><span class="ref">Post-onboarding</span><span class="ref">Transitional</span></div>
+</div>
+<div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
+<div class="history-block">
+  <h4>Iteration History</h4>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Initial creation. Post-onboarding didactic screen. iOS widget mockup, pre-built post preview, template presets bento. Primary CTA + glass "Later" button.</span></div>
+</div>
+
+<!-- DEFAULT STATE -->
+<div class="section">
+  <div class="section-title">Default State (v0.4)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;padding-bottom:4.5rem;">
+    <div class="m-title" style="text-align:center;">Un post par jour, en un tap</div>
+    <div class="m-sub" style="text-align:center;">Choisis un format et PostKit compose un post chaque matin depuis ta galerie</div>
+
+    <!-- iOS Widget Mockup -->
+    <div style="background:rgba(0,0,0,0.03);border-radius:14px;padding:.5rem;margin-bottom:.4rem;box-shadow:0 2px 10px rgba(0,0,0,0.06);">
+      <div style="font-size:.42rem;color:var(--text-4);margin-bottom:.2rem;text-align:center;">iOS Widget Preview</div>
+      <div style="background:var(--glass-strong);border-radius:12px;padding:.4rem;border:1px solid rgba(255,255,255,0.7);box-shadow:0 1px 6px rgba(0,0,0,0.05);">
+        <div style="display:flex;gap:.25rem;align-items:center;">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;width:50px;">
+            <img src="../assets/gallery-nomad-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;" alt="">
+            <img src="../assets/gallery-food-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;" alt="">
+            <img src="../assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;" alt="">
+            <img src="../assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;" alt="">
+          </div>
+          <div style="flex:1;">
+            <div style="font-size:.5rem;font-weight:600;">Ton post du jour</div>
+            <div style="font-size:.42rem;color:var(--text-3);">Bangkok Morning — 4 photos</div>
+            <div style="font-size:.38rem;color:var(--accent);margin-top:.08rem;">Tap to review</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pre-built Post Mockup -->
+    <div style="font-size:.52rem;font-weight:600;color:var(--text-2);margin-bottom:.15rem;">Exemple de post genere</div>
+    <div class="m-glass" style="padding:.35rem;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-bottom:.2rem;">
+        <div style="position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;">
+          <img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">POV</span>
+        </div>
+        <div style="position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;">
+          <img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Detail</span>
+        </div>
+        <div style="position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;">
+          <img src="../assets/gallery-nomad-2.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Wide</span>
+        </div>
+        <div style="position:relative;aspect-ratio:1;border-radius:6px;overflow:hidden;">
+          <img src="../assets/gallery-life-1.webp" style="width:100%;height:100%;object-fit:cover;" alt="">
+          <span class="m-badge" style="position:absolute;bottom:2px;left:2px;background:rgba(0,0,0,.6);color:#fff;font-size:.36rem;">Portrait</span>
+        </div>
+      </div>
+      <div style="font-size:.48rem;color:var(--text-2);font-style:italic;line-height:1.3;">"The road is the destination. 5am start, coffee in hand, the Porsche purring..."</div>
+    </div>
+
+    <!-- Template Presets -->
+    <div style="font-size:.52rem;font-weight:600;color:var(--text-2);margin:.25rem 0 .15rem;">Choisis un format</div>
+    <div class="m-bento">
+      <div class="m-bento-item m-glass-active" style="cursor:pointer;border-color:rgba(0,122,255,.15);">
+        <div class="emoji">🖼</div>
+        <div class="name">Carousel 4 photos</div>
+        <div class="desc">4 slots, mix de cadrages</div>
+      </div>
+      <div class="m-bento-item" style="cursor:pointer;">
+        <div class="emoji">📱</div>
+        <div class="name">Story unique</div>
+        <div class="desc">1 slot, vertical</div>
+      </div>
+      <div class="m-bento-item" style="cursor:pointer;grid-column:span 2;">
+        <div class="emoji">👤</div>
+        <div class="name">Portrait + Hook</div>
+        <div class="desc">2 slots: portrait + accroche texte</div>
+      </div>
+    </div>
+
+    <!-- Nav -->
+    <div class="m-nav"><div class="m-btn-glass">Plus tard</div><div class="m-btn" style="flex:2;">Activer mes posts quotidiens</div></div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASE STATES -->
+<div class="section">
+  <div class="section-title">Edge Case States</div>
+  <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--accent-bg);color:var(--accent);">Preset tapped</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+        <div style="font-size:.68rem;font-weight:600;margin-bottom:.15rem;">Carousel 4 photos</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-bottom:.2rem;">Template pre-rempli avec 4 slots</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:3px;">
+          <div style="aspect-ratio:1;border:2px dashed rgba(0,122,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.05rem;">
+            <div style="font-size:.5rem;color:var(--accent);">Slot 1</div>
+            <div style="font-size:.38rem;color:var(--text-3);">POV</div>
+          </div>
+          <div style="aspect-ratio:1;border:2px dashed rgba(0,122,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.05rem;">
+            <div style="font-size:.5rem;color:var(--accent);">Slot 2</div>
+            <div style="font-size:.38rem;color:var(--text-3);">Detail</div>
+          </div>
+          <div style="aspect-ratio:1;border:2px dashed rgba(0,122,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.05rem;">
+            <div style="font-size:.5rem;color:var(--accent);">Slot 3</div>
+            <div style="font-size:.38rem;color:var(--text-3);">Wide</div>
+          </div>
+          <div style="aspect-ratio:1;border:2px dashed rgba(0,122,255,.2);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.05rem;">
+            <div style="font-size:.5rem;color:var(--accent);">Slot 4</div>
+            <div style="font-size:.38rem;color:var(--text-3);">Portrait</div>
+          </div>
+        </div>
+        <div style="font-size:.42rem;color:var(--text-3);text-align:center;margin-top:.15rem;">Ouvre le template builder pre-rempli</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--green-bg);color:var(--green);">Later tapped</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.2rem;margin-bottom:.3rem;">🏠</div>
+        <div style="font-size:.68rem;font-weight:600;">Home Dashboard</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin-top:.15rem;">Nudge card visible on dashboard:</div>
+        <div class="m-glass" style="border-left:3px solid var(--accent);margin-top:.2rem;text-align:left;max-width:95%;">
+          <div style="font-size:.5rem;">📐 Active un template pour recevoir un post chaque matin</div>
+          <div style="font-size:.42rem;color:var(--accent);font-weight:600;margin-top:.08rem;">Activer →</div>
+        </div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">0 pillars detected</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
+        <div style="font-size:1.2rem;margin-bottom:.3rem;">📐</div>
+        <div style="font-size:.68rem;font-weight:600;">Tes piliers rendent le template intelligent</div>
+        <div style="font-size:.52rem;color:var(--text-3);margin:.15rem 0 .3rem;">Definis tes piliers pour que PostKit choisisse les bonnes photos automatiquement.</div>
+        <div class="m-btn" style="font-size:.55rem;">Configurer mes piliers</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- INTERACTIONS -->
+<div class="section">
+  <div class="section-title">Interactions</div>
+  <table class="int-table">
+    <tr><th>Action</th><th>Result</th></tr>
+    <tr><td>Tap "Activer mes posts quotidiens"</td><td>Navigate to Template Builder (pre-filled if preset selected)</td></tr>
+    <tr><td>Tap "Plus tard"</td><td>Dismiss to Home Dashboard. Nudge card persists on dashboard until first template created.</td></tr>
+    <tr><td>Tap a preset card (Carousel, Story, Portrait+Hook)</td><td>Visual selection highlight. "Creer mon template" opens builder pre-filled with that preset.</td></tr>
+    <tr><td>Tap on another preset</td><td>Selection switches. Only one preset selectable at a time.</td></tr>
+  </table>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
+  <ul class="edge-list">
+    <li>"Plus tard" tapped: Home Dashboard shows nudge card with template CTA until first template is created</li>
+    <li>0 pillars configured: Show fallback message suggesting pillar setup first</li>
+    <li>User already has a template: This screen should not appear (guard check in navigation)</li>
+    <li>No photos in library: Widget mockup still shows, but post preview uses placeholder images</li>
+    <li>App killed on this screen: On relaunch, go directly to Home Dashboard (onboarding considered complete)</li>
+  </ul>
+</div>
+
+<!-- ACCEPTANCE CRITERIA -->
+<div class="section">
+  <div class="section-title">Acceptance Criteria</div>
+  <ul class="ac-list">
+    <li>iOS widget mockup renders with rounded corners, shadow, and system-like appearance</li>
+    <li>Pre-built post mockup uses real gallery photos with cadrage badges (POV, Detail, Wide, Portrait)</li>
+    <li>Template presets bento grid is selectable (single selection, visual highlight)</li>
+    <li>"Creer mon template" navigates to Template Builder, pre-filled if preset is selected</li>
+    <li>"Plus tard" dismisses to Home with nudge card persisted</li>
+    <li>No tab bar visible (transitional screen, not part of main app navigation)</li>
+    <li>No back button (post-onboarding only, forward flow)</li>
+    <li>Screen never shown again once a template is created</li>
+  </ul>
+</div>
+</body></html>

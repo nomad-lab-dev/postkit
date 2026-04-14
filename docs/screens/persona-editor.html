@@ -11,11 +11,12 @@
   <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">No post-onboarding editing. Persona was locked after initial setup.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full inline editor: bio, voice/tone (global), platforms, pillar summary. AI preview. "Redo Onboarding" button. Auto-save.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.2</span><span class="vh-date">Apr 13</span><span class="vh-desc">Removed global tone picker. Tone is now per-platform: each platform card shows its assigned tones. Tap platform to edit its tones. Bio → Platforms (with nested tones) → Pillars → Redo.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Added "Brand Voice" section. If brainstorming done → summary. If not → CTA "Affine ta brand voice (5-10 min)". Restructured: Bio → Platforms (with tones) → Pillars → Brand Voice → Redo.</span></div>
 </div>
 
-<!-- DEFAULT STATE v0.2 -->
+<!-- DEFAULT STATE v0.4 -->
 <div class="section">
-  <div class="section-title">Default State (v0.2 — Tone per platform)</div>
+  <div class="section-title">Default State (v0.4 — With Brand Voice)</div>
   <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
       <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Profile</div>
@@ -82,14 +83,89 @@
       <div style="font-size:.48rem;color:var(--accent);cursor:pointer;white-space:nowrap;">Manage →</div>
     </div>
 
-    <!-- AI Preview -->
-    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.3rem 0 .1rem;">AI sees you as:</div>
-    <div class="m-glass" style="font-size:.52rem;color:var(--text-2);line-height:1.4;font-style:italic;">
-      A Bangkok-based solo founder building AI products for automotive. Professional + storyteller on Instagram, professional on LinkedIn, minimal + casual on X.
+    <!-- Brand Voice section -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Brand Voice</div>
+    <div class="m-glass" style="border-left:3px solid var(--purple);">
+      <div style="font-size:.52rem;color:var(--text-2);line-height:1.4;">
+        <div style="font-weight:600;color:var(--purple);margin-bottom:.08rem;">Brainstorming not done yet</div>
+        <div style="font-size:.48rem;color:var(--text-3);margin-bottom:.15rem;">Affine ta brand voice pour des textes plus personnalises et percutants.</div>
+        <div class="m-btn" style="font-size:.46rem;padding:.15rem .35rem;background:var(--purple);">Affine ta brand voice (5-10 min)</div>
+      </div>
     </div>
 
     <!-- Redo Onboarding -->
     <div style="text-align:center;margin-top:.4rem;padding-top:.3rem;border-top:1px solid rgba(0,0,0,.06);">
+      <div style="font-size:.52rem;color:var(--orange);cursor:pointer;font-weight:500;">Redo Onboarding (guided flow)</div>
+    </div>
+  </div>
+  <div class="phone-tab">
+    <div class="ti"><div class="ti-ic">🏠</div>Home</div>
+    <div class="ti"><div class="ti-ic">🔍</div>Explore</div>
+    <div class="ti"><div class="ti-ic">👆</div>Swipe</div>
+    <div class="ti"><div class="ti-ic">📝</div>Posts</div>
+    <div class="ti ac"><div class="ti-ic">👤</div>Profile</div>
+  </div>
+  <div class="phone-home"></div></div>
+</div>
+
+<!-- BRAND VOICE DONE STATE -->
+<div class="section">
+  <div class="section-title">Brand Voice — Brainstorming completed</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.2rem;">
+      <div style="font-size:.52rem;color:var(--accent);cursor:pointer;">← Profile</div>
+      <div style="font-size:.45rem;color:var(--green);">Auto-saved</div>
+    </div>
+    <div class="m-title">Your Persona</div>
+
+    <!-- Bio (collapsed for brevity) -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.3rem 0 .1rem;">Bio</div>
+    <div class="m-glass-light">
+      <div style="font-size:.52rem;color:var(--text-2);line-height:1.3;">Solo founder building AI SaaS for automotive. Digital nomad in Bangkok.</div>
+    </div>
+
+    <!-- Platforms (collapsed) -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Platforms & Tones</div>
+    <div class="m-glass" style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+      <div style="font-size:.9rem;">📸</div>
+      <div style="flex:1;"><div style="font-size:.58rem;font-weight:600;">Instagram</div><div style="display:flex;gap:.1rem;margin-top:.05rem;"><span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.38rem;">🎯 Pro</span><span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.38rem;">📖 Story</span></div></div>
+      <div style="font-size:.55rem;color:var(--text-4);">›</div>
+    </div>
+    <div class="m-glass" style="display:flex;align-items:center;gap:.35rem;cursor:pointer;">
+      <div style="font-size:.9rem;">💼</div>
+      <div style="flex:1;"><div style="font-size:.58rem;font-weight:600;">LinkedIn</div><div style="display:flex;gap:.1rem;margin-top:.05rem;"><span class="m-badge" style="background:var(--accent-bg);color:var(--accent);font-size:.38rem;">🎯 Pro</span></div></div>
+      <div style="font-size:.55rem;color:var(--text-4);">›</div>
+    </div>
+
+    <!-- Pillars -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Pillars</div>
+    <div class="m-glass-light" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="m-chips" style="margin-bottom:0;"><span class="m-chip" style="font-size:.42rem;">💻 Dev</span><span class="m-chip" style="font-size:.42rem;">🚗 Auto</span><span class="m-chip" style="font-size:.42rem;">✈️ Travel</span></div>
+      <div style="font-size:.46rem;color:var(--accent);cursor:pointer;">Manage →</div>
+    </div>
+
+    <!-- Brand Voice — DONE -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.25rem 0 .1rem;">Brand Voice</div>
+    <div class="m-glass" style="border-left:3px solid var(--green);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.1rem;">
+        <span class="m-badge" style="background:var(--green-bg);color:var(--green);font-size:.42rem;">Brainstorming done ✓</span>
+        <div style="font-size:.42rem;color:var(--accent);cursor:pointer;">Refaire →</div>
+      </div>
+      <div style="font-size:.48rem;color:var(--text-2);line-height:1.4;">
+        <strong>Personnalite:</strong> Curieux, pragmatique, passione<br>
+        <strong>Differenciateur:</strong> Tech + automotive depuis Bangkok, angle unique<br>
+        <strong>Valeurs:</strong> Transparence, craft, liberte
+      </div>
+    </div>
+
+    <!-- AI Preview -->
+    <div style="font-size:.55rem;font-weight:600;color:var(--accent);margin:.3rem 0 .1rem;">AI sees you as:</div>
+    <div class="m-glass" style="font-size:.52rem;color:var(--text-2);line-height:1.4;font-style:italic;">
+      A Bangkok-based solo founder building AI products for automotive. Curious, pragmatic, passionate. Professional + storyteller on Instagram, professional on LinkedIn. Values: transparency, craft, freedom.
+    </div>
+
+    <!-- Redo Onboarding -->
+    <div style="text-align:center;margin-top:.3rem;padding-top:.25rem;border-top:1px solid rgba(0,0,0,.06);">
       <div style="font-size:.52rem;color:var(--orange);cursor:pointer;font-weight:500;">Redo Onboarding (guided flow)</div>
     </div>
   </div>
@@ -206,6 +282,8 @@
     <tr><td>Tap tone in detail</td><td>Toggle tone on/off (max 3), auto-save</td></tr>
     <tr><td>Tap "+ Add platform"</td><td>Show platform picker to add a new platform</td></tr>
     <tr><td>Tap "Manage →" on pillars</td><td>Navigate to Pillars Management screen</td></tr>
+    <tr><td>Tap "Affine ta brand voice" (CTA)</td><td>Launch brainstorming Q&A flow (5 questions, 5-10 min). Saves brand voice profile.</td></tr>
+    <tr><td>Tap "Refaire →" on brand voice</td><td>Re-launch brainstorming to update brand voice</td></tr>
     <tr><td>Tap "Redo Onboarding"</td><td>Confirmation dialog → restart guided flow (pre-filled)</td></tr>
   </table>
 </div>
@@ -218,6 +296,8 @@
     <li>Platform with 0 tones: allowed. AI defaults to Professional for that platform.</li>
     <li>3 tones per platform: max enforced, 4th/5th greyed out with tooltip.</li>
     <li>All platforms removed: allowed. AI generates generic content.</li>
+    <li>Brand Voice not done: Purple-bordered CTA "Affine ta brand voice (5-10 min)" shown. AI generates with tones only.</li>
+    <li>Brand Voice done: Green-bordered summary with personality, differentiator, values. "Refaire →" link to redo.</li>
     <li>Redo onboarding: pre-fills all steps with current values. No data loss.</li>
     <li>Rapid edits: auto-save debounced at 500ms.</li>
     <li>Bio over 280 chars: counter red, stops accepting.</li>
@@ -228,12 +308,16 @@
 <div class="section">
   <div class="section-title">Acceptance Criteria</div>
   <ul class="ac-list">
+    <li>Section order: Bio → Platforms & Tones → Pillars → Brand Voice → Redo Onboarding</li>
     <li>Bio editable inline with char counter</li>
     <li>NO global tone picker — tone is per-platform only</li>
     <li>Each platform card shows its assigned tones as badges</li>
     <li>Tap platform → tone detail with same-phrase examples</li>
     <li>Tone multi-select 1-3 max per platform</li>
-    <li>AI preview reflects per-platform tone assignments</li>
+    <li>Brand Voice section: CTA if brainstorming not done, summary if done</li>
+    <li>Brand Voice summary shows personality, differentiator, values with green border</li>
+    <li>"Refaire →" link available on completed brand voice to redo brainstorming</li>
+    <li>AI preview reflects per-platform tone assignments + brand voice if available</li>
     <li>"Manage Pillars" navigates correctly</li>
     <li>"Redo Onboarding" with confirmation, pre-fills values</li>
     <li>Auto-save on all changes</li>

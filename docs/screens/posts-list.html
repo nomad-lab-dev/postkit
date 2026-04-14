@@ -10,11 +10,12 @@
   <h4>Iteration History</h4>
   <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Plain list with text-only cards. Swipe to change status. No visual slots.</span></div>
   <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Visual slot thumbnails per card. Long press context menu (Duplicate, Delete, Export). No swipe status change. Filter tabs. "+" create button.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Added "Auto" badge on slot-machine-generated posts. Visual distinction between auto vs manual posts.</span></div>
 </div>
 
 <!-- DEFAULT STATE -->
 <div class="section">
-  <div class="section-title">Default State (v0.1)</div>
+  <div class="section-title">Default State (v0.4)</div>
   <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.3rem;">
       <div class="m-title" style="margin-bottom:0;">Your Posts</div>
@@ -27,27 +28,30 @@
       <div style="flex:1;text-align:center;padding:.2rem;font-size:.52rem;color:var(--text-3);">Ready</div>
       <div style="flex:1;text-align:center;padding:.2rem;font-size:.52rem;color:var(--text-3);">Published</div>
     </div>
-    <!-- Post card 1: Ready -->
+    <!-- Post card 1: Ready — Auto-generated -->
     <div class="m-glass" style="cursor:pointer;">
       <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:.2rem;">
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#c0d0e0,#b0c8d8);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#b8d0f0,#a0c0e0);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#90b0d0,#80a0c0);border-radius:3px;"></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-4.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-size:.6rem;font-weight:600;">Track Day Collection</div>
           <div style="font-size:.46rem;color:var(--text-3);">4 assets -- Apr 10</div>
         </div>
-        <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);">Ready</span>
+        <div style="display:flex;gap:.1rem;align-items:center;">
+          <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);font-size:.4rem;">🎰 Auto</span>
+          <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);">Ready</span>
+        </div>
       </div>
     </div>
-    <!-- Post card 2: Draft -->
+    <!-- Post card 2: Draft — Manual -->
     <div class="m-glass" style="cursor:pointer;">
       <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:.2rem;">
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#e0d0b8,#d0c0a8);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#d8c8b0,#c8b8a0);border-radius:3px;"></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-food-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-food-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
         <div class="m-slot-empty" style="aspect-ratio:1;border:1px dashed rgba(0,0,0,.15);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.4rem;color:var(--text-4);">+</div>
         <div class="m-slot-empty" style="aspect-ratio:1;border:1px dashed rgba(0,0,0,.15);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.4rem;color:var(--text-4);">+</div>
       </div>
@@ -59,20 +63,39 @@
         <span class="m-badge" style="background:rgba(0,0,0,.05);color:var(--text-3);">Draft</span>
       </div>
     </div>
-    <!-- Post card 3: Published -->
+    <!-- Post card 3: Published — Auto-generated -->
     <div class="m-glass-light" style="cursor:pointer;">
       <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:.2rem;">
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#a0c8a0,#80b080);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#b0d0b0,#90c090);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#c0d8c0,#a0c0a0);border-radius:3px;"></div>
-        <div class="m-slot-filled" style="aspect-ratio:1;background:linear-gradient(135deg,#90b890,#80a880);border-radius:3px;"></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-dev-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-dev-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-dev-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-nomad-4.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <div>
           <div style="font-size:.6rem;font-weight:600;">Dev Setup Tour</div>
           <div style="font-size:.46rem;color:var(--text-3);">4 assets -- Apr 8</div>
         </div>
-        <span class="m-badge" style="background:var(--green-bg);color:var(--green);">Published</span>
+        <div style="display:flex;gap:.1rem;align-items:center;">
+          <span class="m-badge" style="background:var(--purple-bg);color:var(--purple);font-size:.4rem;">🎰 Auto</span>
+          <span class="m-badge" style="background:var(--green-bg);color:var(--green);">Published</span>
+        </div>
+      </div>
+    </div>
+    <!-- Post card 4: Ready — Manual (no Auto badge) -->
+    <div class="m-glass" style="cursor:pointer;">
+      <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:.2rem;">
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-nomad-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-nomad-2.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-nomad-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+        <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-life-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-size:.6rem;font-weight:600;">Nomad Life</div>
+          <div style="font-size:.46rem;color:var(--text-3);">4 assets -- Apr 9</div>
+        </div>
+        <span class="m-badge" style="background:var(--accent-bg);color:var(--accent);">Ready</span>
       </div>
     </div>
   </div>
@@ -131,9 +154,9 @@
       <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body">
         <div class="m-glass" style="border-color:rgba(255,59,48,.15);">
           <div class="m-slot-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin-bottom:.15rem;">
-            <div style="aspect-ratio:1;background:linear-gradient(135deg,#a8c8f0,#90b8e0);border-radius:3px;"></div>
+            <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
             <div style="aspect-ratio:1;background:repeating-linear-gradient(45deg,var(--red-bg),var(--red-bg) 2px,transparent 2px,transparent 4px);border-radius:3px;border:1px solid rgba(255,59,48,.2);"></div>
-            <div style="aspect-ratio:1;background:linear-gradient(135deg,#b0c0e0,#a0b0d0);border-radius:3px;"></div>
+            <div style="aspect-ratio:1;border-radius:3px;overflow:hidden;"><img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;" alt=""></div>
             <div style="aspect-ratio:1;border:1px dashed rgba(0,0,0,.15);border-radius:3px;"></div>
           </div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -170,6 +193,7 @@
     <li>Cancel a post (delete): All assets return to "non-utilise" state and become available again</li>
     <li>No swipe status change: Status can only be changed from within the Post Editor (intentional v0.1 decision)</li>
     <li>Many posts (20+): Vertical scroll list, lazy loading</li>
+    <li>Auto-generated posts: Show "🎰 Auto" badge in purple next to status badge to distinguish from manually created posts</li>
   </ul>
 </div>
 
@@ -179,6 +203,8 @@
   <ul class="ac-list">
     <li>4 visual slot thumbnails per post card (filled = thumbnail, empty = dotted outline)</li>
     <li>Status badge on each card: Draft (gray), Ready (blue), Published (green)</li>
+    <li>"🎰 Auto" badge in purple shown on slot-machine-generated posts, next to status badge</li>
+    <li>Auto vs manual posts visually distinguishable at a glance</li>
     <li>Tap post card navigates to Post Editor detail</li>
     <li>Long press opens context menu with Duplicate, Export to Album, Delete</li>
     <li>Delete returns all post assets to "non-utilise" state</li>
