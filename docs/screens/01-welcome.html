@@ -1,19 +1,22 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>01 — Welcome</title><link rel="stylesheet" href="screen-template.css"></head><body>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>01 — Welcome + Quick Scan</title><link rel="stylesheet" href="screen-template.css"></head><body>
 <div class="screen-header">
-  <h1>01 — Welcome</h1>
-  <div class="path">Views/Onboarding/OnboardingWelcomeView.swift</div>
-  <div class="refs"><span class="ref">PB-022</span><span class="ref">Step 1 of 3</span></div>
+  <h1>01 — Welcome + Quick Scan</h1>
+  <div class="path">Views/Onboarding/WelcomeView.swift</div>
+  <div class="refs"><span class="ref">PK-F01</span><span class="ref">Step 1 of 2</span><span class="ref">v0.5</span></div>
 </div>
 <div class="history-toggle" onclick="this.nextElementSibling.classList.toggle('open')">📜 Version History ▾</div>
 <div class="history-block">
   <h4>Iteration History</h4>
-  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Logo + tagline only. 7 step dots. No value preview.</span></div>
-  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added before/after visual (chaotic grid → organized). 5 step dots. Skip still available.</span></div>
-  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">Reduced to 3 step dots (Welcome → Scan → Pillars). Removed "Skip" button and skip-related edge cases. Before/after visual preserved.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Logo + tagline. 7 step dots.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Before/after visual. 5 dots. Skip.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.4</span><span class="vh-date">Apr 13</span><span class="vh-desc">3 dots. No skip. Value-first copy.</span></div>
+  <div class="vh-entry"><span class="vh-ver">v0.5</span><span class="vh-date">Apr 14</span><span class="vh-desc">Fusionne Welcome + Quick Scan en 1 ecran, 3 states. Le CTA trigger la permission + le scan. 2 etapes d'onboarding au lieu de 3. Zero friction.</span></div>
 </div>
+
+<!-- STATE 1: WELCOME — CTA triggers permission + scan -->
 <div class="section">
-  <div class="section-title">Default State (v0.4)</div>
+  <div class="section-title">State 1 — Welcome (CTA = permission + scan)</div>
   <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;text-align:center;padding-bottom:4.5rem;">
     <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;">
       <div style="font-size:2.5rem;margin-bottom:.5rem;">📦</div>
@@ -32,48 +35,204 @@
         </div>
       </div>
     </div>
-    <div class="m-dots"><div class="m-dot m-dot-active"></div><div class="m-dot"></div><div class="m-dot"></div></div>
+    <div class="m-dots"><div class="m-dot m-dot-active"></div><div class="m-dot"></div></div>
     <div class="m-nav"><div class="m-btn" style="flex:1;text-align:center;">Decouvrir mon contenu</div></div>
   </div><div class="phone-home"></div></div>
 </div>
+
+<!-- STATE 2: SCANNING — Photos appear one by one -->
 <div class="section">
-  <div class="section-title">Edge Case States</div>
+  <div class="section-title">State 2 — Scan en cours (meme ecran, transition animee)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:4.5rem;">
+    <div class="m-dots"><div class="m-dot m-dot-active"></div><div class="m-dot"></div></div>
+    <div style="text-align:center;margin:.3rem 0 .3rem;">
+      <div style="font-size:.85rem;font-weight:700;">Decouvrons ton contenu</div>
+      <div style="font-size:.55rem;color:var(--text-3);">PostKit detecte tes themes...</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:3px;margin:.5rem 0;">
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;"><img src="../assets/gallery-auto-1.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;"><img src="../assets/gallery-food-2.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;"><img src="../assets/gallery-dev-1.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;opacity:.7;"><img src="../assets/gallery-life-1.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;opacity:.5;"><img src="../assets/gallery-nomad-1.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;overflow:hidden;opacity:.3;"><img src="../assets/gallery-auto-3.webp" style="width:100%;height:100%;object-fit:cover;"></div>
+      <div style="aspect-ratio:1;border-radius:6px;background:rgba(0,0,0,0.03);"></div>
+      <div style="aspect-ratio:1;border-radius:6px;background:rgba(0,0,0,0.02);"></div>
+    </div>
+    <div class="m-progress" style="margin-top:.3rem;"><div class="m-progress-fill" style="width:65%;"></div></div>
+    <div style="text-align:center;font-size:.5rem;color:var(--text-3);margin-top:.15rem;">13 / 20 photos analysees</div>
+    <div class="m-nav">
+      <div class="m-btn-disabled" style="flex:1;text-align:center;">Detection en cours...</div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- STATE 3: RESULTS — Pillars detected -->
+<div class="section">
+  <div class="section-title">State 3 — Piliers detectes (meme ecran, transition)</div>
+  <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="padding-bottom:4.5rem;">
+    <div class="m-dots"><div class="m-dot m-dot-active"></div><div class="m-dot"></div></div>
+    <div style="text-align:center;margin:.3rem 0 .4rem;">
+      <div style="font-size:.85rem;font-weight:700;">Ta galerie a 4 piliers ✨</div>
+      <div style="font-size:.55rem;color:var(--text-3);">Voici les themes de ton contenu</div>
+    </div>
+    <div class="m-bento">
+      <div class="m-bento-item" style="border-color:rgba(0,122,255,.15);background:var(--accent-bg);padding:.5rem;">
+        <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;margin-bottom:.2rem;">
+          <span style="font-size:.75rem;">🚗</span>
+          <span style="font-size:.55rem;font-weight:600;">Automotive</span>
+          <span class="m-badge" style="background:rgba(0,122,255,0.1);color:var(--accent);font-size:.42rem;">8 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <img src="../assets/gallery-auto-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          <img src="../assets/gallery-auto-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+        </div>
+      </div>
+      <div class="m-bento-item" style="border-color:rgba(50,173,230,.15);background:rgba(50,173,230,0.06);padding:.5rem;">
+        <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;margin-bottom:.2rem;">
+          <span style="font-size:.75rem;">💻</span>
+          <span style="font-size:.55rem;font-weight:600;">Dev / Tech</span>
+          <span class="m-badge" style="background:rgba(50,173,230,0.1);color:#32ade6;font-size:.42rem;">5 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <img src="../assets/gallery-dev-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          <img src="../assets/gallery-dev-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+        </div>
+      </div>
+      <div class="m-bento-item" style="border-color:rgba(255,149,0,.15);background:rgba(255,149,0,0.06);padding:.5rem;">
+        <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;margin-bottom:.2rem;">
+          <span style="font-size:.75rem;">🍜</span>
+          <span style="font-size:.55rem;font-weight:600;">Food</span>
+          <span class="m-badge" style="background:rgba(255,149,0,0.1);color:#ff9500;font-size:.42rem;">4 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <img src="../assets/gallery-food-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          <img src="../assets/gallery-food-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+        </div>
+      </div>
+      <div class="m-bento-item" style="border-color:rgba(52,199,89,.15);background:rgba(52,199,89,0.06);padding:.5rem;">
+        <div style="display:flex;align-items:center;gap:.2rem;justify-content:center;margin-bottom:.2rem;">
+          <span style="font-size:.75rem;">🌅</span>
+          <span style="font-size:.55rem;font-weight:600;">Travel</span>
+          <span class="m-badge" style="background:rgba(52,199,89,0.1);color:#34c759;font-size:.42rem;">3 photos</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+          <img src="../assets/gallery-nomad-1.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+          <img src="../assets/gallery-nomad-2.webp" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:3px;">
+        </div>
+      </div>
+    </div>
+    <div class="m-nav">
+      <div class="m-btn" style="flex:1;text-align:center;">Configurer mes piliers →</div>
+    </div>
+  </div><div class="phone-home"></div></div>
+</div>
+
+<!-- EDGE CASES -->
+<div class="section">
+  <div class="section-title">Edge Cases</div>
   <div class="mockup-row">
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--red-bg);color:var(--red);">Permission denied</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">🔒</div>
+        <div style="font-size:.72rem;font-weight:700;">Autorise l'acces a ta galerie</div>
+        <div style="font-size:.58rem;color:var(--text-3);margin:.2rem 0 .5rem;max-width:85%;">PostKit analyse tes photos localement pour detecter tes themes de contenu.</div>
+        <div class="m-btn" style="font-size:.58rem;">Ouvrir les Reglages</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--orange-bg);color:var(--orange);">0 piliers detectes</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">🎨</div>
+        <div style="font-size:.72rem;font-weight:700;">Tes photos sont uniques</div>
+        <div style="font-size:.58rem;color:var(--text-3);margin:.2rem 0 .5rem;">Choisis tes piliers toi-meme pour definir ta marque !</div>
+        <div class="m-btn" style="font-size:.58rem;">Choisir mes piliers →</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:rgba(0,0,0,0.04);color:var(--text-3);">Galerie vide</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">📷</div>
+        <div style="font-size:.72rem;font-weight:700;">Ta galerie est vide</div>
+        <div style="font-size:.58rem;color:var(--text-3);margin:.2rem 0;">Prends quelques photos, PostKit fera le reste.</div>
+      </div><div class="phone-home"></div></div>
+    </div>
+    <div class="mockup-col">
+      <div class="state-label" style="background:var(--yellow-bg);color:var(--yellow);">Acces limite</div>
+      <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+        <div style="font-size:2rem;margin-bottom:.3rem;">⚡</div>
+        <div style="font-size:.72rem;font-weight:700;">Acces partiel</div>
+        <div style="font-size:.58rem;color:var(--text-3);margin:.2rem 0 .3rem;">PostKit peut analyser tes 12 photos selectionnees.</div>
+        <div class="m-btn" style="font-size:.55rem;margin-bottom:.2rem;">Donner l'acces complet</div>
+        <div style="font-size:.5rem;color:var(--accent);">ou continuer avec 12 photos</div>
+      </div><div class="phone-home"></div></div>
+    </div>
     <div class="mockup-col">
       <div class="state-label" style="background:var(--green-bg);color:var(--green);">Resume after kill</div>
       <div class="phone"><div class="phone-bar">9:41</div><div class="phone-body" style="display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
         <div style="font-size:1.2rem;margin-bottom:.3rem;">🔄</div>
         <div style="font-size:.68rem;font-weight:600;">On reprend...</div>
         <div style="font-size:.55rem;color:var(--text-3);margin-top:.15rem;">Retour a la derniere etape</div>
-        <div class="m-dots" style="margin-top:.4rem;"><div class="m-dot m-dot-done"></div><div class="m-dot m-dot-active"></div><div class="m-dot"></div></div>
       </div><div class="phone-home"></div></div>
     </div>
   </div>
 </div>
+
+<!-- INTERACTIONS -->
 <div class="section">
   <div class="section-title">Interactions</div>
   <table class="int-table">
     <tr><th>Action</th><th>Result</th></tr>
-    <tr><td>Tap "Decouvrir mon contenu"</td><td>Navigate to Step 2 (Quick Scan Preview)</td></tr>
+    <tr><td>Tap "Decouvrir mon contenu"</td><td>Trigger PHPhotoLibrary permission dialog. Si granted → transition vers State 2 (scan).</td></tr>
+    <tr><td>Permission granted (full)</td><td>Core ML scan 20 photos recentes (~5 sec). Thumbnails fade-in un par un. Transition automatique vers State 3.</td></tr>
+    <tr><td>Permission granted (limited)</td><td>Scan les photos selectionnees. State 3 avec count limite.</td></tr>
+    <tr><td>Permission denied</td><td>Edge case "Autorise l'acces" avec lien Settings.</td></tr>
+    <tr><td>Scan termine (State 3)</td><td>Piliers detectes avec thumbnails de SES photos. Bento grid.</td></tr>
+    <tr><td>Tap "Configurer mes piliers →"</td><td>Navigate to Step 2 (Pillars Setup). Piliers pre-coches avec suggestions.</td></tr>
   </table>
 </div>
+
+<!-- EDGE CASES LIST -->
 <div class="section">
   <div class="section-title">Edge Cases</div>
   <ul class="edge-list">
-    <li>App killed during onboarding: resume at last completed step (persisted in UserDefaults)</li>
-    <li>VoiceOver: full accessibility labels on all elements. CTA is default focus.</li>
+    <li>Permission denied : ecran lock + deep link "Ouvrir les Reglages"</li>
+    <li>Limited access : scan le subset, montre le resultat avec count limite + offre d'elargir</li>
+    <li>Galerie vide : message friendly + pas de CTA next</li>
+    <li>Core ML ne detecte rien : "Tes photos sont uniques" → skip vers pillars manuels</li>
+    <li>App killed pendant le scan : reprend au state 1 (le scan est rapide, pas grave)</li>
+    <li>20 photos toutes du meme sujet : 1 seul pilier suggere, c'est OK</li>
   </ul>
 </div>
+
+<!-- ACCEPTANCE CRITERIA -->
 <div class="section">
   <div class="section-title">Acceptance Criteria</div>
   <ul class="ac-list">
-    <li>Before/after visual renders correctly on both iPhone and Mac</li>
-    <li>Step dots show 1/3</li>
-    <li>"Decouvrir mon contenu" navigates to Step 2 (Quick Scan Preview)</li>
-    <li>No "Skip" button — onboarding is mandatory</li>
-    <li>Onboarding state persisted in UserDefaults</li>
-    <li>No Back button on Step 1</li>
-    <li>Nav pinned at bottom (same position as all other steps)</li>
+    <li>CTA "Decouvrir mon contenu" trigger la permission Photos</li>
+    <li>Permission → scan → resultats = meme ecran, 3 states animes</li>
+    <li>Core ML analyse 20 photos en moins de 10 secondes</li>
+    <li>Thumbnails apparaissent un par un (fade-in sequentiel)</li>
+    <li>Piliers sugggeres avec thumbnails de SES photos</li>
+    <li>Count de photos par pilier</li>
+    <li>Permission denied/limited/empty geres</li>
+    <li>Step dots montrent 1/2 (2 etapes d'onboarding total)</li>
+    <li>Les piliers sugggeres pre-remplissent l'etape 2</li>
+    <li>Un seul ecran SwiftUI avec 3 @State transitions</li>
+  </ul>
+</div>
+
+<!-- DESIGN NOTES -->
+<div class="section">
+  <div class="section-title">Design Notes</div>
+  <ul class="ac-list">
+    <li>Fusionne Welcome + Quick Scan en 1 ecran (etait 2 ecrans separes en v0.4)</li>
+    <li>Onboarding = 2 etapes (Welcome/Scan + Pillars). Etait 3 en v0.4, 5 en v0.1, 7 en v0.0.</li>
+    <li>Le CTA trigger la permission de facon CONTEXTUELLE : "montre-moi mon contenu"</li>
+    <li>L'user ne voit jamais un ecran de permissions — c'est integre dans le flow naturel</li>
+    <li>Core ML VNClassifyImageRequest + PHAsset metadata (EXIF lieu/date)</li>
+    <li>Portfolio piece : 1 View SwiftUI, 3 states avec animations, permission handling</li>
   </ul>
 </div>
 </body></html>
