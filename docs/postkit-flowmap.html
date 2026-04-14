@@ -33,8 +33,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
 /* Canvas */
 .canvas {
   position: absolute;
-  width: 2800px;
-  height: 1800px;
+  width: 2100px;
+  height: 1000px;
   background:
     radial-gradient(circle at 1px 1px, rgba(255,255,255,0.04) 1px, transparent 0);
   background-size: 24px 24px;
@@ -120,12 +120,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
 }
 .screen:hover { transform: translateY(-2px); box-shadow: 0 6px 24px rgba(0,0,0,0.08); }
 .screen .preview {
-  height: 140px;
+  height: 180px;
   background: #f2f2f7;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2rem;
   position: relative;
   overflow: hidden;
+}
+.screen .preview iframe {
+  width: 400%;
+  height: 400%;
+  transform: scale(0.25);
+  transform-origin: 0 0;
+  border: none;
+  pointer-events: none;
 }
 .screen .preview img { width: 100%; height: 100%; object-fit: cover; }
 .screen .info { padding: .6rem .75rem; }
@@ -183,89 +189,67 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
 <div class="canvas" id="canvas">
 
   <!-- SVG CONNECTIONS -->
-  <svg class="connections" viewBox="0 0 2800 1800">
-    <!-- Onboarding flow -->
-    <path class="flow-main" d="M 300 220 C 400 220, 400 220, 500 220" />
+  <svg class="connections" viewBox="0 0 2100 1000">
     <!-- Welcome → Pillars -->
-    <path class="flow-main" d="M 700 220 C 800 220, 800 220, 900 220" />
+    <path class="flow-main" d="M 300 250 C 340 250, 340 250, 380 250" />
     <!-- Pillars → Template Nudge -->
-    <path class="flow-main" d="M 1100 220 C 1200 220, 1200 300, 1300 380" />
-    <!-- Pillars → Dashboard (skip template) -->
-    <path class="flow-main" d="M 1100 220 C 1250 220, 1250 500, 400 580" />
+    <path class="flow-main" d="M 580 250 C 620 250, 620 250, 660 250" />
     <!-- Template Nudge → Template Builder -->
-    <path class="flow-main" d="M 1500 380 C 1600 380, 1600 380, 1700 380" />
-    <!-- Template Nudge → Dashboard (later) -->
-    <path class="flow-optional" d="M 1400 460 C 1400 520, 600 520, 500 580" />
+    <path class="flow-main" d="M 860 250 C 900 250, 900 250, 940 250" />
+    <!-- Template / Pillars → Dashboard -->
+    <path class="flow-optional" d="M 500 370 C 500 400, 250 400, 200 420" />
+    <path class="flow-main" d="M 760 370 C 760 400, 300 410, 250 420" />
+    <!-- Dashboard → Slot Machine -->
+    <path class="flow-main" d="M 320 560 C 400 580, 450 600, 500 560" />
     <!-- Dashboard → Classification -->
-    <path class="flow-main" d="M 500 760 C 500 820, 500 820, 500 880" />
+    <path class="flow-main" d="M 200 650 C 200 680, 200 680, 200 700" />
     <!-- Dashboard → Explore -->
-    <path class="flow-main" d="M 600 700 C 800 700, 800 880, 900 880" />
-    <!-- Dashboard → Slot Machine (post-scan) -->
-    <path class="flow-main" d="M 400 700 C 200 750, 200 880, 200 920" />
-    <!-- Classification Queue → Classification View -->
-    <path class="flow-main" d="M 600 1000 C 700 1000, 700 1000, 800 1000" />
+    <path class="flow-main" d="M 300 650 C 500 670, 700 680, 760 700" />
+    <!-- Dashboard → Posts List -->
+    <path class="flow-main" d="M 320 520 C 800 510, 1100 490, 1220 520" />
+    <!-- Classification Queue → View -->
+    <path class="flow-main" d="M 300 830 C 340 830, 340 830, 380 830" />
     <!-- Explore → Asset Detail -->
-    <path class="flow-main" d="M 1100 960 C 1200 960, 1200 960, 1300 960" />
-    <!-- Explore → Post Editor (multi-select) -->
-    <path class="flow-main" d="M 1000 1040 C 1000 1150, 1400 1150, 1500 1150" />
+    <path class="flow-main" d="M 860 830 C 900 830, 900 830, 940 830" />
+    <!-- Explore → Post Editor -->
+    <path class="flow-main" d="M 800 900 C 1000 920, 1150 870, 1220 830" />
     <!-- Slot Machine → Post Editor -->
-    <path class="flow-main" d="M 350 1100 C 600 1200, 1200 1200, 1500 1150" />
-    <!-- Post Editor → First Share -->
-    <path class="flow-trigger" d="M 1700 1230 C 1700 1350, 1700 1350, 1800 1400" />
+    <path class="flow-main" d="M 600 600 C 900 650, 1100 750, 1220 800" />
     <!-- Post Editor → Posts List -->
-    <path class="flow-main" d="M 1600 1080 C 1600 980, 1800 900, 1900 850" />
-    <!-- Posts List → Post Editor -->
-    <path class="flow-main" d="M 1900 920 C 1900 1000, 1700 1060, 1600 1080" />
-    <!-- First Share → Brainstorming (optional) -->
-    <path class="flow-optional" d="M 2000 1400 C 2100 1400, 2100 1400, 2200 1400" />
-    <!-- Profile section -->
-    <path class="flow-optional" d="M 2200 700 C 2300 700, 2300 700, 2400 700" />
+    <path class="flow-main" d="M 1320 700 C 1320 630, 1320 580, 1320 560" />
+    <!-- Post Editor → First Share -->
+    <path class="flow-trigger" d="M 1420 830 C 1460 830, 1460 830, 1500 830" />
+    <!-- First Share → Brainstorming -->
+    <path class="flow-optional" d="M 1700 830 C 1740 830, 1740 830, 1780 830" />
+    <!-- Dashboard → Persona -->
+    <path class="flow-optional" d="M 320 500 C 800 480, 1300 470, 1500 500" />
+    <!-- Persona → Settings -->
+    <path class="flow-optional" d="M 1700 520 C 1740 520, 1740 520, 1780 520" />
   </svg>
 
   <!-- ZONE LABELS -->
   <div class="zone" style="top:80px;left:100px;background:rgba(0,122,255,.06);color:var(--accent);">🚀 Onboarding</div>
-  <div class="zone" style="top:300px;left:1250px;background:rgba(175,82,222,.06);color:var(--purple);">📐 Templates</div>
-  <div class="zone" style="top:500px;left:100px;background:rgba(255,149,0,.06);color:var(--orange);">🏠 Home</div>
-  <div class="zone" style="top:800px;left:100px;background:rgba(52,199,89,.06);color:var(--green);">🏷️ Classification</div>
-  <div class="zone" style="top:800px;left:850px;background:rgba(50,173,230,.06);color:var(--cyan);">🔍 Explore</div>
-  <div class="zone" style="top:800px;left:50px;background:rgba(255,45,85,.06);color:var(--pink);">🎰 Wow</div>
-  <div class="zone" style="top:1000px;left:1450px;background:rgba(0,122,255,.06);color:var(--accent);">📝 Posts</div>
-  <div class="zone" style="top:1320px;left:1750px;background:rgba(175,82,222,.06);color:var(--purple);">📤 Share</div>
+  <div class="zone" style="top:80px;left:660px;background:rgba(175,82,222,.06);color:var(--purple);">📐 Templates</div>
+  <div class="zone" style="top:380px;left:100px;background:rgba(255,149,0,.06);color:var(--orange);">🏠 Home + Wow</div>
+  <div class="zone" style="top:660px;left:100px;background:rgba(52,199,89,.06);color:var(--green);">🏷️ Classification</div>
+  <div class="zone" style="top:660px;left:660px;background:rgba(50,173,230,.06);color:var(--cyan);">🔍 Explore</div>
+  <div class="zone" style="top:380px;left:1220px;background:rgba(0,122,255,.06);color:var(--accent);">📝 Posts</div>
+  <div class="zone" style="top:660px;left:1500px;background:rgba(175,82,222,.06);color:var(--purple);">📤 Share</div>
+  <div class="zone" style="top:380px;left:1500px;background:rgba(0,0,0,.03);color:var(--text-3);">👤 Profile</div>
   <div class="zone" style="top:500px;left:2050px;background:rgba(0,0,0,.03);color:var(--text-3);">👤 Profile</div>
 
   <!-- ONBOARDING -->
   <div class="screen" style="top:120px;left:100px;">
-    <div class="preview" style="background:linear-gradient(135deg,#e8f0ff,#f0e8ff);">
-      <div class="mini-phone">
-        <div class="bar"></div>
-        <div class="body" style="text-align:center;padding-top:15px;">
-          <div style="font-size:.5rem;">📦</div>
-          <div style="font-size:.25rem;font-weight:600;">PostKit</div>
-          <div style="font-size:.18rem;margin-top:2px;">Ton prochain post</div>
-          <div style="display:flex;gap:1px;justify-content:center;margin-top:4px;">
-            <div style="width:10px;height:10px;background:#ccc;border-radius:1px;"></div>
-            <div style="width:10px;height:10px;background:#bbb;border-radius:1px;"></div>
-            <div style="width:10px;height:10px;background:rgba(0,122,255,.2);border-radius:1px;"></div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <div class="preview"><iframe src="screens/01-welcome.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">01 Welcome + Scan</div>
-      <div class="desc">CTA → permission → Core ML 20 photos → piliers</div>
+      <div class="desc">CTA → permission → Core ML → piliers</div>
       <span class="tag" style="background:rgba(0,122,255,.08);color:var(--accent);">3 states</span>
     </div>
   </div>
 
-  <div class="screen" style="top:120px;left:500px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#e8ffe8,#f0fff0);height:120px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;width:70px;">
-        <div style="aspect-ratio:1;background:rgba(0,122,255,.15);border-radius:2px;"></div>
-        <div style="aspect-ratio:1;background:rgba(52,199,89,.15);border-radius:2px;"></div>
-        <div style="aspect-ratio:1;background:rgba(255,149,0,.15);border-radius:2px;"></div>
-        <div style="aspect-ratio:1;background:rgba(50,173,230,.15);border-radius:2px;"></div>
-      </div>
-    </div>
+  <div class="screen" style="top:120px;left:380px;">
+    <div class="preview"><iframe src="screens/02-pillars.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">02 Pillars</div>
       <div class="desc">Pre-rempli par scan. Toggle on/off.</div>
@@ -274,10 +258,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- TEMPLATES -->
-  <div class="screen" style="top:340px;left:1300px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#f0e8ff,#ffe8f0);height:120px;">
-      <div style="font-size:1.5rem;">📐</div>
-    </div>
+  <div class="screen" style="top:120px;left:660px;">
+    <div class="preview"><iframe src="screens/template-nudge.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Template Nudge</div>
       <div class="desc">Mockup widget + presets. "Active tes posts."</div>
@@ -285,17 +267,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
     </div>
   </div>
 
-  <div class="screen" style="top:340px;left:1700px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#f0e8ff,#e8f0ff);height:120px;">
-      <div style="text-align:center;">
-        <div style="font-size:.8rem;">📐</div>
-        <div style="display:flex;flex-direction:column;gap:2px;align-items:center;margin-top:4px;">
-          <div style="width:60px;height:8px;background:rgba(175,82,222,.1);border-radius:3px;font-size:.2rem;color:var(--purple);">Slot 1 — Wide</div>
-          <div style="width:60px;height:8px;background:rgba(175,82,222,.08);border-radius:3px;font-size:.2rem;color:var(--purple);">Slot 2 — Detail</div>
-          <div style="width:60px;height:8px;background:rgba(175,82,222,.06);border-radius:3px;font-size:.2rem;color:var(--purple);">Slot 3 — POV</div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:120px;left:940px;">
+    <div class="preview"><iframe src="screens/template-builder.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Template Builder</div>
       <div class="desc">Slots configurables. Presets.</div>
@@ -304,26 +277,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- HOME -->
-  <div class="screen" style="top:560px;left:200px;width:240px;">
-    <div class="preview" style="background:linear-gradient(135deg,#fff8e8,#fff0e0);height:150px;">
-      <div style="width:90%;text-align:left;padding:8px;">
-        <div style="font-size:.35rem;font-weight:600;">Dashboard</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;margin-top:4px;">
-          <div style="background:rgba(0,122,255,.08);border-radius:4px;padding:4px;text-align:center;">
-            <div style="font-size:.4rem;">🚗</div><div style="font-size:.2rem;">Auto · 89</div>
-          </div>
-          <div style="background:rgba(52,199,89,.08);border-radius:4px;padding:4px;text-align:center;">
-            <div style="font-size:.4rem;">💻</div><div style="font-size:.2rem;">Dev · 342</div>
-          </div>
-          <div style="background:rgba(255,149,0,.08);border-radius:4px;padding:4px;text-align:center;">
-            <div style="font-size:.4rem;">🍜</div><div style="font-size:.2rem;">Food · 128</div>
-          </div>
-          <div style="background:rgba(50,173,230,.08);border-radius:4px;padding:4px;text-align:center;">
-            <div style="font-size:.4rem;">✈️</div><div style="font-size:.2rem;">Travel · 215</div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:420px;left:100px;width:220px;">
+    <div class="preview"><iframe src="screens/home-dashboard.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">🏠 Home Dashboard</div>
       <div class="desc">Scan status + pillar bento + quick actions + template nudge</div>
@@ -332,19 +287,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- SLOT MACHINE -->
-  <div class="screen" style="top:880px;left:80px;width:220px;">
-    <div class="preview" style="background:linear-gradient(135deg,#ffe8f0,#fff0e0);height:150px;">
-      <div style="text-align:center;">
-        <div style="font-size:1.5rem;">🎰</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;width:80px;margin:6px auto 0;">
-          <div style="aspect-ratio:1;background:rgba(255,45,85,.1);border-radius:3px;"></div>
-          <div style="aspect-ratio:1;background:rgba(0,122,255,.1);border-radius:3px;"></div>
-          <div style="aspect-ratio:1;background:rgba(52,199,89,.1);border-radius:3px;"></div>
-          <div style="aspect-ratio:1;background:rgba(175,82,222,.1);border-radius:3px;"></div>
-        </div>
-        <div style="font-size:.3rem;color:var(--text-3);margin-top:3px;">Remixer · Ajuster · Parfait</div>
-      </div>
-    </div>
+  <div class="screen" style="top:420px;left:400px;">
+    <div class="preview"><iframe src="screens/slot-machine.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">🎰 Slot Machine</div>
       <div class="desc">Photos shuffle → post revele. Haptic click. Le wow moment.</div>
@@ -353,15 +297,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- CLASSIFICATION -->
-  <div class="screen" style="top:880px;left:400px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#e8ffe8,#e8fff8);height:120px;">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:3px;width:70px;">
-        <div style="background:rgba(0,122,255,.1);border-radius:4px;padding:6px;text-align:center;font-size:.3rem;">🚗<br>42</div>
-        <div style="background:rgba(52,199,89,.1);border-radius:4px;padding:6px;text-align:center;font-size:.3rem;">💻<br>23</div>
-        <div style="background:rgba(255,149,0,.1);border-radius:4px;padding:6px;text-align:center;font-size:.3rem;">🍜<br>18</div>
-        <div style="background:rgba(50,173,230,.1);border-radius:4px;padding:6px;text-align:center;font-size:.3rem;color:var(--green);">✈️<br>✓</div>
-      </div>
-    </div>
+  <div class="screen" style="top:700px;left:100px;">
+    <div class="preview"><iframe src="screens/classification-queue.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Classification Queue</div>
       <div class="desc">Bento par pilier. Tap → swipe.</div>
@@ -369,14 +306,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
     </div>
   </div>
 
-  <div class="screen" style="top:880px;left:700px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#506070,#708090);height:140px;position:relative;">
-      <div style="position:absolute;bottom:4px;left:4px;display:flex;gap:2px;">
-        <span style="font-size:.25rem;background:rgba(255,255,255,.3);color:#fff;padding:1px 3px;border-radius:2px;">track day ✕</span>
-        <span style="font-size:.25rem;background:rgba(255,255,255,.3);color:#fff;padding:1px 3px;border-radius:2px;">porsche ✕</span>
-      </div>
-      <div style="position:absolute;bottom:4px;right:4px;font-size:.25rem;color:rgba(255,255,255,.7);">📍 BCN ✎ · 🖼 Wide ✎</div>
-    </div>
+  <div class="screen" style="top:700px;left:380px;">
+    <div class="preview"><iframe src="screens/classification-view.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Classification View</div>
       <div class="desc">Swipe + edit tags/loc/cadrage en live</div>
@@ -385,20 +316,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- EXPLORE -->
-  <div class="screen" style="top:880px;left:950px;width:200px;">
-    <div class="preview" style="background:var(--bg);height:130px;">
-      <div style="width:85%;padding:4px;">
-        <div style="height:10px;background:rgba(0,0,0,.04);border-radius:3px;margin-bottom:3px;font-size:.2rem;color:var(--text-3);padding:2px 4px;">🔍 Chercher...</div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;">
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c8e8d0,#d8e8c0);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#f0d8c8,#f0c8d0);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c8d8f0,#c8e8d0);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#d8e8c0,#f0d8c8);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#e0c8f0,#c8c8f0);border-radius:2px;"></div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:700px;left:660px;">
+    <div class="preview"><iframe src="screens/explore-grid.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">🔍 Explore Grid</div>
       <div class="desc">Filtres riches. Multi-select → post.</div>
@@ -406,13 +325,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
     </div>
   </div>
 
-  <div class="screen" style="top:880px;left:1250px;width:160px;">
-    <div class="preview" style="background:linear-gradient(145deg,#d0d8f0,#c8e0f0);height:120px;position:relative;">
-      <div style="position:absolute;bottom:4px;left:4px;right:4px;">
-        <span style="font-size:.25rem;background:rgba(0,122,255,.8);color:#fff;padding:1px 3px;border-radius:2px;">💻 Dev</span>
-        <span style="font-size:.25rem;background:rgba(50,173,230,.8);color:#fff;padding:1px 3px;border-radius:2px;">🤖 AI</span>
-      </div>
-    </div>
+  <div class="screen" style="top:700px;left:940px;">
+    <div class="preview"><iframe src="screens/asset-detail.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Asset Detail</div>
       <div class="desc">Sheet. Tout editable.</div>
@@ -421,21 +335,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- POSTS -->
-  <div class="screen" style="top:780px;left:1800px;width:200px;">
-    <div class="preview" style="background:var(--bg);height:120px;">
-      <div style="width:85%;padding:4px;">
-        <div style="font-size:.3rem;font-weight:600;margin-bottom:3px;">Tes Posts</div>
-        <div style="background:#fff;border:1px solid var(--border);border-radius:4px;padding:4px;margin-bottom:2px;">
-          <div style="display:flex;gap:2px;margin-bottom:2px;">
-            <div style="width:16px;height:16px;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);border-radius:2px;"></div>
-            <div style="width:16px;height:16px;background:linear-gradient(135deg,#c8e8d0,#d8e8c0);border-radius:2px;"></div>
-            <div style="width:16px;height:16px;border:1px dashed rgba(0,0,0,.1);border-radius:2px;"></div>
-            <div style="width:16px;height:16px;border:1px dashed rgba(0,0,0,.1);border-radius:2px;"></div>
-          </div>
-          <div style="font-size:.22rem;">Bangkok Morning · 2/4</div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:420px;left:1220px;">
+    <div class="preview"><iframe src="screens/posts-list.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">📝 Posts List</div>
       <div class="desc">Visual slots. Auto badge 🎰.</div>
@@ -443,21 +344,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
     </div>
   </div>
 
-  <div class="screen" style="top:1060px;left:1500px;width:220px;">
-    <div class="preview" style="background:var(--bg);height:140px;">
-      <div style="width:90%;padding:4px;">
-        <div style="font-size:.3rem;font-weight:600;">Track Day Collection</div>
-        <div style="font-size:.22rem;color:var(--text-3);margin-bottom:3px;">Barcelona track day 🏎️</div>
-        <div style="background:rgba(175,82,222,.04);border:1px solid rgba(175,82,222,.1);border-radius:4px;padding:3px;margin-bottom:3px;">
-          <div style="font-size:.2rem;color:var(--purple);font-weight:600;">Hook</div>
-          <div style="font-size:.2rem;">Le son d'un flat-6 a 7h...</div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:2px;">
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#d0d8f0,#c8e0f0);border-radius:2px;"></div>
-          <div style="aspect-ratio:1;background:linear-gradient(135deg,#c8e8d0,#d8e8c0);border-radius:2px;"></div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:700px;left:1220px;">
+    <div class="preview"><iframe src="screens/post-editor.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">📝 Post Editor</div>
       <div class="desc">Slots + Hook/Desc/Hashtags + Remixer</div>
@@ -466,17 +354,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- SHARE -->
-  <div class="screen" style="top:1370px;left:1800px;width:180px;">
-    <div class="preview" style="background:linear-gradient(135deg,#f0e8ff,#e8f0ff);height:110px;">
-      <div style="text-align:center;">
-        <div style="font-size:.4rem;font-weight:600;margin-bottom:4px;">Publier sur...</div>
-        <div style="display:flex;gap:4px;justify-content:center;">
-          <div style="width:20px;height:20px;background:linear-gradient(135deg,#f09433,#dc2743,#bc1888,#5851db);border-radius:5px;"></div>
-          <div style="width:20px;height:20px;background:#0A66C2;border-radius:5px;"></div>
-          <div style="width:20px;height:20px;background:#000;border-radius:5px;"></div>
-        </div>
-      </div>
-    </div>
+  <div class="screen" style="top:700px;left:1500px;">
+    <div class="preview"><iframe src="screens/first-share-setup.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">📤 First Share Setup</div>
       <div class="desc">Just-in-time : reseau + tone + brainstorm</div>
@@ -485,10 +364,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- BRAINSTORMING (optional from share) -->
-  <div class="screen" style="top:1370px;left:2150px;width:170px;">
-    <div class="preview" style="background:linear-gradient(135deg,#f0e8ff,#ffe8f8);height:100px;">
-      <div style="font-size:1.2rem;">🧠</div>
-    </div>
+  <div class="screen" style="top:700px;left:1780px;">
+    <div class="preview"><iframe src="screens/first-share-setup.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Brand Voice</div>
       <div class="desc">30 questions. Stacked cards.</div>
@@ -497,18 +374,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- PROFILE -->
-  <div class="screen" style="top:560px;left:2100px;width:160px;">
-    <div class="preview" style="background:var(--bg);height:100px;">
-      <div style="font-size:1.2rem;">👤</div>
-    </div>
+  <div class="screen" style="top:420px;left:1500px;">
+    <div class="preview"><iframe src="screens/persona-editor.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Persona Editor</div>
       <div class="desc">Bio + Platforms + Brand Voice</div>
     </div>
   </div>
 
-  <div class="screen" style="top:560px;left:2350px;width:140px;">
-    <div class="preview" style="background:var(--bg);height:80px;font-size:1rem;">⚙️</div>
+  <div class="screen" style="top:420px;left:1780px;">
+    <div class="preview"><iframe src="screens/scan-settings.html" loading="lazy"></iframe></div>
     <div class="info">
       <div class="name">Settings</div>
       <div class="desc">Scan + Pillars + Stats</div>
@@ -516,15 +391,16 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
   </div>
 
   <!-- FLOW ANNOTATIONS -->
-  <div style="position:absolute;top:180px;left:360px;font-size:.55rem;color:var(--accent);font-weight:500;transform:rotate(-5deg);">permission + scan →</div>
-  <div style="position:absolute;top:180px;left:760px;font-size:.55rem;color:var(--accent);font-weight:500;">pre-rempli →</div>
-  <div style="position:absolute;top:290px;left:1100px;font-size:.5rem;color:var(--purple);font-weight:500;transform:rotate(25deg);">template nudge ↘</div>
-  <div style="position:absolute;top:480px;left:800px;font-size:.5rem;color:var(--orange);font-style:italic;">"plus tard" →</div>
-  <div style="position:absolute;top:820px;left:300px;font-size:.5rem;color:var(--green);font-weight:500;">trier ↓</div>
-  <div style="position:absolute;top:820px;left:130px;font-size:.5rem;color:var(--pink);font-weight:500;">post-scan ↓</div>
-  <div style="position:absolute;top:820px;left:800px;font-size:.5rem;color:var(--cyan);font-weight:500;">explorer →</div>
-  <div style="position:absolute;top:1300px;left:1750px;font-size:.5rem;color:var(--purple);font-weight:500;">1er partage ↓</div>
-  <div style="position:absolute;top:1200px;left:800px;font-size:.5rem;color:var(--pink);font-style:italic;">slot machine → post</div>
+  <!-- Flow annotations -->
+  <div style="position:absolute;top:210px;left:320px;font-size:.55rem;color:var(--accent);font-weight:500;">scan →</div>
+  <div style="position:absolute;top:210px;left:600px;font-size:.55rem;color:var(--accent);font-weight:500;">→</div>
+  <div style="position:absolute;top:210px;left:880px;font-size:.55rem;color:var(--purple);font-weight:500;">→</div>
+  <div style="position:absolute;top:395px;left:500px;font-size:.48rem;color:var(--orange);font-style:italic;">"plus tard" ↘</div>
+  <div style="position:absolute;top:670px;left:320px;font-size:.48rem;color:var(--green);font-weight:500;">→ swipe</div>
+  <div style="position:absolute;top:585px;left:400px;font-size:.48rem;color:var(--pink);font-weight:500;">→ wow</div>
+  <div style="position:absolute;top:670px;left:890px;font-size:.48rem;color:var(--cyan);font-weight:500;">→ detail</div>
+  <div style="position:absolute;top:870px;left:1100px;font-size:.48rem;color:var(--accent);font-style:italic;">→ post</div>
+  <div style="position:absolute;top:790px;left:1440px;font-size:.48rem;color:var(--purple);font-weight:500;">→ share</div>
 
 </div>
 </div><!-- end viewport -->
@@ -546,9 +422,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', system-
 // === PAN & ZOOM ===
 const viewport = document.getElementById('viewport');
 const canvas = document.getElementById('canvas');
-let scale = 0.55;
-let panX = -200;
-let panY = -40;
+let scale = 0.7;
+let panX = -50;
+let panY = -30;
 let isPanning = false;
 let startX, startY;
 
@@ -591,7 +467,7 @@ viewport.addEventListener('wheel', e => {
 
 function zoomIn() { scale = Math.min(2, scale * 1.2); applyTransform(); }
 function zoomOut() { scale = Math.max(0.2, scale * 0.8); applyTransform(); }
-function zoomFit() { scale = 0.5; panX = -100; panY = -20; applyTransform(); }
+function zoomFit() { scale = 0.65; panX = -30; panY = -20; applyTransform(); }
 
 // === SCREEN DETAILS ===
 const screenData = {
