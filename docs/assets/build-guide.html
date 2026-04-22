@@ -1,0 +1,2377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — Build Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+:root {
+  --bg:         #f7f5f0;
+  --bg2:        #eeeae2;
+  --bg3:        #e5e0d6;
+  --border:     #d4cec4;
+  --border2:    #c0b8ac;
+  --amber:      #b36a00;
+  --amber-dim:  #f5e8cc;
+  --cyan:       #006fa8;
+  --cyan-dim:   #daeef8;
+  --green:      #1a7a46;
+  --green-dim:  #d6f0e4;
+  --red:        #c0392b;
+  --text:       #1c1a14;
+  --text-dim:   #5a5448;
+  --text-muted: #9a9288;
+  --sidebar-w:  260px;
+  --font-ui:    'IBM Plex Sans', sans-serif;
+  --font-mono:  'IBM Plex Mono', monospace;
+  --font-code:  'JetBrains Mono', monospace;
+  --font-orbit: 'Orbitron', sans-serif;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.7;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Dot grid background ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, #c0b8ac 1px, transparent 1px);
+  background-size: 28px 28px;
+  opacity: 0.45;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  width: var(--sidebar-w);
+  background: rgba(247, 245, 240, 0.97);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+}
+
+.sidebar-header {
+  padding: 24px 20px 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo {
+  font-family: var(--font-orbit);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.sidebar-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 0;
+}
+
+.sidebar-nav::-webkit-scrollbar { width: 3px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-decoration: none;
+  color: var(--text-dim);
+  border-left: 2px solid transparent;
+  position: relative;
+}
+
+.nav-item:hover {
+  color: var(--text);
+  background: rgba(245, 166, 35, 0.05);
+  border-left-color: var(--amber-dim);
+}
+
+.nav-item.active {
+  color: var(--amber);
+  background: rgba(245, 166, 35, 0.08);
+  border-left-color: var(--amber);
+}
+
+.nav-item.complete {
+  color: var(--green);
+}
+
+.nav-item.complete.active {
+  color: var(--green);
+  border-left-color: var(--green);
+  background: rgba(0, 255, 136, 0.06);
+}
+
+.nav-slice-num {
+  font-family: var(--font-orbit);
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 24px;
+  color: inherit;
+  opacity: 0.7;
+}
+
+.nav-slice-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-progress {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.nav-item.complete .nav-progress {
+  color: var(--green);
+}
+
+.sidebar-footer {
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+
+.global-progress {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.progress-bar-track {
+  height: 3px;
+  background: var(--border2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--amber), var(--cyan));
+  border-radius: 2px;
+  transition: width 0.4s ease;
+}
+
+/* ── Main Content ── */
+.main {
+  margin-left: var(--sidebar-w);
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Section ── */
+.section {
+  min-height: 100vh;
+  padding: 80px 64px 80px 72px;
+  position: relative;
+  border-bottom: 1px solid var(--border);
+}
+
+.section-watermark {
+  position: absolute;
+  top: 40px; right: 40px;
+  font-family: var(--font-orbit);
+  font-size: 220px;
+  font-weight: 900;
+  color: var(--amber);
+  opacity: 0.025;
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+  letter-spacing: -0.05em;
+}
+
+/* ── Section Header ── */
+.section-header {
+  margin-bottom: 48px;
+  max-width: 760px;
+}
+
+.section-tag {
+  font-family: var(--font-orbit);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.25em;
+  color: var(--amber);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-tag::after {
+  content: '';
+  flex: 1;
+  max-width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--amber-dim), transparent);
+}
+
+.section-title {
+  font-family: var(--font-orbit);
+  font-size: 28px;
+  font-weight: 700;
+  color: #1c1a14;
+  letter-spacing: 0.05em;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.section-delivers {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--cyan);
+  line-height: 1.6;
+}
+
+.section-delivers strong {
+  color: var(--cyan);
+  font-weight: 600;
+}
+
+/* ── Content Blocks ── */
+.content-block {
+  max-width: 760px;
+  margin-bottom: 40px;
+}
+
+.block-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.block-title::before {
+  content: '//';
+  color: var(--amber-dim);
+  font-size: 10px;
+}
+
+/* ── Step ── */
+.step {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.step-number {
+  font-family: var(--font-orbit);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--amber);
+  letter-spacing: 0.2em;
+  margin-bottom: 10px;
+}
+
+.step-title {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 500;
+  color: #e8e8ff;
+  margin-bottom: 16px;
+}
+
+/* ── Checklist ── */
+.checklist {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.checklist-item:hover {
+  background: rgba(245, 166, 35, 0.05);
+}
+
+.checklist-item input[type="checkbox"] {
+  display: none;
+}
+
+.check-box {
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--border2);
+  border-radius: 4px;
+  background: var(--bg);
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.checklist-item input:checked + .check-box {
+  background: var(--green-dim);
+  border-color: var(--green);
+}
+
+.checklist-item input:checked + .check-box::after {
+  content: '✓';
+  color: var(--green);
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--font-mono);
+}
+
+.check-label {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  user-select: none;
+}
+
+.checklist-item input:checked ~ .check-label {
+  color: var(--text-dim);
+  text-decoration: line-through;
+  text-decoration-color: var(--green-dim);
+}
+
+/* ── Code Blocks ── */
+.code-block {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.code-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: 6px 6px 0 0;
+  padding: 8px 16px;
+}
+
+.code-lang {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.code-dots {
+  display: flex;
+  gap: 5px;
+}
+
+.code-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.code-dot.red   { background: #ff5f56; }
+.code-dot.amber { background: #ffbd2e; }
+.code-dot.green { background: #27c93f; }
+
+.code-body {
+  background: #f0ece3;
+  border: 1px solid var(--border);
+  border-radius: 0 0 6px 6px;
+  padding: 20px 22px;
+  overflow-x: auto;
+  cursor: pointer;
+  position: relative;
+}
+
+.code-body::after {
+  content: 'CLICK TO COPY';
+  position: absolute;
+  top: 10px; right: 14px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  color: var(--text-muted);
+  transition: color 0.2s;
+  pointer-events: none;
+}
+
+.code-body:hover::after {
+  color: var(--amber);
+}
+
+.code-body.copied::after {
+  content: 'COPIED ✓';
+  color: var(--green);
+}
+
+.code-body pre {
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.65;
+  color: var(--text);
+  white-space: pre;
+  tab-size: 2;
+}
+
+.code-body pre .kw    { color: #7c3aed; }
+.code-body pre .fn    { color: #1d4ed8; }
+.code-body pre .str   { color: #15803d; }
+.code-body pre .cm    { color: #9a9288; font-style: italic; }
+.code-body pre .num   { color: #c2410c; }
+.code-body pre .type  { color: #b45309; }
+
+/* ── Claude Prompt Block ── */
+.claude-block {
+  background: #fdf8ee;
+  border: 1px solid #e0d0b0;
+  border-left: 3px solid var(--amber);
+  border-radius: 6px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.claude-block::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--amber), transparent 60%);
+}
+
+.claude-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  border-bottom: 1px solid #e0d0b0;
+}
+
+.claude-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-orbit);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+}
+
+.claude-icon {
+  width: 16px;
+  height: 16px;
+  background: var(--amber);
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  color: var(--bg);
+  font-weight: 900;
+}
+
+.claude-copy-btn {
+  background: rgba(245, 166, 35, 0.12);
+  border: 1px solid var(--amber-dim);
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  color: var(--amber);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-transform: uppercase;
+}
+
+.claude-copy-btn:hover {
+  background: rgba(245, 166, 35, 0.22);
+  border-color: var(--amber);
+}
+
+.claude-copy-btn.copied {
+  background: rgba(0, 255, 136, 0.12);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.claude-prompt {
+  padding: 20px 22px;
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.7;
+  color: #1a4a2e;
+  white-space: pre-wrap;
+}
+
+/* ── Wireframe Block ── */
+.wireframe-block {
+  margin-bottom: 32px;
+}
+
+.wireframe-frame {
+  display: inline-block;
+  background: #f0ece3;
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 12px 16px;
+  position: relative;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.wireframe-frame::before {
+  content: '';
+  width: 50px;
+  height: 4px;
+  background: var(--border2);
+  border-radius: 3px;
+  display: block;
+  margin: 0 auto 12px;
+}
+
+.wireframe-frame::after {
+  content: '';
+  width: 30px;
+  height: 30px;
+  border: 1.5px solid var(--border2);
+  border-radius: 50%;
+  display: block;
+  margin: 12px auto 4px;
+}
+
+
+.wireframe-pre {
+  font-family: var(--font-code);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: var(--cyan);
+  white-space: pre;
+  padding: 4px 0;
+}
+
+
+/* ── Done Panel ── */
+.done-panel {
+  background: #f0faf4;
+  border: 1px solid #b8deca;
+  border-left: 3px solid var(--green);
+  border-radius: 6px;
+  padding: 20px 24px;
+  margin-top: 40px;
+}
+
+.done-panel-title {
+  font-family: var(--font-orbit);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--green);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.done-panel-title::before {
+  content: '✓';
+  width: 20px;
+  height: 20px;
+  background: var(--green-dim);
+  border: 1px solid var(--green);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ── Table ── */
+.rules-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.rules-table th {
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border2);
+  color: var(--amber);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.rules-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  vertical-align: top;
+}
+
+.rules-table tr:hover td {
+  background: rgba(245, 166, 35, 0.03);
+}
+
+.rules-table td:first-child {
+  color: var(--cyan);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ── Key behaviours ── */
+.behaviours {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.behaviours li {
+  display: flex;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+  padding: 8px 12px;
+  background: var(--bg2);
+  border-radius: 6px;
+  border-left: 2px solid var(--border2);
+}
+
+.behaviours li::before {
+  content: '▸';
+  color: var(--cyan);
+  flex-shrink: 0;
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.behaviours strong {
+  color: var(--amber);
+  font-weight: 600;
+}
+
+/* ── Prereqs ── */
+.prereq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  max-width: 680px;
+}
+
+.prereq-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.prereq-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.prereq-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.prereq-text strong {
+  color: var(--amber);
+  font-weight: 500;
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* ── Section status badge ── */
+.section-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-top: 10px;
+}
+
+.section-status.done {
+  border-color: var(--green);
+  color: var(--green);
+  background: var(--green-dim);
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+
+.section-status.done .status-dot {
+  background: var(--green);
+}
+
+/* ── Folder tree ── */
+.folder-tree {
+  background: #f0ece3;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 20px 24px;
+  font-family: var(--font-code);
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-dim);
+}
+
+.folder-tree .dir  { color: var(--cyan); font-weight: 500; }
+.folder-tree .file { color: var(--text); }
+.folder-tree .note { color: var(--text-dim); font-size: 11px; }
+
+/* ── Divider ── */
+.divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border2), transparent);
+  margin: 36px 0;
+}
+
+/* ── Inline code ── */
+code {
+  font-family: var(--font-code);
+  font-size: 12px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  padding: 1px 6px;
+  border-radius: 3px;
+  color: var(--cyan);
+}
+
+
+/* ── Scrollspy active glow ── */
+@keyframes pulse-amber {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.nav-item.active .nav-slice-num {
+  animation: pulse-amber 2s ease-in-out infinite;
+}
+
+/* ── Transition ── */
+.section { transition: opacity 0.3s ease; }
+
+/* ── Responsive hint ── */
+@media (max-width: 900px) {
+  .sidebar { transform: translateX(-100%); }
+  .main { margin-left: 0; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     SIDEBAR
+════════════════════════════════════════════ -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="sidebar-logo">PostKit</div>
+    <div class="sidebar-subtitle">BUILD GUIDE · 8 SLICES</div>
+  </div>
+  <div class="sidebar-nav" id="sidebar-nav">
+    <a class="nav-item active" href="#section-prereqs" data-section="prereqs">
+      <span class="nav-slice-num">PRE</span>
+      <span class="nav-slice-label">Prerequisites</span>
+      <span class="nav-progress" id="prog-prereqs">—</span>
+    </a>
+    <a class="nav-item" href="#section-0" data-section="0">
+      <span class="nav-slice-num">0</span>
+      <span class="nav-slice-label">Foundation</span>
+      <span class="nav-progress" id="prog-0">0/6</span>
+    </a>
+    <a class="nav-item" href="#section-1" data-section="1">
+      <span class="nav-slice-num">1</span>
+      <span class="nav-slice-label">Onboarding</span>
+      <span class="nav-progress" id="prog-1">0/8</span>
+    </a>
+    <a class="nav-item" href="#section-2" data-section="2">
+      <span class="nav-slice-num">2</span>
+      <span class="nav-slice-label">Dashboard + Scan</span>
+      <span class="nav-progress" id="prog-2">0/6</span>
+    </a>
+    <a class="nav-item" href="#section-3" data-section="3">
+      <span class="nav-slice-num">3</span>
+      <span class="nav-slice-label">Classification</span>
+      <span class="nav-progress" id="prog-3">0/7</span>
+    </a>
+    <a class="nav-item" href="#section-4" data-section="4">
+      <span class="nav-slice-num">4</span>
+      <span class="nav-slice-label">Explore Grid</span>
+      <span class="nav-progress" id="prog-4">0/6</span>
+    </a>
+    <a class="nav-item" href="#section-5" data-section="5">
+      <span class="nav-slice-num">5</span>
+      <span class="nav-slice-label">Post Assembly</span>
+      <span class="nav-progress" id="prog-5">0/8</span>
+    </a>
+    <a class="nav-item" href="#section-6" data-section="6">
+      <span class="nav-slice-num">6</span>
+      <span class="nav-slice-label">Pillar Editor</span>
+      <span class="nav-progress" id="prog-6">0/7</span>
+    </a>
+    <a class="nav-item" href="#section-7" data-section="7">
+      <span class="nav-slice-num">7</span>
+      <span class="nav-slice-label">Settings + Pro</span>
+      <span class="nav-progress" id="prog-7">0/8</span>
+    </a>
+    <a class="nav-item" href="#section-rules" data-section="rules">
+      <span class="nav-slice-num">★</span>
+      <span class="nav-slice-label">Global Rules</span>
+      <span class="nav-progress" id="prog-rules">—</span>
+    </a>
+  </div>
+  <div class="sidebar-footer">
+    <div class="global-progress" id="global-progress-label">0 / 56 tasks complete</div>
+    <div class="progress-bar-track">
+      <div class="progress-bar-fill" id="global-progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════ -->
+<main class="main">
+
+<!-- ── PREREQUISITES ── -->
+<section class="section" id="section-prereqs">
+  <div class="section-watermark">✦</div>
+  <div class="section-header">
+    <div class="section-tag">Before You Begin</div>
+    <h1 class="section-title">Prerequisites</h1>
+    <p class="section-delivers">One time setup. Check all four before opening Xcode.</p>
+  </div>
+
+  <div class="content-block">
+    <div class="prereq-grid">
+      <label class="checklist-item prereq-card">
+        <input type="checkbox" data-section="prereqs" data-id="p1">
+        <div class="check-box"></div>
+        <div>
+          <div class="prereq-icon">🛠</div>
+          <div class="prereq-text">
+            <strong>Xcode 16+</strong>
+            Installed and configured for iOS development.
+          </div>
+        </div>
+      </label>
+      <label class="checklist-item prereq-card">
+        <input type="checkbox" data-section="prereqs" data-id="p2">
+        <div class="check-box"></div>
+        <div>
+          <div class="prereq-icon">📱</div>
+          <div class="prereq-text">
+            <strong>iOS 18 Simulator</strong>
+            Available in Xcode → Devices & Simulators.
+          </div>
+        </div>
+      </label>
+      <label class="checklist-item prereq-card">
+        <input type="checkbox" data-section="prereqs" data-id="p3">
+        <div class="check-box"></div>
+        <div>
+          <div class="prereq-icon">📦</div>
+          <div class="prereq-text">
+            <strong>Google Generative AI SDK</strong>
+            URL: <code>https://github.com/google/generative-ai-swift</code>
+          </div>
+        </div>
+      </label>
+      <label class="checklist-item prereq-card">
+        <input type="checkbox" data-section="prereqs" data-id="p4">
+        <div class="check-box"></div>
+        <div>
+          <div class="prereq-icon">🔑</div>
+          <div class="prereq-text">
+            <strong>Gemini API Key</strong>
+            Free at <code>aistudio.google.com</code> — have it ready.
+          </div>
+        </div>
+      </label>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="content-block">
+    <div class="block-title">Session Startup</div>
+    <p style="font-size:13px; color:var(--text); margin-bottom:16px; max-width:640px;">
+      Paste this at the top of <strong style="color:var(--amber)">every new Claude Code session</strong>. It primes Claude with full context.
+    </p>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          CLAUDE CODE — SESSION TEMPLATE
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI app.
+CLAUDE.md is in the repo root — read it before anything else.
+Architecture brief: docs/briefs/16-dev-programme.md
+Build guide: docs/briefs/17-build-guide.md
+
+Current slice: [NUMBER + NAME]
+[paste the slice prompt from the guide]</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── SLICE 0 ── -->
+<section class="section" id="section-0">
+  <div class="section-watermark">0</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 0</div>
+    <h1 class="section-title">Project Foundation</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Runnable Xcode project · DI container · SwiftData stack · Empty screens · Tab navigation</p>
+    <div class="section-status" id="status-0"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="step">
+      <div class="step-number">STEP 01</div>
+      <div class="step-title">Create the Xcode project</div>
+      <ul class="checklist">
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c1">
+          <div class="check-box"></div>
+          <span class="check-label">Xcode → File → New → Project → App</span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c2">
+          <div class="check-box"></div>
+          <span class="check-label">Product Name: <code>PostKit</code> · Bundle ID: <code>com.yourname.postkit</code></span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c3">
+          <div class="check-box"></div>
+          <span class="check-label">Interface: <strong>SwiftUI</strong> · Language: <strong>Swift</strong> · Storage: <strong>SwiftData</strong> ← important</span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c4">
+          <div class="check-box"></div>
+          <span class="check-label">Minimum Deployments: <strong>iOS 18.0</strong></span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c5">
+          <div class="check-box"></div>
+          <span class="check-label">Save to <code>~/Desktop/GithubRepos/PillarBox/</code> · Create Git repository: <strong>yes</strong></span>
+        </label></li>
+      </ul>
+    </div>
+
+    <div class="step">
+      <div class="step-number">STEP 02</div>
+      <div class="step-title">Add Google Generative AI Swift Package</div>
+      <ul class="checklist">
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c6">
+          <div class="check-box"></div>
+          <span class="check-label">File → Add Package Dependencies → paste URL below → Up to Next Major → Add to target: PostKit</span>
+        </label></li>
+      </ul>
+      <div class="code-block" style="margin-top:14px;">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+          <div class="code-lang">package url</div>
+        </div>
+        <div class="code-body" onclick="copyCode(this)">
+          <pre>https://github.com/google/generative-ai-swift</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">STEP 03</div>
+      <div class="step-title">Create the folder structure</div>
+      <div class="folder-tree">
+<span class="dir">PostKit/</span>
+├── <span class="dir">App/</span>
+│   ├── <span class="file">PostKitApp.swift</span>        <span class="note">← already created by Xcode</span>
+│   └── <span class="file">AppContainer.swift</span>      <span class="note">← new</span>
+├── <span class="dir">Models/</span>
+│   ├── <span class="file">Pillar.swift</span>
+│   ├── <span class="file">ClassifiedPhoto.swift</span>
+│   └── <span class="file">GeneratedPost.swift</span>
+├── <span class="dir">Services/</span>
+│   ├── <span class="dir">Protocols/</span>
+│   │   ├── <span class="file">PhotoLibraryService.swift</span>
+│   │   ├── <span class="file">ImageClassifierService.swift</span>
+│   │   ├── <span class="file">PersistenceService.swift</span>
+│   │   └── <span class="file">PostGeneratorService.swift</span>
+│   └── <span class="dir">Live/</span>
+│       ├── <span class="file">LivePhotoLibraryService.swift</span>
+│       ├── <span class="file">HybridClassifierService.swift</span>
+│       ├── <span class="file">LivePersistenceService.swift</span>
+│       └── <span class="file">GeminiPostGeneratorService.swift</span>
+├── <span class="dir">ViewModels/</span>
+├── <span class="dir">Views/</span>
+│   ├── <span class="dir">Onboarding/</span>
+│   ├── <span class="dir">Dashboard/</span>
+│   ├── <span class="dir">Classification/</span>
+│   ├── <span class="dir">Explore/</span>
+│   ├── <span class="dir">PostAssembly/</span>
+│   └── <span class="dir">Shared/</span>
+├── <span class="dir">Navigation/</span>
+│   ├── <span class="file">AppRouter.swift</span>
+│   └── <span class="file">Routes.swift</span>
+└── <span class="dir">Utilities/</span>
+    └── <span class="file">AppStrings.swift</span></div>
+    </div>
+
+    <div class="step">
+      <div class="step-number">STEP 04</div>
+      <div class="step-title">Add Secrets.xcconfig — never commit this</div>
+      <ul class="checklist">
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c7">
+          <div class="check-box"></div>
+          <span class="check-label">File → New → File → Configuration Settings File → name it <code>Secrets.xcconfig</code></span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c8">
+          <div class="check-box"></div>
+          <span class="check-label">Add to project root (not a target) → paste your Gemini API key</span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c9">
+          <div class="check-box"></div>
+          <span class="check-label">In Info.plist add key <code>GEMINI_API_KEY</code> → value <code>$(GEMINI_API_KEY)</code></span>
+        </label></li>
+        <li><label class="checklist-item">
+          <input type="checkbox" data-section="0" data-id="s0c10">
+          <div class="check-box"></div>
+          <span class="check-label">Add <code>Secrets.xcconfig</code> to <code>.gitignore</code></span>
+        </label></li>
+      </ul>
+      <div class="code-block" style="margin-top:14px;">
+        <div class="code-header">
+          <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+          <div class="code-lang">xcconfig</div>
+        </div>
+        <div class="code-body" onclick="copyCode(this)">
+          <pre>GEMINI_API_KEY = paste_your_key_here</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 0</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">I'm building PostKit — an iOS 18+ SwiftUI app that uses AI to classify
+camera roll photos into content pillars and auto-generate social media posts.
+
+Read CLAUDE.md first — it defines the full stack, architecture rules, and naming.
+
+For this session, build Slice 0: Project Foundation.
+
+Deliver:
+1. All SwiftData @Model classes: Pillar, ClassifiedPhoto, GeneratedPost
+   (with all fields from the dev programme in docs/briefs/16-dev-programme.md)
+2. All 4 service protocols (PhotoLibraryService, ImageClassifierService,
+   PersistenceService, PostGeneratorService) — protocol only, no implementation yet
+3. EnvironmentValues extensions using @Entry macro for all 4 services
+4. AppRouter (@Observable @MainActor) with HomeRoute, ClassifyRoute, CreateRoute enums
+5. RootView with TabView (4 tabs: Home, Classify, Create, Settings)
+   using NavigationStack per tab
+6. Empty placeholder Views for: DashboardView, ClassificationQueueView,
+   ExploreView, PostAssemblyView — each just shows a Text with screen name
+7. PostKitApp.swift wired up with ModelContainer and AppRouter in environment
+
+Architecture rules (from CLAUDE.md):
+- @Observable, never ObservableObject
+- @Entry for DI, never EnvironmentObject
+- @MainActor on all ViewModels
+- Zero logic in Views
+- Swift 6 Sendable on all service protocols
+
+The app should compile and launch to an empty Dashboard tab with a tab bar.</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 0 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c1">
+        <div class="check-box"></div>
+        <span class="check-label">Project compiles with zero errors</span>
+      </label></li>
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c2">
+        <div class="check-box"></div>
+        <span class="check-label">App launches in simulator to Dashboard tab</span>
+      </label></li>
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c3">
+        <div class="check-box"></div>
+        <span class="check-label">Tab bar shows 4 tabs: Home / Classify / Create / Settings</span>
+      </label></li>
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c4">
+        <div class="check-box"></div>
+        <span class="check-label">All 4 service protocols exist with correct method signatures</span>
+      </label></li>
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c5">
+        <div class="check-box"></div>
+        <span class="check-label">All 3 SwiftData models exist with all fields</span>
+      </label></li>
+      <li><label class="checklist-item">
+        <input type="checkbox" data-section="0-done" data-id="d0c6">
+        <div class="check-box"></div>
+        <span class="check-label">No hardcoded data anywhere</span>
+      </label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 1 ── -->
+<section class="section" id="section-1">
+  <div class="section-watermark">1</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 1</div>
+    <h1 class="section-title">Onboarding</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Welcome screen → Photo permission → Quick Scan (20 photos) → Pillar suggestions → Save → dismiss to Dashboard</p>
+    <div class="section-status" id="status-1"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframes — 3 screens</div>
+    <div class="wireframe-block" style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Screen 1 · Welcome</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│         PostKit              │
+│                              │
+│   Turn your camera roll      │
+│   into daily content.        │
+│                              │
+│  📸  Camera Roll             │
+│  🧠  AI Classification       │
+│  🎯  Content Pillars         │
+│  ✦   Ready to Post           │
+│                              │
+│  [ Get Started → ]           │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Screen 2 · Quick Scan</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│   Scanning your photos…      │
+│                              │
+│      [Progress ring]         │
+│         14 / 20              │
+│                              │
+│  [Live 3-col thumbnail grid] │
+│   photos appear as scanned   │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Screen 3 · Suggestions</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│   We found your pillars      │
+│                              │
+│  🚗 Automotive  [✓]  [−]    │
+│     47 photos                │
+│  🌍 Travel      [✓]  [−]    │
+│     32 photos                │
+│  ☕ Food        [✓]  [−]    │
+│     18 photos                │
+│  + Add a pillar              │
+│                              │
+│  [ Start PostKit → ]         │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Key Behaviours</div>
+    <ul class="behaviours">
+      <li><strong>Permission flow:</strong> request <code>.readWrite</code> authorization before scanning. If denied → show settings deeplink, don't crash.</li>
+      <li><strong>Quick Scan:</strong> fetch last 20 PHAsset from PhotoKit → resize to 299×299 → run HybridClassifierService → group results by predicted pillar name.</li>
+      <li><strong>Suggestions:</strong> deduplicate pillar names, show top 5 by photo count. User can remove any.</li>
+      <li><strong>Confirm:</strong> <code>PersistenceService.save(pillars)</code> → dismiss sheet → Dashboard loads with real data.</li>
+      <li><strong>One-shot:</strong> check <code>UserDefaults.standard.bool(forKey: "onboardingComplete")</code> in RootView — only shows once.</li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">HybridClassifierService Stub</div>
+    <p style="font-size:13px;color:var(--text);margin-bottom:12px;max-width:640px;">For Slice 1, Gemini isn't needed yet. Build a stub — real Core ML comes in Slice 2.</p>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+        <div class="code-lang">swift</div>
+      </div>
+      <div class="code-body" onclick="copyCode(this)">
+        <pre><span class="cm">// Stub for onboarding — replace with real Core ML in Slice 2</span>
+<span class="kw">actor</span> <span class="type">HybridClassifierService</span>: <span class="type">ImageClassifierService</span> {
+    <span class="kw">private let</span> knownPillars = [<span class="str">"Automotive"</span>, <span class="str">"Travel"</span>, <span class="str">"Food"</span>,
+                                  <span class="str">"Business"</span>, <span class="str">"Fitness"</span>, <span class="str">"Behind the Scenes"</span>]
+
+    <span class="kw">func</span> <span class="fn">classify</span>(_ image: <span class="type">UIImage</span>) <span class="kw">async throws</span> -> <span class="type">ClassificationResult</span> {
+        <span class="kw">let</span> pillar = knownPillars.<span class="fn">randomElement</span>()!
+        <span class="kw">return</span> <span class="type">ClassificationResult</span>(
+            pillarName: pillar,
+            confidence: <span class="type">Float</span>.<span class="fn">random</span>(in: <span class="num">0.65</span>...<span class="num">0.95</span>),
+            suggestedTags: [],
+            source: .coreML
+        )
+    }
+}</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 1</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 1: Onboarding flow (full vertical slice).
+
+Deliver:
+1. OnboardingViewModel (@Observable @MainActor):
+   - step: OnboardingStep enum (.welcome | .scanning(Double) | .suggestions([PillarSuggestion]))
+   - func startQuickScan() async — fetches 20 recent PHAssets, classifies each,
+     groups into PillarSuggestion array (name, emoji, photoCount)
+   - func confirmPillars(_ selected: [PillarSuggestion]) async — saves to PersistenceService
+   - injected: PhotoLibraryService, ImageClassifierService, PersistenceService via init
+
+2. OnboardingView — full sheet with 3 steps driven by viewModel.step:
+   - .welcome: app logo, 4 feature bullets with entrance animation, "Get Started" button
+   - .scanning(progress): circular progress ring, live 3-col photo grid (thumbnails
+     appear as they're classified), pillar emoji overlaid on each thumb
+   - .suggestions: list of PillarSuggestion rows with confirm/remove toggles,
+     "Start PostKit" CTA button
+
+3. LivePhotoLibraryService implementing PhotoLibraryService:
+   - requestAuthorization() — PHPhotoLibrary.requestAuthorization(.readWrite)
+   - fetchRecentPhotos(limit:) — PHAsset.fetchAssets sorted by creationDate desc
+   - image(for:targetSize:) — PHImageManager.default().requestImage async
+
+4. HybridClassifierService stub (random pillar, real Core ML in Slice 2)
+
+5. In RootView: show OnboardingView as .sheet if UserDefaults "onboardingComplete" == false
+   After confirmPillars succeeds → set UserDefaults flag → dismiss sheet
+
+Architecture:
+- @Observable on ViewModel, @MainActor
+- Services injected via @Environment
+- No logic in Views, no hardcoded data
+- Handle PHAuthorizationStatus.denied gracefully (show alert with Settings deeplink)
+- The scanning loop must use Swift concurrency (Task + withThrowingTaskGroup)</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 1 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c1"><div class="check-box"></div><span class="check-label">Fresh install shows Onboarding sheet on launch</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c2"><div class="check-box"></div><span class="check-label">"Get Started" requests photo permission</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c3"><div class="check-box"></div><span class="check-label">If denied: alert with link to Settings, not a crash</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c4"><div class="check-box"></div><span class="check-label">Quick Scan visibly processes 20 photos with live progress</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c5"><div class="check-box"></div><span class="check-label">Suggestions screen shows ≥ 1 pillar with photo count</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c6"><div class="check-box"></div><span class="check-label">Tapping "Start PostKit" dismisses the sheet</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c7"><div class="check-box"></div><span class="check-label">Dashboard is now visible (empty state OK)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="1-done" data-id="d1c8"><div class="check-box"></div><span class="check-label">Second launch does NOT show onboarding again</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 2 ── -->
+<section class="section" id="section-2">
+  <div class="section-watermark">2</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 2</div>
+    <h1 class="section-title">Dashboard + Full Scan</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Pillar cards with metrics · Live scan progress · Full library scan in background</p>
+    <div class="section-status" id="status-2"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframe</div>
+    <div class="wireframe-block">
+      <div class="wireframe-frame">
+        <pre class="wireframe-pre">┌──────────────────────────────┐
+│  Dashboard              [+]  │
+├──────────────────────────────┤
+│  ┌───────────┬─────────────┐ │
+│  │ 155       │ 6           │ │
+│  │ Photos    │ Active      │ │
+│  │ sorted    │ Pillars     │ │
+│  └───────────┴─────────────┘ │
+│                              │
+│  YOUR PILLARS                │
+│  ┌────────────────────────┐  │
+│  │ 🚗 Automotive    47 ↗  │  │
+│  │ ████████░░ 84%  3/wk   │  │
+│  ├────────────────────────┤  │
+│  │ 🌍 Travel        32 ↗  │  │
+│  │ ██████░░░░ 64%  2/wk   │  │
+│  └────────────────────────┘  │
+│                              │
+│  [Scanning library… 42%  ✕]  │
+└──────────────────────────────┘</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Key Behaviours</div>
+    <ul class="behaviours">
+      <li><strong>Full Scan</strong> starts automatically when Dashboard appears for the first time after onboarding.</li>
+      <li>Processes the entire library in <strong>batches of 30 photos</strong> (older → newer), background <code>Task</code>.</li>
+      <li>Dashboard pillar cards <strong>update in real time</strong> as photos are classified.</li>
+      <li>Scan persists across app backgrounding — use <code>BackgroundTasks</code> framework.</li>
+      <li><strong>Real Core ML classifier</strong> goes here — replace the stub from Slice 1.</li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Core ML Setup</div>
+    <ul class="checklist" style="margin-bottom:16px;">
+      <li><label class="checklist-item"><input type="checkbox" data-section="2" data-id="s2c1"><div class="check-box"></div><span class="check-label">Download <code>MobileNetV2.mlmodel</code> from Apple's Core ML Model Gallery</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2" data-id="s2c2"><div class="check-box"></div><span class="check-label">Drag into Xcode project → check "Add to target: PostKit"</span></label></li>
+    </ul>
+    <div class="code-block">
+      <div class="code-header">
+        <div class="code-dots"><div class="code-dot red"></div><div class="code-dot amber"></div><div class="code-dot green"></div></div>
+        <div class="code-lang">swift — label mapping</div>
+      </div>
+      <div class="code-body" onclick="copyCode(this)">
+        <pre><span class="cm">// Pillar name mapping — MobileNet label → PostKit pillar</span>
+<span class="kw">let</span> labelToPillar: [<span class="type">String</span>: <span class="type">String</span>] = [
+    <span class="str">"sports car"</span>: <span class="str">"Automotive"</span>,
+    <span class="str">"racing car"</span>: <span class="str">"Automotive"</span>,
+    <span class="str">"convertible"</span>: <span class="str">"Automotive"</span>,
+    <span class="str">"airliner"</span>: <span class="str">"Travel"</span>,
+    <span class="str">"lakeside"</span>: <span class="str">"Travel"</span>,
+    <span class="str">"seashore"</span>: <span class="str">"Travel"</span>,
+    <span class="str">"espresso"</span>: <span class="str">"Food"</span>,
+    <span class="str">"pizza"</span>: <span class="str">"Food"</span>,
+    <span class="str">"cheeseburger"</span>: <span class="str">"Food"</span>,
+    <span class="cm">// expand as needed</span>
+]</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 2</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 2: Dashboard + Full Library Scan.
+
+Deliver:
+1. DashboardViewModel (@Observable @MainActor):
+   - pillars: [Pillar] — loaded from PersistenceService on appear
+   - totalPhotosSorted: Int
+   - isScanning: Bool
+   - scanProgress: Double (0.0–1.0)
+   - scanTask: Task? (for cancellation)
+   - func startFullScan() — launches background Task consuming AsyncStream<[PHAsset]>
+     from photoLibraryService.fetchAllPhotos(batchSize: 30), classifies each batch
+     with withThrowingTaskGroup, saves ClassifiedPhoto via persistenceService
+   - func cancelScan()
+   - Pillars update live as scan progresses (don't wait for full completion)
+
+2. DashboardView:
+   - 2-column metric header (total photos sorted, active pillar count)
+   - Scrollable list of PillarRowView (emoji, name, progress bar, photo count, freq)
+   - Tapping a pillar row navigates to HomeRoute.pillarDetail(pillar)
+   - Live scan progress bar at bottom (dismiss button cancels Task)
+   - [+] nav button → HomeRoute.pillarEditor(nil)
+   - Empty state when no pillars: "Add your first pillar" button
+
+3. LivePhotoLibraryService.fetchAllPhotos(batchSize:) → AsyncStream<[PHAsset]>
+   Full library sorted by creationDate desc, chunked into batches
+
+4. Real HybridClassifierService (replace stub from Slice 1):
+   - VNCoreMLModel from MobileNetV2.mlmodel
+   - VNCoreMLRequest in async continuation
+   - Map top label to pillar name via labelToPillar dict
+   - If confidence < 0.70 OR label not in dict → Gemini Flash fallback
+   - Gemini call: send base64 image with prompt asking for pillar classification
+     from the user's pillar list
+
+5. LivePersistenceService implementing PersistenceService:
+   - All CRUD operations using @ModelContext from ModelContainer
+   - fetchPillars(), save(photo:), fetchPhotos(status:) etc.
+
+Architecture:
+- Full Scan MUST use AsyncStream + withThrowingTaskGroup (showcase concurrency)
+- Actor isolation on HybridClassifierService
+- @MainActor updates on DashboardViewModel
+- Task cancellation via scanTask?.cancel() on view disappear</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 2 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c1"><div class="check-box"></div><span class="check-label">Dashboard shows pillar cards with real data from SwiftData</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c2"><div class="check-box"></div><span class="check-label">Photo count and progress bar update live during scan</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c3"><div class="check-box"></div><span class="check-label">Scan can be cancelled cleanly (no crash, task properly cancelled)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c4"><div class="check-box"></div><span class="check-label">Core ML classifies a photo successfully (check with a print)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c5"><div class="check-box"></div><span class="check-label">Gemini fallback is called when Core ML confidence &lt; 70%</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="2-done" data-id="d2c6"><div class="check-box"></div><span class="check-label">Pillar photo counts persist across app restart</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 3 ── -->
+<section class="section" id="section-3">
+  <div class="section-watermark">3</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 3</div>
+    <h1 class="section-title">Classification</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Photo queue grid → Swipe card with AI suggestion → Confirm/Reject → Updates pillar count</p>
+    <div class="section-status" id="status-3"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframes — Queue + Swipe Card</div>
+    <div class="wireframe-block" style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Queue View (tab 📸)</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│  ← Back    Classify  Filter  │
+├──────────────────────────────┤
+│  38 photos to review         │
+│  ┌─────┬─────┬─────┐         │
+│  │[img]│[img]│[img]│         │
+│  │ 🚗? │ 🌍? │  ?  │         │
+│  ├─────┼─────┼─────┤         │
+│  │[img]│[img]│[img]│         │
+│  └─────┴─────┴─────┘         │
+│  [Classify All — Accept AI]  │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Swipe Card</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│  ← Library  Classify  Filter │
+│  🚗 Automotive  ████░░  7/38 │
+│                              │
+│  ┌──────────────────────┐    │
+│  │                      │    │
+│  │    [Full photo]      │    │
+│  │                      │    │
+│  │    AI 87% ✓          │    │
+│  │                      │    │
+│  │  track day  porsche  │    │
+│  │  📍 Barcelona        │    │
+│  └──────────────────────┘    │
+│                              │
+│    [✕ Reject] [↩] [✓ Keep]   │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Key Behaviours</div>
+    <ul class="behaviours">
+      <li>Queue shows only <code>ClassifiedPhoto</code> with <code>.pending</code> status.</li>
+      <li><strong>Swipe right</strong> = confirm AI suggestion → <code>photo.status = .classified</code></li>
+      <li><strong>Swipe left</strong> = reject → <code>photo.status = .rejected</code></li>
+      <li><strong>Undo</strong> = restore previous photo's status via undo stack.</li>
+      <li><strong>Classify All</strong> = accept AI suggestion on all pending photos in one batch.</li>
+      <li>After confirming, pillar's photo count updates <strong>immediately</strong> on Dashboard.</li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 3</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 3: Classification — Queue view + Swipe card.
+
+Deliver:
+1. ClassificationViewModel (@Observable @MainActor):
+   - pendingPhotos: [ClassifiedPhoto] from PersistenceService
+   - currentIndex: Int
+   - currentAsset: PHAsset? (loaded from assetLocalIdentifier)
+   - currentImage: UIImage?
+   - isLoading: Bool
+   - undoStack: [(ClassifiedPhoto, ClassifiedPhoto.PhotoStatus)] for undo
+   - func loadQueue() async
+   - func confirm(pillar: Pillar) async — sets status .classified, pillarID
+   - func reject() async — sets status .rejected
+   - func undo() async
+   - func acceptAll() async — batch update all pending to .classified with AI suggestion
+   - func advance() — move to next index
+
+2. ClassificationQueueView (tab 📸):
+   - 3-column LazyVGrid of pending photos
+   - Each cell shows thumbnail + pillar emoji overlay if AI suggestion exists
+   - "38 photos to review" header
+   - "Classify All" button
+   - Tap → navigate to ClassifyRoute.classify(asset) at that index
+
+3. ClassificationView (the swipe card):
+   - Full-screen photo display
+   - Pillar name + progress bar header (current index / total)
+   - AI confidence badge (green if ≥ 70%, yellow if < 70%)
+   - Editable tag chips at bottom
+   - Swipe gesture: DragGesture, threshold 80pt left/right
+   - Card rotates slightly during drag (visual feedback)
+   - ✕ / ↩ / ✓ buttons at bottom (same actions as swipe)
+   - After confirm/reject: advance to next photo with card-flip transition
+
+Architecture:
+- DragGesture offset tracked in @State, NOT in ViewModel
+- ViewModel never imports SwiftUI (pure logic)
+- Photos fetched lazily — load current + prefetch next 2 only
+- Task cancellation when view disappears</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 3 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c1"><div class="check-box"></div><span class="check-label">Queue tab shows correct count of pending photos</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c2"><div class="check-box"></div><span class="check-label">Tapping a photo opens the swipe card</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c3"><div class="check-box"></div><span class="check-label">Swipe right confirms, swipe left rejects</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c4"><div class="check-box"></div><span class="check-label">Undo restores the last photo's state</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c5"><div class="check-box"></div><span class="check-label">"Classify All" batch-updates all pending</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c6"><div class="check-box"></div><span class="check-label">Dashboard pillar count updates after classification</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="3-done" data-id="d3c7"><div class="check-box"></div><span class="check-label">Swiping through all photos returns to the queue (empty state)</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 4 ── -->
+<section class="section" id="section-4">
+  <div class="section-watermark">4</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 4</div>
+    <h1 class="section-title">Explore Grid</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Full classified photo grid · Filter by pillar, status, date, location</p>
+    <div class="section-status" id="status-4"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframe</div>
+    <div class="wireframe-block">
+      <div class="wireframe-frame">
+        <pre class="wireframe-pre">┌──────────────────────────────┐
+│  Explore              Filter │
+├──────────────────────────────┤
+│  [All] [🚗] [🌍] [☕] [💼]   │
+├──────────────────────────────┤
+│  ┌─────┬─────┬─────┐         │
+│  │[img]│[img]│[img]│         │
+│  │ 🚗  │ 🌍  │ 🚗  │         │
+│  ├─────┼─────┼─────┤         │
+│  │[img]│[img]│[img]│         │
+│  │ ☕  │ 💼  │ 🌍  │         │
+│  └─────┴─────┴─────┘         │
+│                              │
+│  [Cadrage] [Lieu] [Moment]   │
+└──────────────────────────────┘</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 4</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 4: Explore Grid.
+
+Deliver:
+1. ExploreViewModel (@Observable @MainActor):
+   - allPhotos: [ClassifiedPhoto]
+   - filteredPhotos: [ClassifiedPhoto] (computed from filters)
+   - selectedPillar: Pillar?
+   - statusFilter: ClassifiedPhoto.PhotoStatus?
+   - locationFilter: String?
+   - func applyFilters() — queries SwiftData with NSPredicate based on active filters
+   - func loadPhotos() async
+
+2. ExploreView:
+   - Horizontal pill scroll for pillar filter (All + one per pillar)
+   - Active pill highlighted in pillar color
+   - 3-column LazyVGrid, each cell:
+     - Thumbnail image (loaded lazily via PhotoLibraryService)
+     - Pillar emoji badge (bottom-left overlay)
+     - Status indicator: classified (✓), pending (?), rejected (✗)
+   - Secondary filter row: Framing | Location | Moment | Status chips
+   - Tapping a photo opens full-screen view (modal sheet, no navigation)
+   - Tapping a pending photo navigates to ClassifyRoute.classify(asset)
+   - Empty state: "No photos yet — start classifying" with button
+
+Architecture:
+- LazyVGrid with on-demand image loading only (no full UIImage array in memory)
+- Filters applied via SwiftData @Query with dynamic predicates
+- Smooth pillar filter animation (matched geometry effect on pill indicator)</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 4 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c1"><div class="check-box"></div><span class="check-label">All classified photos appear in the grid</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c2"><div class="check-box"></div><span class="check-label">Tapping a pillar pill filters correctly</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c3"><div class="check-box"></div><span class="check-label">Secondary filters work independently (and compose with pillar filter)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c4"><div class="check-box"></div><span class="check-label">Scrolling through 100+ photos is smooth (no janking)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c5"><div class="check-box"></div><span class="check-label">Tapping a pending photo goes to classification</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="4-done" data-id="d4c6"><div class="check-box"></div><span class="check-label">Empty state shows when no photos match filter</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 5 ── -->
+<section class="section" id="section-5">
+  <div class="section-watermark">5</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 5</div>
+    <h1 class="section-title">Post Assembly</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Photo selection → AI caption generation → Platform tabs → Export sheet</p>
+    <div class="section-status" id="status-5"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframes — Builder + Export</div>
+    <div class="wireframe-block" style="display:flex; gap:24px; flex-wrap:wrap;">
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Step 1 · Photo + Caption</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│  ← Automotive  Post Builder  │
+│                        Save  │
+├──────────────────────────────┤
+│  [img✓][img ][img ][img ][+] │
+├──────────────────────────────┤
+│  Instagram  LinkedIn  Twitter│
+├──────────────────────────────┤
+│  ┌────────────────────────┐  │
+│  │ [selected photo]       │  │
+│  │ 🚗 Automotive          │  │
+│  │ ✦ AI Generated         │  │
+│  │ Track day at Circuit…  │  │
+│  │ #automotive #trackday  │  │
+│  │              218/2200  │  │
+│  └────────────────────────┘  │
+│  ┌──┐ ┌────────────────────┐ │
+│  │🔄│ │ Post to Instagram  │ │
+│  └──┘ └────────────────────┘ │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+      <div>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-dim);margin-bottom:8px;letter-spacing:0.1em;">Step 2 · Platform Export</div>
+        <div class="wireframe-frame">
+          <pre class="wireframe-pre">┌──────────────────────────────┐
+│  Share                  Done │
+├──────────────────────────────┤
+│  [Post mini preview]         │
+│                              │
+│  SHARE TO                    │
+│  📸 Instagram    [ON  ●]    │
+│  💼 LinkedIn     [ON  ●]    │
+│  𝕏  Twitter      [off ○]   │
+│                              │
+│  [ Share Now  [2] ]          │
+└──────────────────────────────┘</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Key Behaviours</div>
+    <ul class="behaviours">
+      <li>Post Assembly reached by tapping a pillar card on Dashboard.</li>
+      <li><strong>Multi-select:</strong> up to 10 photos from that pillar's classified photos.</li>
+      <li>AI caption generated by <code>PostGeneratorService</code> (Gemini Flash) for the selected platform.</li>
+      <li>Caption is <strong>editable inline</strong> — user tweaks before posting.</li>
+      <li><strong>Switching platforms</strong> regenerates the caption (adapted tone/length).</li>
+      <li>"Share Now" opens native iOS <code>UIActivityViewController</code>.</li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 5</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 5: Post Assembly — full vertical slice.
+
+Deliver:
+1. PostAssemblyViewModel (@Observable @MainActor):
+   - pillar: Pillar (injected)
+   - eligiblePhotos: [ClassifiedPhoto] (all .classified for this pillar)
+   - selectedAssets: [String] (assetLocalIdentifiers, max 10)
+   - currentPlatform: SocialPlatform = .instagram
+   - caption: String (editable)
+   - hashtags: [String]
+   - isGenerating: Bool
+   - generationTask: Task? (for cancellation on platform switch)
+   - func loadPhotos() async
+   - func togglePhoto(_ id: String) — add/remove from selectedAssets
+   - func generateCaption() async throws — calls PostGeneratorService
+   - func regenerate() async throws — cancels in-flight, generates new
+   - func switchPlatform(_ platform: SocialPlatform) — regenerates caption
+   - func savePost() async throws -> GeneratedPost
+
+2. PostAssemblyView (reached from Dashboard pillar tap → CreateRoute):
+   - Horizontal photo strip (thumbnails, selected = purple border + checkmark)
+   - Platform tab bar (Instagram / LinkedIn / Twitter)
+   - Post preview card: photo, pillar tag, "✦ AI Generated" chip, caption TextEditor,
+     hashtag pills, character count
+   - 🔄 regenerate button + primary "Post to [Platform]" CTA button
+   - Generating state: skeleton/shimmer over caption area
+
+3. PlatformExportView (sheet pushed from CTA):
+   - Post mini-preview card
+   - Toggle rows for each platform (iOS-style UISwitch)
+   - "Share Now [N]" button → UIActivityViewController via ShareLink
+   - Each platform generates adapted copy before sharing
+
+4. GeminiPostGeneratorService implementing PostGeneratorService:
+   - generateCaption(for:pillar:platform:) — sends image(s) + pillar context to Gemini Flash
+   - Prompt includes: pillar name, tone, topics, platform character limit
+   - generateHashtags(caption:pillar:platform:) — separate Gemini call for hashtags
+   - Use structured output (JSON mode) for reliable parsing
+
+Architecture:
+- Caption generation MUST be cancellable (generationTask?.cancel())
+- TextEditor for caption (not Text) — user should be able to edit
+- Character counter turns red when approaching platform limit
+- No hardcoded captions</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 5 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c1"><div class="check-box"></div><span class="check-label">Tapping a pillar on Dashboard opens Post Assembly for that pillar</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c2"><div class="check-box"></div><span class="check-label">Photo strip shows all classified photos for the pillar</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c3"><div class="check-box"></div><span class="check-label">Selecting photos and switching platforms regenerates the caption</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c4"><div class="check-box"></div><span class="check-label">Caption is editable (user can type freely)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c5"><div class="check-box"></div><span class="check-label">Character count is accurate and warns near platform limit</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c6"><div class="check-box"></div><span class="check-label">🔄 button generates a different caption</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c7"><div class="check-box"></div><span class="check-label">"Share Now" opens iOS share sheet with correct text</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="5-done" data-id="d5c8"><div class="check-box"></div><span class="check-label">Post is saved to SwiftData after sharing</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 6 ── -->
+<section class="section" id="section-6">
+  <div class="section-watermark">6</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 6</div>
+    <h1 class="section-title">Pillar Editor</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Create new pillar · Edit existing · Emoji picker · Tone selector · Topics chips · Frequency control</p>
+    <div class="section-status" id="status-6"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframe</div>
+    <div class="wireframe-block">
+      <div class="wireframe-frame">
+        <pre class="wireframe-pre">┌──────────────────────────────┐
+│  ← Dashboard  Edit Pillar    │
+│                        Save  │
+├──────────────────────────────┤
+│        [🚗]                  │
+│      Automotive              │
+│   47 photos · 84% coverage   │
+├──────────────────────────────┤
+│  PILLAR NAME                 │
+│  [Automotive          ]      │
+│  ABOUT THIS PILLAR           │
+│  [Cars, track days…   ]      │
+│  BRAND TONE                  │
+│  [Casual][Technical✓][Inspi] │
+│  TOPICS                      │
+│  [#automotive][#trackday][+] │
+│  POSTING FREQUENCY           │
+│  Posts per week  [−] 3 [+]   │
+├──────────────────────────────┤
+│  [ 🚗 Save Pillar ]          │
+└──────────────────────────────┘</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 6</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 6: Pillar Editor (create + edit).
+
+Deliver:
+1. PillarEditorViewModel (@Observable @MainActor):
+   - mode: EditorMode (.create | .edit(Pillar))
+   - name: String, emoji: String, about: String
+   - tone: PillarTone, topics: [String], postsPerWeek: Int, colorHex: String
+   - isValid: Bool (name not empty, emoji not empty)
+   - func save() async throws — create or update via PersistenceService
+   - func deletePillar() async throws (edit mode only)
+   - Populated from existing Pillar in .edit mode
+
+2. PillarEditorView:
+   - Large emoji display at top (tap → sheet with EmojiPickerView)
+   - Name TextField (focused on appear in .create mode)
+   - About TextEditor (multiline, max 200 chars with counter)
+   - Tone: 3-segment segmented-style button row (Casual / Technical / Inspirational)
+   - Topics: flow layout chip input (tag appears after typing + return,
+     tap chip to delete it)
+   - Frequency: stepper-style control (− / value / +), range 1–7
+   - "Save Pillar" button (disabled if !isValid)
+   - In edit mode: destructive "Delete Pillar" button at bottom (confirmation alert)
+   - Navigation title: "New Pillar" or "Edit Pillar"
+
+3. EmojiPickerView (simple grid, no external dependency):
+   - 6 categories, ~60 curated emojis relevant to content pillars
+   - Presented as a .sheet
+   - Tapping emoji dismisses sheet + updates PillarEditorViewModel.emoji
+
+Architecture:
+- Topics chip input: @State localTopic string, .onSubmit appends to viewModel.topics
+- Flow layout for chips: use Layout protocol (iOS 16+) for custom FlowLayout
+- No emoji picker library — build a simple curated grid</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 6 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c1"><div class="check-box"></div><span class="check-label">[+] on Dashboard opens editor in create mode</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c2"><div class="check-box"></div><span class="check-label">Tapping a pillar row offers an "Edit" path</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c3"><div class="check-box"></div><span class="check-label">All fields save correctly and persist across restart</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c4"><div class="check-box"></div><span class="check-label">Emoji picker opens and selection is reflected immediately</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c5"><div class="check-box"></div><span class="check-label">Topics can be added (type + return) and removed (tap ✕)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c6"><div class="check-box"></div><span class="check-label">Delete pillar shows confirmation alert before deleting</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="6-done" data-id="d6c7"><div class="check-box"></div><span class="check-label">Validation prevents saving an empty name</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── SLICE 7 ── -->
+<section class="section" id="section-7">
+  <div class="section-watermark">7</div>
+  <div class="section-header">
+    <div class="section-tag">Slice 7</div>
+    <h1 class="section-title">Settings + Pro Paywall</h1>
+    <p class="section-delivers"><strong>Delivers:</strong> Settings screen · StoreKit 2 paywall · Photo access deeplink · Re-scan</p>
+    <div class="section-status" id="status-7"><span class="status-dot"></span>Not started</div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Wireframe</div>
+    <div class="wireframe-block">
+      <div class="wireframe-frame">
+        <pre class="wireframe-pre">┌──────────────────────────────┐
+│  Settings                    │
+├──────────────────────────────┤
+│  ACCOUNT                     │
+│  → PostKit Pro          Free │
+│  → Restore Purchases         │
+├──────────────────────────────┤
+│  LIBRARY                     │
+│  → Photo Access      Full ›  │
+│  → Re-scan Library       ›   │
+│  → Clear All Data        ›   │
+├──────────────────────────────┤
+│  ABOUT                       │
+│  → Privacy Policy        ›   │
+│  → Rate PostKit          ›   │
+│  → Version            1.0.0  │
+└──────────────────────────────┘</pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">StoreKit 2 Configuration</div>
+    <ul class="checklist" style="margin-bottom:16px;">
+      <li><label class="checklist-item"><input type="checkbox" data-section="7" data-id="s7c1"><div class="check-box"></div><span class="check-label">Create StoreKit configuration file for local testing</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7" data-id="s7c2"><div class="check-box"></div><span class="check-label">Monthly subscription: <code>com.yourname.postkit.pro.monthly</code></span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7" data-id="s7c3"><div class="check-box"></div><span class="check-label">Annual subscription: <code>com.yourname.postkit.pro.annual</code></span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7" data-id="s7c4"><div class="check-box"></div><span class="check-label">3-day trial on both for sandbox testing</span></label></li>
+    </ul>
+  </div>
+
+  <div class="content-block">
+    <div class="block-title">Claude Code Prompt — Slice 7</div>
+    <div class="claude-block">
+      <div class="claude-header">
+        <div class="claude-label">
+          <div class="claude-icon">C</div>
+          PASTE AT START OF SESSION
+        </div>
+        <button class="claude-copy-btn" onclick="copyClaudeBlock(this)">Copy</button>
+      </div>
+      <div class="claude-prompt">Working on PostKit — iOS 18+ SwiftUI. Read CLAUDE.md.
+
+Slice 7: Settings + StoreKit 2 paywall.
+
+Deliver:
+1. SettingsViewModel (@Observable @MainActor):
+   - isPro: Bool (from StoreKit subscription status)
+   - photoAuthStatus: PHAuthorizationStatus
+   - appVersion: String (from Bundle)
+   - func openPhotoSettings() — UIApplication.shared.open Settings URL
+   - func rescanLibrary() async — resets ClassifiedPhoto statuses, triggers new full scan
+   - func clearAllData() async — deletes all SwiftData records
+   - func requestReview() — SKStoreReviewController.requestReview()
+
+2. SettingsView (List-based, iOS Settings style):
+   - ACCOUNT section: Pro status row, Restore Purchases row
+   - LIBRARY section: Photo Access row (shows current status), Re-scan, Clear All Data
+   - ABOUT section: Privacy Policy (WKWebView or Safari), Rate PostKit, Version
+
+3. PaywallView (sheet from Pro row):
+   - Hero: "PostKit Pro"
+   - Feature comparison: free vs pro limits
+   - 2 purchase options: monthly ($4.99) + annual ($34.99, "Best Value" badge)
+   - "Try Free for 7 Days" if trial available
+   - StoreKit 2: Product.products(for:), product.purchase(), Transaction.updates listener
+   - Restore button
+   - Dismiss (X) button
+
+4. StoreKit configuration file for local testing:
+   - Monthly subscription: com.yourname.postkit.pro.monthly
+   - Annual subscription: com.yourname.postkit.pro.annual
+   - 3-day trial on both for testing
+
+Architecture:
+- StoreKit 2 (async/await), NOT SKPaymentQueue
+- Transaction.updates AsyncSequence listened in AppContainer on init
+- isPro stored in @AppStorage, updated on transaction verification
+- Clear All Data: confirmation alert with destructive button,
+  then modelContext.delete on all models</div>
+    </div>
+  </div>
+
+  <div class="done-panel">
+    <div class="done-panel-title">Slice 7 is done when</div>
+    <ul class="checklist">
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c1"><div class="check-box"></div><span class="check-label">Settings screen navigates correctly from tab bar</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c2"><div class="check-box"></div><span class="check-label">Photo Access row shows current permission status</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c3"><div class="check-box"></div><span class="check-label">Opening Photo Settings deep-links to iOS Settings</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c4"><div class="check-box"></div><span class="check-label">Re-scan resets and restarts full scan</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c5"><div class="check-box"></div><span class="check-label">Clear All Data deletes everything after confirmation</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c6"><div class="check-box"></div><span class="check-label">Paywall shows both subscription options</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c7"><div class="check-box"></div><span class="check-label">Purchase flow completes without crash (sandbox)</span></label></li>
+      <li><label class="checklist-item"><input type="checkbox" data-section="7-done" data-id="d7c8"><div class="check-box"></div><span class="check-label">isPro persists across restart after purchase</span></label></li>
+    </ul>
+  </div>
+</section>
+
+<!-- ── GLOBAL RULES ── -->
+<section class="section" id="section-rules" style="min-height:auto; padding-bottom:120px;">
+  <div class="section-watermark">★</div>
+  <div class="section-header">
+    <div class="section-tag">Always Active</div>
+    <h1 class="section-title">Global Rules</h1>
+    <p class="section-delivers">These apply to every slice, every file, every session. If in doubt, re-read CLAUDE.md.</p>
+  </div>
+
+  <div class="content-block" style="max-width:860px;">
+    <table class="rules-table">
+      <thead>
+        <tr>
+          <th>Rule</th>
+          <th>What it means</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>@Observable</code> only</td>
+          <td>Never use <code>ObservableObject</code> or <code>@Published</code></td>
+        </tr>
+        <tr>
+          <td><code>@Entry</code> DI</td>
+          <td>Services injected via <code>EnvironmentValues</code>, never as singletons</td>
+        </tr>
+        <tr>
+          <td><code>@MainActor</code> on VMs</td>
+          <td>Every ViewModel is <code>@MainActor</code> — no manual <code>DispatchQueue.main</code></td>
+        </tr>
+        <tr>
+          <td>Zero logic in Views</td>
+          <td>No <code>if</code> that isn't pure display logic, no calculations</td>
+        </tr>
+        <tr>
+          <td>Services behind protocols</td>
+          <td>Never call SwiftData from a ViewModel directly</td>
+        </tr>
+        <tr>
+          <td><code>Sendable</code> everywhere</td>
+          <td>All service protocols conform to <code>Sendable</code></td>
+        </tr>
+        <tr>
+          <td>Async/await</td>
+          <td>No callbacks, no Combine, no <code>DispatchQueue</code> except legacy bridging</td>
+        </tr>
+        <tr>
+          <td>Typed routes</td>
+          <td>Navigation via enum cases, never string-based</td>
+        </tr>
+        <tr>
+          <td><code>AppStrings</code> enum</td>
+          <td>All user-facing strings in one place</td>
+        </tr>
+        <tr>
+          <td>No force unwrap</td>
+          <td><code>guard let</code> or <code>if let</code>, never <code>!</code> except tests</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <div class="content-block">
+    <div class="block-title">Phase 2 — After MVP Ships</div>
+    <ul class="behaviours">
+      <li>StoreKit 2 paywall (already scaffolded in Slice 7) → real product IDs</li>
+      <li>AI caption fine-tuning (user feedback loop → Gemini adapter)</li>
+      <li>CloudKit sync → multi-device support</li>
+      <li>LinkedIn direct publish via API (OAuth flow)</li>
+    </ul>
+  </div>
+
+  <div style="text-align:center; margin-top:60px; padding:40px;">
+    <div style="font-family:var(--font-orbit);font-size:11px;letter-spacing:0.3em;color:var(--text-muted);text-transform:uppercase;">PostKit · Build Guide</div>
+    <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted);margin-top:6px;">Checkboxes persist in localStorage · Open alongside Xcode + Claude Code</div>
+  </div>
+</section>
+
+</main>
+
+<script>
+// ── Checkbox state ────────────────────────────────────────────────
+const STORAGE_KEY = 'postkit-build-guide-v1';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Count totals per section
+const sectionTotals = {
+  'prereqs': 4,
+  '0': 10, '0-done': 6,
+  '1-done': 8,
+  '2': 2, '2-done': 6,
+  '3-done': 7,
+  '4-done': 6,
+  '5-done': 8,
+  '6-done': 7,
+  '7': 4, '7-done': 8,
+};
+
+// Map section groups to nav items
+const navSections = {
+  'prereqs': ['prereqs'],
+  '0': ['0', '0-done'],
+  '1': ['1-done'],
+  '2': ['2', '2-done'],
+  '3': ['3-done'],
+  '4': ['4-done'],
+  '5': ['5-done'],
+  '6': ['6-done'],
+  '7': ['7', '7-done'],
+};
+
+function countForNav(navKey) {
+  const state = loadState();
+  const groups = navSections[navKey] || [];
+  let checked = 0, total = 0;
+  groups.forEach(g => {
+    total += (sectionTotals[g] || 0);
+    Object.keys(state).filter(k => k.startsWith(g + '_')).forEach(k => {
+      if (state[k]) checked++;
+    });
+  });
+  return { checked, total };
+}
+
+function updateProgress() {
+  const state = loadState();
+  let totalChecked = 0;
+  let grandTotal = 0;
+
+  Object.values(navSections).forEach((groups, idx) => {
+    const navKey = Object.keys(navSections)[idx];
+    let navChecked = 0, navTotal = 0;
+    groups.forEach(g => {
+      navTotal += (sectionTotals[g] || 0);
+      Object.keys(state).filter(k => k.startsWith(g + '_')).forEach(k => {
+        if (state[k]) navChecked++;
+      });
+    });
+    totalChecked += navChecked;
+    grandTotal += navTotal;
+
+    const progEl = document.getElementById('prog-' + navKey);
+    if (progEl && navTotal > 0) {
+      if (navKey === 'prereqs' || navKey === 'rules') {
+        progEl.textContent = navChecked > 0 ? '✓' : '—';
+      } else {
+        progEl.textContent = navChecked + '/' + navTotal;
+      }
+    }
+
+    // Update nav item complete state
+    const navItem = document.querySelector('[data-section="' + navKey + '"]');
+    if (navItem && navTotal > 0) {
+      if (navChecked === navTotal) {
+        navItem.classList.add('complete');
+        // Update section status badge
+        const badge = document.getElementById('status-' + navKey);
+        if (badge) {
+          badge.className = 'section-status done';
+          badge.innerHTML = '<span class="status-dot"></span>Complete ✓';
+        }
+      } else {
+        navItem.classList.remove('complete');
+      }
+    }
+  });
+
+  // Global
+  const pct = grandTotal > 0 ? (totalChecked / grandTotal * 100) : 0;
+  const label = document.getElementById('global-progress-label');
+  const fill = document.getElementById('global-progress-fill');
+  if (label) label.textContent = totalChecked + ' / ' + grandTotal + ' tasks complete';
+  if (fill) fill.style.width = pct.toFixed(1) + '%';
+}
+
+function initCheckboxes() {
+  const state = loadState();
+  document.querySelectorAll('input[type="checkbox"][data-section]').forEach(cb => {
+    const key = cb.dataset.section + '_' + cb.dataset.id;
+    cb.checked = !!state[key];
+    cb.addEventListener('change', () => {
+      const s = loadState();
+      s[key] = cb.checked;
+      saveState(s);
+      updateProgress();
+    });
+  });
+  updateProgress();
+}
+
+// ── Copy code ────────────────────────────────────────────────────
+function copyCode(el) {
+  const text = el.querySelector('pre').innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    el.classList.add('copied');
+    setTimeout(() => el.classList.remove('copied'), 2000);
+  });
+}
+
+function copyClaudeBlock(btn) {
+  const prompt = btn.closest('.claude-block').querySelector('.claude-prompt').innerText;
+  navigator.clipboard.writeText(prompt).then(() => {
+    btn.textContent = 'Copied ✓';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = 'Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+// ── Scrollspy ────────────────────────────────────────────────────
+function initScrollspy() {
+  const sections = [
+    { id: 'section-prereqs', key: 'prereqs' },
+    { id: 'section-0', key: '0' },
+    { id: 'section-1', key: '1' },
+    { id: 'section-2', key: '2' },
+    { id: 'section-3', key: '3' },
+    { id: 'section-4', key: '4' },
+    { id: 'section-5', key: '5' },
+    { id: 'section-6', key: '6' },
+    { id: 'section-7', key: '7' },
+    { id: 'section-rules', key: 'rules' },
+  ];
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const sec = sections.find(s => s.id === entry.target.id);
+        if (sec) {
+          document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+          const navItem = document.querySelector('[data-section="' + sec.key + '"]');
+          if (navItem) navItem.classList.add('active');
+        }
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '-80px 0px -60% 0px' });
+
+  sections.forEach(s => {
+    const el = document.getElementById(s.id);
+    if (el) observer.observe(el);
+  });
+}
+
+// ── Init ─────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  initCheckboxes();
+  initScrollspy();
+});
+</script>
+</body>
+</html>

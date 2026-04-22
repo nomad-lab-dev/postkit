@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit Icon Preview</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #111;
+    font-family: -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 48px 24px;
+    gap: 48px;
+    min-height: 100vh;
+  }
+  h1 { color: #fff; font-size: 15px; font-weight: 500; opacity: 0.5; letter-spacing: .08em; text-transform: uppercase; }
+  .grid {
+    display: flex;
+    align-items: flex-end;
+    gap: 32px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .size-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
+  .size-item span {
+    color: #888;
+    font-size: 11px;
+  }
+  .icon-wrap {
+    border-radius: var(--r);
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  svg { display: block; }
+</style>
+</head>
+<body>
+
+<h1>PostKit — App Icon v4 (SwiftUI reference)</h1>
+
+<div class="grid" id="icons"></div>
+
+<script>
+const sizes = [512, 180, 120, 76, 60, 40, 29];
+
+function makeIcon(size) {
+  const R = size * 0.40;     // outer aperture radius
+  const innerR = size * 0.12; // center void radius
+  const cx = size / 2;
+  const cy = size / 2;
+  const gaps = 6;
+  const outerHalf = Math.PI / 22;   // ~8.2° fan at outer edge
+  const innerHalf = Math.PI / 110;  // ~1.6° slit at inner edge
+  const twist = Math.PI / 12;       // +15° iris sweep
+
+  // Build gap wedges
+  let gapsPath = '';
+  for (let i = 0; i < gaps; i++) {
+    const angle = i * (Math.PI * 2 / gaps) + twist;
+    const oStart = angle - outerHalf;
+    const oEnd   = angle + outerHalf;
+    const iStart = angle - innerHalf;
+    const iEnd   = angle + innerHalf;
+
+    const pt = (r, a) => [cx + r * Math.cos(a), cy + r * Math.sin(a)];
+    const arc = (r, a1, a2, cw) => {
+      const [x1, y1] = pt(r, a1);
+      const [x2, y2] = pt(r, a2);
+      const large = Math.abs(a2 - a1) > Math.PI ? 1 : 0;
+      const sweep = cw ? 1 : 0;
+      return `A ${r} ${r} 0 ${large} ${sweep} ${x2} ${y2}`;
+    };
+
+    const [ix1, iy1] = pt(innerR, iStart);
+    const [ox1, oy1] = pt(R, oStart);
+    const [ix2, iy2] = pt(innerR, iEnd);
+
+    gapsPath += `M ${ix1} ${iy1} L ${ox1} ${oy1} ${arc(R, oStart, oEnd, true)} L ${ix2} ${iy2} ${arc(innerR, iEnd, iStart, false)} Z `;
+  }
+
+  const cornerR = size * 0.2237;
+
+  return `
+    <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <!-- Background: deep indigo → violet -->
+        <linearGradient id="bg${size}" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%"   stop-color="#170D38"/>
+          <stop offset="100%" stop-color="#582990"/>
+        </linearGradient>
+        <!-- Gold disc: champagne → gold → bronze, off-center radial -->
+        <radialGradient id="gold${size}" cx="38%" cy="32%" r="62%">
+          <stop offset="0%"   stop-color="#F7E6A3"/>
+          <stop offset="45%"  stop-color="#E0C26B"/>
+          <stop offset="100%" stop-color="#B89038"/>
+        </radialGradient>
+        <!-- Gap wedges: dark indigo -->
+        <linearGradient id="gap${size}" x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%"   stop-color="#170D38" stop-opacity="0.97"/>
+          <stop offset="100%" stop-color="#2E1760" stop-opacity="0.90"/>
+        </linearGradient>
+        <!-- Center void: deep dark with violet edge glow -->
+        <radialGradient id="void${size}" cx="50%" cy="50%" r="50%">
+          <stop offset="0%"   stop-color="#080410"/>
+          <stop offset="65%"  stop-color="#0F062E"/>
+          <stop offset="100%" stop-color="#38196B" stop-opacity="0.6"/>
+        </radialGradient>
+        <clipPath id="clip${size}">
+          <rect width="${size}" height="${size}" rx="${cornerR}" ry="${cornerR}"/>
+        </clipPath>
+      </defs>
+
+      <g clip-path="url(#clip${size})">
+        <!-- 1. Background -->
+        <rect width="${size}" height="${size}" fill="url(#bg${size})"/>
+
+        <!-- 2. Gold aperture disc -->
+        <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#gold${size})"/>
+
+        <!-- 3. Dark gap wedges -->
+        <path d="${gapsPath}" fill="url(#gap${size})"/>
+
+        <!-- 4. Center void -->
+        <circle cx="${cx}" cy="${cy}" r="${innerR * 0.925}" fill="url(#void${size})"/>
+      </g>
+    </svg>`;
+}
+
+const container = document.getElementById('icons');
+sizes.forEach(size => {
+  const item = document.createElement('div');
+  item.className = 'size-item';
+  item.innerHTML = makeIcon(size) + `<span>${size}px</span>`;
+  container.appendChild(item);
+});
+</script>
+
+</body>
+</html>

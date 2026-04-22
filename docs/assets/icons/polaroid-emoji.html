@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1024px;
+    height: 1024px;
+    overflow: hidden;
+    background: radial-gradient(ellipse at 40% 35%, #2a1060 0%, #12082e 65%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stack {
+    position: relative;
+    width: 640px;
+    height: 560px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: -40px;
+  }
+
+  .polaroid {
+    position: absolute;
+    width: 300px;
+    background: #f5f2ee;
+    border-radius: 6px;
+    padding: 18px 18px 58px 18px;
+    box-shadow: 0 24px 70px rgba(0,0,0,0.75), 0 6px 18px rgba(0,0,0,0.5);
+  }
+
+  .photo-area {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 120px;
+    line-height: 1;
+  }
+
+  /* Left polaroid */
+  .p-left {
+    transform: rotate(-21deg) translateX(-205px) translateY(18px);
+    z-index: 1;
+  }
+  .p-left .photo-area {
+    background: linear-gradient(135deg, #1a3a5c, #0d2240);
+  }
+
+  /* Right polaroid */
+  .p-right {
+    transform: rotate(21deg) translateX(205px) translateY(18px);
+    z-index: 1;
+  }
+  .p-right .photo-area {
+    background: linear-gradient(135deg, #2d1a50, #1a0d38);
+  }
+
+  /* Center polaroid — hero */
+  .p-center {
+    transform: translateY(-12px);
+    z-index: 3;
+    background: #ffffff;
+    box-shadow:
+      0 0 0 1px rgba(255,210,100,0.2),
+      0 0 50px 16px rgba(255,185,50,0.28),
+      0 0 100px 40px rgba(255,150,30,0.13),
+      0 28px 80px rgba(0,0,0,0.85);
+  }
+  .p-center .photo-area {
+    background: linear-gradient(135deg, #1e1040, #2a1560);
+  }
+
+  /* Ambient glow behind center */
+  .glow {
+    position: absolute;
+    width: 360px;
+    height: 300px;
+    background: radial-gradient(ellipse, rgba(255,185,50,0.20) 0%, transparent 68%);
+    z-index: 2;
+    pointer-events: none;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -62%);
+  }
+</style>
+</head>
+<body>
+  <div class="stack">
+    <div class="glow"></div>
+
+    <div class="polaroid p-left">
+      <div class="photo-area">📸</div>
+    </div>
+
+    <div class="polaroid p-right">
+      <div class="photo-area">🚀</div>
+    </div>
+
+    <div class="polaroid p-center">
+      <div class="photo-area">🌍</div>
+    </div>
+  </div>
+</body>
+</html>

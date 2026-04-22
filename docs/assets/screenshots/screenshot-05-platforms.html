@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { width: 1290px; height: 2796px; overflow: hidden; position: relative; font-family: 'DM Sans', -apple-system, sans-serif; background: #070414; }
+.bg { position: absolute; inset: 0; background: radial-gradient(ellipse 130% 52% at 50% -1%, #3b208a 0%, #1d0e4e 22%, #0d0528 52%, #070414 100%); }
+.bg::after { content: ''; position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E"); opacity: 0.35; pointer-events: none; }
+.glow-left { position: absolute; width: 700px; height: 700px; left: -220px; top: 900px; background: radial-gradient(circle, rgba(75,25,200,0.10) 0%, transparent 70%); pointer-events: none; }
+.glow-right { position: absolute; width: 500px; height: 500px; right: -110px; top: 1500px; background: radial-gradient(circle, rgba(55,18,160,0.09) 0%, transparent 70%); pointer-events: none; }
+.glow-bottom { position: absolute; width: 900px; height: 500px; bottom: 0; left: 50%; transform: translateX(-50%); background: radial-gradient(ellipse, rgba(45,18,140,0.12) 0%, transparent 70%); pointer-events: none; }
+
+.caption { position: absolute; top: 0; left: 0; right: 0; padding: 130px 100px 0; z-index: 10; text-align: center; }
+.eyebrow { font-family: 'DM Sans', sans-serif; font-size: 28px; font-weight: 500; letter-spacing: 0.22em; text-transform: uppercase; color: #c4a4ff; margin-bottom: 22px; opacity: 0.85; }
+.headline { font-family: 'Syne', sans-serif; font-size: 110px; font-weight: 800; line-height: 1.04; letter-spacing: -0.028em; color: #ffffff; margin-bottom: 28px; }
+.headline em { font-style: normal; background: linear-gradient(118deg, #ffd84a 0%, #ffb420 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.sub { font-family: 'DM Sans', sans-serif; font-size: 35px; font-weight: 300; line-height: 1.55; color: rgba(255,255,255,0.42); max-width: 780px; margin: 0 auto; }
+
+.phone-wrap { position: absolute; top: 640px; left: 50%; transform: translateX(-50%); zoom: 1.18; z-index: 5; }
+.phone { width: 672px; height: 1458px; background: linear-gradient(168deg, #3a3a3e 0%, #242428 40%, #141416 100%); border-radius: 74px; padding: 14px; position: relative; box-shadow: 0 0 0 1.5px rgba(255,255,255,0.13), 0 0 0 3px rgba(0,0,0,0.92), 0 0 0 4px rgba(255,255,255,0.04), 0 70px 180px rgba(0,0,0,0.92), 0 25px 60px rgba(0,0,0,0.72), inset 0 1px 0 rgba(255,255,255,0.13), inset 0 -1px 0 rgba(0,0,0,0.5); }
+.phone::before { content: ''; position: absolute; left: -5px; top: 180px; width: 5px; height: 80px; background: linear-gradient(to right, #1c1c1e, #2c2c30); border-radius: 3px 0 0 3px; box-shadow: 0 100px 0 rgba(28,28,30,0.9), 0 180px 0 rgba(28,28,30,0.9); }
+.phone::after { content: ''; position: absolute; right: -5px; top: 220px; width: 5px; height: 112px; background: linear-gradient(to left, #1c1c1e, #2c2c30); border-radius: 0 3px 3px 0; }
+.screen { width: 100%; height: 100%; border-radius: 62px; overflow: hidden; background: #08080c; position: relative; }
+.di { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); width: 126px; height: 38px; background: #000; border-radius: 22px; z-index: 20; }
+.statusbar { position: absolute; top: 0; left: 0; right: 0; height: 62px; display: flex; align-items: flex-end; justify-content: space-between; padding: 0 30px 10px; z-index: 15; color: #fff; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+.status-right { display: flex; gap: 7px; align-items: center; }
+.signal-bars { display: flex; gap: 2px; align-items: flex-end; height: 14px; }
+.bar { width: 4px; background: #fff; border-radius: 1px; }
+.nav-bar { position: absolute; top: 62px; left: 0; right: 0; height: 50px; display: flex; align-items: center; justify-content: space-between; padding: 0 22px; background: rgba(8,8,12,0.80); backdrop-filter: blur(24px) saturate(1.8); -webkit-backdrop-filter: blur(24px) saturate(1.8); border-bottom: 0.5px solid rgba(255,255,255,0.07); z-index: 14; }
+.nav-back { font-size: 17px; color: rgba(255,255,255,0.40); font-weight: 400; }
+.nav-title { font-family: 'DM Sans', sans-serif; font-size: 17px; font-weight: 600; color: #fff; letter-spacing: -0.015em; }
+.nav-action { font-size: 15px; color: rgba(255,255,255,0.40); font-weight: 400; }
+
+/* ── Platform Export Content ── */
+.export-scroll {
+  position: absolute;
+  top: 112px; left: 0; right: 0; bottom: 100px;
+  overflow: hidden;
+  padding: 16px 18px 0;
+}
+
+/* Post preview card */
+.post-mini-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+.mini-photo {
+  width: 100%;
+  height: 180px;
+  background: radial-gradient(ellipse 60% 38% at 68% 36%, rgba(145,190,220,0.42) 0%, rgba(80,140,185,0.18) 30%, transparent 60%), linear-gradient(to bottom, #6ea4bc 0%, #326a84 25%, #0a2030 60%, #010610 100%);
+  position: relative;
+}
+.mini-pillar-tag {
+  position: absolute;
+  top: 10px; left: 10px;
+  display: flex; align-items: center; gap: 5px;
+  padding: 4px 10px; border-radius: 100px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+  font-size: 12px; font-weight: 600;
+  color: rgba(255,255,255,0.8);
+}
+.mini-caption {
+  padding: 12px 14px 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.70);
+}
+.mini-caption strong { color: #fff; font-weight: 500; }
+
+/* Section header */
+.sec-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.sec-title {
+  font-size: 12px; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase;
+  color: rgba(255,255,255,0.30);
+}
+.sec-info {
+  font-size: 12px;
+  color: rgba(255,255,255,0.25);
+}
+
+/* Platform toggle rows */
+.platform-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 16px;
+  margin-bottom: 9px;
+}
+.platform-icon-wrap {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.platform-info { flex: 1; }
+.platform-name { font-size: 16px; font-weight: 600; color: #fff; letter-spacing: -0.01em; margin-bottom: 2px; }
+.platform-format { font-size: 12px; color: rgba(255,255,255,0.35); }
+/* Toggle switch */
+.toggle {
+  width: 52px; height: 32px;
+  border-radius: 16px;
+  flex-shrink: 0;
+  position: relative;
+}
+.toggle-on {
+  background: #30d158;
+}
+.toggle-off {
+  background: rgba(255,255,255,0.12);
+}
+.toggle-thumb {
+  position: absolute;
+  top: 4px;
+  width: 24px; height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.toggle-on .toggle-thumb { left: auto; right: 4px; }
+.toggle-off .toggle-thumb { left: 4px; }
+
+/* Share bar */
+.share-bar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 14px 18px 34px;
+  background: rgba(8,8,12,0.95);
+  backdrop-filter: blur(20px);
+  border-top: 0.5px solid rgba(255,255,255,0.07);
+}
+.btn-share {
+  width: 100%; height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(120deg, #8b5cf6, #6d28d9);
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px;
+  font-size: 17px; font-weight: 600;
+  color: #fff; letter-spacing: -0.01em;
+}
+.share-count {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.20);
+  font-size: 13px; font-weight: 700;
+}
+
+.feature-strip { position: absolute; bottom: 238px; left: 0; right: 0; display: flex; justify-content: center; gap: 14px; z-index: 10; padding: 0 55px; }
+.feat-chip { display: inline-flex; align-items: center; gap: 10px; padding: 14px 24px; border-radius: 100px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09); font-size: 21px; font-weight: 400; color: rgba(255,255,255,0.50); white-space: nowrap; }
+.feat-icon { font-size: 19px; }
+.tagline { position: absolute; bottom: 110px; left: 0; right: 0; text-align: center; z-index: 10; }
+.tagline-text { font-family: 'DM Sans', sans-serif; font-size: 26px; font-weight: 400; color: rgba(255,255,255,0.20); letter-spacing: 0.04em; }
+.tagline-dot { display: inline-block; width: 3px; height: 3px; border-radius: 50%; background: rgba(255,255,255,0.16); margin: 0 10px; vertical-align: middle; }
+</style>
+</head>
+<body>
+<div class="bg"></div>
+<div class="glow-left"></div>
+<div class="glow-right"></div>
+<div class="glow-bottom"></div>
+
+<div class="caption">
+  <div class="eyebrow">PostKit · One Tap Publishing</div>
+  <div class="headline">Ready to Post<br><em>Everywhere</em></div>
+  <div class="sub">One tap to share across<br>every platform.</div>
+</div>
+
+<div class="phone-wrap">
+  <div class="phone">
+    <div class="screen">
+      <div class="di"></div>
+      <div class="statusbar">
+        <span>9:41</span>
+        <div class="status-right">
+          <div class="signal-bars"><div class="bar" style="height:5px"></div><div class="bar" style="height:8px"></div><div class="bar" style="height:11px"></div><div class="bar" style="height:14px"></div></div>
+          <svg width="18" height="14" viewBox="0 0 18 14" fill="white" opacity="0.9"><path d="M9 2.5C11.8 2.5 14.3 3.6 16.1 5.4L17.5 4C15.3 1.8 12.3 0.5 9 0.5C5.7 0.5 2.7 1.8 0.5 4L1.9 5.4C3.7 3.6 6.2 2.5 9 2.5Z"/><path d="M9 6C10.9 6 12.6 6.8 13.9 8L15.3 6.6C13.6 5 11.4 4 9 4C6.6 4 4.4 5 2.7 6.6L4.1 8C5.4 6.8 7.1 6 9 6Z"/><circle cx="9" cy="11" r="2"/></svg>
+          <svg width="26" height="14" viewBox="0 0 26 14" fill="none"><rect x="0.5" y="0.5" width="22" height="13" rx="3.5" stroke="white" stroke-opacity="0.35"/><rect x="2" y="2" width="18" height="10" rx="2" fill="white"/><path d="M24 5v4c1.1-.5 1.1-3.5 0-4Z" fill="white" opacity="0.4"/></svg>
+        </div>
+      </div>
+      <div class="nav-bar">
+        <span class="nav-back">← Post Builder</span>
+        <span class="nav-title">Share</span>
+        <span class="nav-action">Done</span>
+      </div>
+
+      <div class="export-scroll">
+        <!-- Post mini preview -->
+        <div class="post-mini-card">
+          <div class="mini-photo">
+            <div class="mini-pillar-tag">🚗 Automotive</div>
+          </div>
+          <div class="mini-caption">
+            <strong>Track day at Circuit de Catalunya</strong> 🏎️ Nothing beats the rush of pushing limits on a perfect Barcelona morning... <span style="color:rgba(255,255,255,0.35)">more</span>
+          </div>
+        </div>
+
+        <!-- Platform list -->
+        <div class="sec-header">
+          <span class="sec-title">Share to</span>
+          <span class="sec-info">2 of 4 selected</span>
+        </div>
+
+        <div class="platform-row">
+          <div class="platform-icon-wrap" style="background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888)">📸</div>
+          <div class="platform-info">
+            <div class="platform-name">Instagram</div>
+            <div class="platform-format">Feed Post · 1:1 format</div>
+          </div>
+          <div class="toggle toggle-on"><div class="toggle-thumb"></div></div>
+        </div>
+
+        <div class="platform-row">
+          <div class="platform-icon-wrap" style="background:#0a66c2">💼</div>
+          <div class="platform-info">
+            <div class="platform-name">LinkedIn</div>
+            <div class="platform-format">Article Post · Adapted copy</div>
+          </div>
+          <div class="toggle toggle-on"><div class="toggle-thumb"></div></div>
+        </div>
+
+        <div class="platform-row" style="opacity:0.55">
+          <div class="platform-icon-wrap" style="background:#000">𝕏</div>
+          <div class="platform-info">
+            <div class="platform-name">Twitter / X</div>
+            <div class="platform-format">Tweet · 280 chars</div>
+          </div>
+          <div class="toggle toggle-off"><div class="toggle-thumb"></div></div>
+        </div>
+
+        <div class="platform-row" style="opacity:0.55">
+          <div class="platform-icon-wrap" style="background:linear-gradient(135deg,#010101,#fe2c55)">🎵</div>
+          <div class="platform-info">
+            <div class="platform-name">TikTok</div>
+            <div class="platform-format">Video caption · Coming soon</div>
+          </div>
+          <div class="toggle toggle-off"><div class="toggle-thumb"></div></div>
+        </div>
+      </div>
+
+      <div class="share-bar">
+        <div class="btn-share">
+          <span>Share Now</span>
+          <div class="share-count">2</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="feature-strip">
+  <div class="feat-chip"><span class="feat-icon">📸</span> Instagram</div>
+  <div class="feat-chip"><span class="feat-icon">💼</span> LinkedIn</div>
+  <div class="feat-chip"><span class="feat-icon">𝕏</span> Twitter / X</div>
+</div>
+<div class="tagline">
+  <span class="tagline-text">PostKit</span>
+  <span class="tagline-dot"></span>
+  <span class="tagline-text">AI Photos to Posts</span>
+</div>
+</body>
+</html>
