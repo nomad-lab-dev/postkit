@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>PostKit — Landing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif&family=Geist+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    color: #0a0a0c;
+    background: #fff;
+  }
+  @keyframes chaosIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
+  @keyframes slotIn { from { opacity: 0; transform: scale(1.1); filter: blur(8px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
+  @keyframes fadeScale { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  button, input { font-family: inherit; }
+  .font-sans { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif; }
+  .font-serif { font-family: "Instrument Serif", "Times New Roman", Georgia, serif; }
+  .font-grotesk { font-family: "Space Grotesk", system-ui, sans-serif; }
+
+  /* tweaks panel */
+  .tweaks-panel {
+    position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+    background: rgba(255,255,255,.92); backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(0,0,0,.1); border-radius: 16px;
+    padding: 16px 18px; min-width: 260px;
+    box-shadow: 0 20px 40px -10px rgba(0,0,0,.15);
+    font-size: 13px;
+    display: none;
+  }
+  .tweaks-panel.open { display: block; }
+  .tweaks-panel h4 {
+    margin: 0 0 12px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: #86868b;
+  }
+  .tw-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; gap: 12px; }
+  .tw-row label { font-size: 12px; color: #52525b; }
+  .tw-row select, .tw-row button {
+    padding: 4px 10px; border: 1px solid rgba(0,0,0,.12); border-radius: 8px;
+    background: #fff; font-size: 12px; cursor: pointer;
+  }
+  .tw-toggle { display: flex; gap: 2px; padding: 2px; background: rgba(0,0,0,.05); border-radius: 8px; }
+  .tw-toggle button { border: 0; padding: 4px 10px; border-radius: 6px; background: transparent; font-size: 11px; font-weight: 500; cursor: pointer; color: #52525b; }
+  .tw-toggle button.active { background: #fff; color: #0a0a0c; box-shadow: 0 1px 2px rgba(0,0,0,.1); }
+
+  /* Font pairing variants */
+  body.fp-sf .landing-root,
+  body.fp-sf .landing-root h1, body.fp-sf .landing-root h2, body.fp-sf .landing-root h3 {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  }
+  body.fp-serif .landing-root h1, body.fp-serif .landing-root h2, body.fp-serif .landing-root .title-serif {
+    font-family: "Instrument Serif", Georgia, serif !important;
+    letter-spacing: -0.025em !important;
+  }
+  body.fp-grotesk .landing-root,
+  body.fp-grotesk .landing-root h1, body.fp-grotesk .landing-root h2, body.fp-grotesk .landing-root h3 {
+    font-family: "Space Grotesk", system-ui, sans-serif !important;
+  }
+</style>
+</head>
+<body class="fp-sf">
+
+<!-- Tweaks Panel (populated via JS) -->
+<div class="tweaks-panel" id="tweaksPanel">
+  <h4>Tweaks</h4>
+  <div class="tw-row">
+    <label>Langue</label>
+    <div class="tw-toggle" id="twLang"><button data-v="fr" class="active">FR</button><button data-v="en">EN</button></div>
+  </div>
+  <div class="tw-row">
+    <label>Hero layout</label>
+    <div class="tw-toggle" id="twHero"><button data-v="split" class="active">Split</button><button data-v="stack">Stack</button></div>
+  </div>
+  <div class="tw-row">
+    <label>Font pairing</label>
+    <div class="tw-toggle" id="twFont"><button data-v="sf" class="active">SF</button><button data-v="serif">Serif</button><button data-v="grotesk">Grotesk</button></div>
+  </div>
+  <div class="tw-row">
+    <label>Densité</label>
+    <div class="tw-toggle" id="twDensity"><button data-v="airy" class="active">Airy</button><button data-v="compact">Compact</button></div>
+  </div>
+  <div class="tw-row">
+    <label>Version</label>
+    <div class="tw-toggle" id="twVersion"><button data-v="safe" class="active">Safe</button><button data-v="bold">Bold</button></div>
+  </div>
+</div>
+
+<div id="root"></div>
+
+<script>
+  // default tweak state
+  window.__TWEAKS = /*EDITMODE-BEGIN*/{
+    "lang": "en",
+    "heroLayout": "split",
+    "fontPairing": "serif",
+    "density": "airy",
+    "version": "safe"
+  }/*EDITMODE-END*/;
+
+  // edit-mode protocol
+  window.addEventListener("message", (e) => {
+    const d = e.data || {};
+    if (d.type === "__activate_edit_mode") document.getElementById("tweaksPanel").classList.add("open");
+    if (d.type === "__deactivate_edit_mode") document.getElementById("tweaksPanel").classList.remove("open");
+  });
+  setTimeout(() => {
+    try { window.parent.postMessage({ type: "__edit_mode_available" }, "*"); } catch(e){}
+  }, 50);
+
+  window.setTweak = function setTweak(k, v) {
+    window.__TWEAKS[k] = v;
+    try { localStorage.setItem("postkit.lang.user", k === "lang" ? v : (localStorage.getItem("postkit.lang.user") || "")); } catch(e) {}
+    try { window.parent.postMessage({ type: "__edit_mode_set_keys", edits: { [k]: v } }, "*"); } catch(e){}
+    document.querySelectorAll('.tw-toggle').forEach(t => {
+      const key = t.id.replace("tw","").toLowerCase();
+      // ignore, our renderer re-reads from __TWEAKS
+    });
+    if (k === "fontPairing") {
+      document.body.classList.remove("fp-sf", "fp-serif", "fp-grotesk");
+      document.body.classList.add("fp-" + v);
+    }
+    if (window.__rerender) window.__rerender();
+    // sync Tweaks panel toggles if present
+    document.querySelectorAll('.tw-toggle').forEach(t => {
+      const tkey = ({twLang:"lang",twHero:"heroLayout",twFont:"fontPairing",twDensity:"density",twVersion:"version"})[t.id];
+      if (tkey === k) {
+        t.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.v === v));
+      }
+    });
+  }
+  // apply initial font
+  document.body.classList.remove("fp-sf","fp-serif","fp-grotesk");
+  document.body.classList.add("fp-" + window.__TWEAKS.fontPairing);
+
+  // Geo-based language detection (once per visitor).
+  // Priority: user explicit choice (localStorage) > IP country > browser navigator.language > default "en".
+  (function autoDetectLang() {
+    try {
+      const forced = new URLSearchParams(location.search).get("lang");
+      if (forced === "fr" || forced === "en") {
+        window.__TWEAKS.lang = forced;
+        return;
+      }
+      const userChoice = localStorage.getItem("postkit.lang.user");
+      if (userChoice === "fr" || userChoice === "en") {
+        window.__TWEAKS.lang = userChoice;
+        return;
+      }
+      // Fast optimistic guess from browser before API resolves
+      const nav = (navigator.language || "").toLowerCase();
+      if (nav.startsWith("fr")) window.__TWEAKS.lang = "fr";
+      else window.__TWEAKS.lang = "en";
+
+      // Confirm via Vercel edge header (only in prod; dev fails silently)
+      fetch("/api/geo").then(r => r.ok ? r.json() : null).then(d => {
+        if (!d || !d.lang) return;
+        if (localStorage.getItem("postkit.lang.user")) return; // user already picked
+        if (d.lang !== window.__TWEAKS.lang) {
+          window.__TWEAKS.lang = d.lang;
+          if (window.__rerender) window.__rerender();
+        }
+      }).catch(() => {});
+    } catch(e) {}
+  })();
+
+  // wire up toggles
+  document.addEventListener("DOMContentLoaded", () => {
+    const pairs = [["twLang","lang"],["twHero","heroLayout"],["twFont","fontPairing"],["twDensity","density"],["twVersion","version"]];
+    pairs.forEach(([id, key]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      // set initial active
+      const cur = window.__TWEAKS[key];
+      el.querySelectorAll("button").forEach(b => b.classList.toggle("active", b.dataset.v === cur));
+      el.addEventListener("click", (e) => {
+        const btn = e.target.closest("button"); if (!btn) return;
+        el.querySelectorAll("button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        setTweak(key, btn.dataset.v);
+      });
+    });
+  });
+</script>
+
+<!-- Pinned React stack -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="landing-data.jsx"></script>
+<script type="text/babel" src="landing-components.jsx"></script>
+<script type="text/babel" src="landing-sections-1.jsx"></script>
+<script type="text/babel" src="landing-sections-2.jsx"></script>
+<script type="text/babel" src="landing-sync.jsx"></script>
+
+<script type="text/babel">
+/* ================== NAV ================== */
+function Nav({ lang, copy, onCTA, dark }) {
+  return (
+    <nav style={{
+      position: "sticky", top: 0, zIndex: 50,
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      padding: "16px 40px",
+      background: dark ? "rgba(10,10,12,.7)" : "rgba(255,255,255,.75)",
+      backdropFilter: "blur(20px) saturate(180%)",
+      borderBottom: "1px solid " + (dark ? "rgba(255,255,255,.06)" : "rgba(0,0,0,.05)"),
+    }}>
+      <Logo dark={dark}/>
+      <div style={{ display: "flex", gap: 28, alignItems: "center" }}>
+        <a href="#features" style={{ fontSize: 13, color: dark ? "rgba(255,255,255,.7)" : "#52525b", textDecoration: "none" }}>{copy.nav.features}</a>
+        <a href="#pillars" style={{ fontSize: 13, color: dark ? "rgba(255,255,255,.7)" : "#52525b", textDecoration: "none" }}>{copy.nav.pillars}</a>
+        <a href="#faq" style={{ fontSize: 13, color: dark ? "rgba(255,255,255,.7)" : "#52525b", textDecoration: "none" }}>{copy.nav.faq}</a>
+        <div style={{
+          display: "inline-flex", padding: 2, borderRadius: 100,
+          background: dark ? "rgba(255,255,255,.08)" : "rgba(0,0,0,.05)",
+          border: dark ? "1px solid rgba(255,255,255,.1)" : "1px solid rgba(0,0,0,.06)",
+          fontSize: 11, fontWeight: 600, letterSpacing: "0.04em",
+        }}>
+          {["fr","en"].map(code => {
+            const active = lang === code;
+            return (
+              <button key={code} onClick={() => window.setTweak && window.setTweak("lang", code)} style={{
+                padding: "5px 10px", borderRadius: 100, border: 0, cursor: "pointer",
+                background: active ? (dark ? "#fff" : "#0a0a0c") : "transparent",
+                color: active ? (dark ? "#0a0a0c" : "#fff") : (dark ? "rgba(255,255,255,.6)" : "#52525b"),
+                fontFamily: "inherit", fontWeight: 600, fontSize: 11, letterSpacing: "0.04em",
+                transition: "all .15s",
+              }}>{code.toUpperCase()}</button>
+            );
+          })}
+        </div>
+        <button onClick={onCTA} style={{
+          padding: "8px 16px", borderRadius: 100,
+          background: dark ? "#fff" : "#0a0a0c",
+          color: dark ? "#0a0a0c" : "#fff",
+          border: 0, fontSize: 13, fontWeight: 600, cursor: "pointer",
+        }}>{copy.nav.cta}</button>
+      </div>
+    </nav>
+  );
+}
+
+/* ================== SAFE LAYOUT ================== */
+function LandingSafe({ tweaks }) {
+  const lang = tweaks.lang;
+  const copy = window.POSTKIT.COPY[lang];
+  const density = tweaks.density;
+
+  const scrollToWaitlist = () => {
+    document.getElementById("waitlist")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
+  return (
+    <div className="landing-root" style={{ background: "#fff", color: "#0a0a0c" }}>
+      <Nav lang={lang} copy={copy} onCTA={scrollToWaitlist}/>
+      <Hero lang={lang} copy={copy} density={density} heroLayout={tweaks.heroLayout} onCTA={scrollToWaitlist}/>
+      <ProblemSection lang={lang} copy={copy} density={density}/>
+      <div id="features"><HowSection lang={lang} copy={copy} density={density}/></div>
+      <div id="pillars"><PillarsSection lang={lang} copy={copy} density={density}/></div>
+      <TemplatesSection lang={lang} copy={copy} density={density}/>
+      <SyncSection lang={lang} copy={copy} density={density}/>
+      <PlatformsSection lang={lang} copy={copy} density={density}/>
+      <PersonaSection lang={lang} copy={copy} density={density}/>
+      <DownloadSection lang={lang} copy={copy} density={density}/>
+      <WaitlistSection lang={lang} copy={copy} density={density}/>
+      <div id="faq"><FAQSection lang={lang} copy={copy} density={density}/></div>
+      <Footer copy={copy}/>
+    </div>
+  );
+}
+
+/* ================== BOLD LAYOUT ================== */
+/* Editorial: huge serif title, full-bleed photo hero, warmer + punchier visuals */
+function LandingBold({ tweaks }) {
+  const lang = tweaks.lang;
+  const copy = window.POSTKIT.COPY[lang];
+  const density = tweaks.density;
+  const [activePlatform, setActivePlatform] = React.useState("ig");
+  const active = window.POSTKIT.PLATFORMS.find(x => x.id === activePlatform);
+
+  const scrollToWaitlist = () => document.getElementById("waitlist-bold")?.scrollIntoView({ behavior: "smooth" });
+
+  return (
+    <div className="landing-root" style={{
+      background: "#0a0a0c", color: "#fff",
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', system-ui, sans-serif",
+    }}>
+      {/* Dark nav */}
+      <Nav lang={lang} copy={copy} onCTA={scrollToWaitlist} dark/>
+
+      {/* HERO — editorial full-bleed */}
+      <section style={{ padding: "80px 48px 60px", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute", inset: 0,
+          backgroundImage: "url(assets/cinematic-1.webp)",
+          backgroundSize: "cover", backgroundPosition: "center",
+          opacity: 0.25, filter: "blur(2px)",
+        }}/>
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(10,10,12,.4) 0%, #0a0a0c 90%)",
+        }}/>
+        <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative" }}>
+          <div style={{
+            fontSize: 12, fontWeight: 600, letterSpacing: "0.15em",
+            textTransform: "uppercase", color: "rgba(255,255,255,.6)",
+            fontFamily: "'Geist Mono', ui-monospace, monospace", marginBottom: 28,
+          }}>
+            ✦ {copy.hero.eyebrow}
+          </div>
+          <h1 className="title-serif" style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: "clamp(56px, 9vw, 140px)", fontWeight: 400,
+            letterSpacing: "-0.035em", lineHeight: 0.95, margin: 0,
+          }}>
+            {copy.hero.title1}<br/>
+            <em style={{ fontStyle: "italic", color: "#ff9500" }}>{copy.hero.title2.replace(/\.$/, "")}</em>.
+          </h1>
+          <div style={{
+            display: "grid", gridTemplateColumns: "1.2fr 1fr",
+            gap: 48, marginTop: 48, alignItems: "end",
+          }}>
+            <p style={{ fontSize: 20, color: "rgba(255,255,255,.75)", lineHeight: 1.45, maxWidth: 540 }}>
+              {copy.hero.sub}
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14, alignItems: "flex-start" }}>
+              <button onClick={scrollToWaitlist} style={{
+                padding: "16px 32px", background: "#ff9500", color: "#0a0a0c",
+                border: 0, borderRadius: 100, fontSize: 16, fontWeight: 700,
+                cursor: "pointer", letterSpacing: "-0.01em",
+                boxShadow: "0 20px 40px -10px rgba(255,149,0,.4)",
+              }}>{copy.hero.cta} →</button>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)",
+                fontFamily: "'Geist Mono', ui-monospace, monospace" }}>{copy.hero.ctaSub}</div>
+            </div>
+          </div>
+          {/* Big tiled gallery below */}
+          <div style={{
+            marginTop: 72,
+            display: "grid", gridTemplateColumns: "repeat(9,1fr)", gap: 6,
+            borderRadius: 24, overflow: "hidden",
+          }}>
+            {window.POSTKIT.CHAOS_PHOTOS.slice(0, 18).map((src, i) => (
+              <img key={i} src={src} style={{
+                width: "100%", aspectRatio: "1", objectFit: "cover",
+                animation: `chaosIn .4s ${i*0.03}s both`,
+              }}/>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Inline "after" — pillars reveal */}
+      <section style={{ padding: "100px 48px", background: "#0a0a0c", borderTop: "1px solid rgba(255,255,255,.06)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase",
+                color: "#ff9500", fontFamily: "'Geist Mono', ui-monospace, monospace", marginBottom: 20 }}>
+                {copy.pillars.eyebrow}
+              </div>
+              <h2 className="title-serif" style={{
+                fontFamily: "'Instrument Serif', Georgia, serif",
+                fontSize: "clamp(40px, 5vw, 72px)", fontWeight: 400,
+                letterSpacing: "-0.03em", lineHeight: 1.02, margin: 0,
+              }}>
+                {copy.pillars.title.split(" ").slice(0, -2).join(" ")} <em style={{ fontStyle: "italic", color: "#ff9500" }}>{copy.pillars.title.split(" ").slice(-2).join(" ")}</em>
+              </h2>
+              <p style={{ fontSize: 17, color: "rgba(255,255,255,.7)", marginTop: 20, lineHeight: 1.5 }}>
+                {copy.pillars.sub}
+              </p>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {window.POSTKIT.PILLARS.map((p, i) => (
+                <div key={p.id} style={{
+                  display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 16,
+                  alignItems: "center",
+                  padding: "16px 20px", borderRadius: 14,
+                  background: "rgba(255,255,255,.04)",
+                  border: "1px solid rgba(255,255,255,.06)",
+                  animation: `chaosIn .4s ${i*0.1}s both`,
+                }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 12,
+                    background: `${p.color}20`, display: "grid", placeItems: "center", fontSize: 20,
+                    border: `1px solid ${p.color}40` }}>{p.emoji}</div>
+                  <div>
+                    <div style={{ fontSize: 16, fontWeight: 600 }}>{lang === "fr" ? p.labelFr : p.labelEn}</div>
+                    <div style={{ fontSize: 11.5, color: "rgba(255,255,255,.5)",
+                      fontFamily: "'Geist Mono', ui-monospace, monospace" }}>{p.count} photos · {p.color}</div>
+                  </div>
+                  <div style={{ display: "flex", gap: 4 }}>
+                    {p.photos.slice(0, 3).map((src, j) => (
+                      <img key={j} src={src} style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }}/>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Reuse templates, platforms, how, persona in dark? — simpler: reuse sections in light inverted mode */}
+      <div style={{ background: "#fff", color: "#0a0a0c" }}>
+        <HowSection lang={lang} copy={copy} density={density}/>
+        <TemplatesSection lang={lang} copy={copy} density={density}/>
+        <SyncSection lang={lang} copy={copy} density={density}/>
+        <PlatformsSection lang={lang} copy={copy} density={density}/>
+        <PersonaSection lang={lang} copy={copy} density={density}/>
+      </div>
+
+      {/* Big CTA / download */}
+      <section style={{ padding: "140px 48px", background: "#0a0a0c", position: "relative", overflow: "hidden" }}>
+        <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center", position: "relative" }}>
+          <div style={{ fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase",
+            color: "#ff9500", fontFamily: "'Geist Mono', ui-monospace, monospace", marginBottom: 24 }}>
+            {copy.download.eyebrow}
+          </div>
+          <h2 className="title-serif" style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: "clamp(48px, 6vw, 96px)", fontWeight: 400,
+            letterSpacing: "-0.035em", lineHeight: 1, margin: 0,
+          }}>
+            {copy.download.title.split(".").slice(0, 2).join(".")}<br/>
+            <em style={{ fontStyle: "italic", color: "#ff9500" }}>{copy.download.title.split(".").slice(2).join(".").trim()}</em>
+          </h2>
+          <p style={{ fontSize: 18, color: "rgba(255,255,255,.65)", marginTop: 24, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
+            {copy.download.sub}
+          </p>
+          <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 40, flexWrap: "wrap" }}>
+            <AppStoreBadge/>
+            <AppStoreBadge mac/>
+          </div>
+        </div>
+      </section>
+
+      <div id="waitlist-bold" style={{ background: "#fafafa", color: "#0a0a0c" }}>
+        <WaitlistSection lang={lang} copy={copy} density={density}/>
+      </div>
+      <div style={{ background: "#fff", color: "#0a0a0c" }}>
+        <FAQSection lang={lang} copy={copy} density={density}/>
+        <Footer copy={copy}/>
+      </div>
+    </div>
+  );
+}
+
+/* ================== ROOT ================== */
+function App() {
+  const [tweaks, setTweaks] = React.useState(window.__TWEAKS);
+
+  React.useEffect(() => {
+    window.__rerender = () => setTweaks({ ...window.__TWEAKS });
+  }, []);
+
+  // scroll-linked: save scroll per version
+  return tweaks.version === "bold" ? <LandingBold tweaks={tweaks}/> : <LandingSafe tweaks={tweaks}/>;
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
