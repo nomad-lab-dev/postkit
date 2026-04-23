@@ -2,31 +2,30 @@
 
 const { useState: uS, useEffect: uE, useRef: uR } = React;
 
-/* ================== TEMPLATES — Slot filling animation ================== */
+/* ================== TEMPLATES — Slot filling triggered by CTA ================== */
 function TemplatesSection({ lang, copy, density }) {
   const t = copy.templates;
+  const [started, setStarted] = uS(false);
   const [filled, setFilled] = uS([false, false, false, false]);
-  const ref = uR(null);
 
+  // Each slot declares its pillars[] — supports multi-pillar tagging.
+  // "Wide" is intentionally multi (travel + life) to demonstrate overlap.
   const SLOTS = [
-    { label: "POV", pillar: "dev", photo: "assets/gallery-dev-1.webp" },
-    { label: "Detail", pillar: "auto", photo: "assets/gallery-auto-1.webp" },
-    { label: "Wide", pillar: "travel", photo: "assets/gallery-nomad-2.webp" },
-    { label: "Portrait", pillar: "life", photo: "assets/gallery-life-1.webp" },
+    { label: "POV",      pillars: ["dev"],           photo: "assets/gallery-dev-1.webp" },
+    { label: "Detail",   pillars: ["auto"],          photo: "assets/gallery-auto-1.webp" },
+    { label: "Wide",     pillars: ["travel","life"], photo: "assets/gallery-nomad-2.webp" },
+    { label: "Portrait", pillars: ["life"],          photo: "assets/gallery-life-1.webp" },
   ];
 
-  uE(() => {
-    const el = ref.current; if (!el) return;
-    const io = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) {
-        SLOTS.forEach((_, i) => setTimeout(() => {
-          setFilled(f => { const n = [...f]; n[i] = true; return n; });
-        }, 500 + i * 450));
-        io.disconnect();
-      }
-    }, { threshold: 0.35 });
-    io.observe(el); return () => io.disconnect();
-  }, []);
+  const pillarById = (id) => window.POSTKIT.PILLARS.find(p => p.id === id);
+
+  const runFill = () => {
+    setStarted(true);
+    setFilled([false, false, false, false]);
+    SLOTS.forEach((_, i) => setTimeout(() => {
+      setFilled(f => { const n = [...f]; n[i] = true; return n; });
+    }, 300 + i * 450));
+  };
 
   const replay = () => {
     setFilled([false, false, false, false]);
@@ -36,19 +35,12 @@ function TemplatesSection({ lang, copy, density }) {
   };
 
   return (
-    <section ref={ref} style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 64, alignItems: "center" }}>
+    <section className="pk-section" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
+      <div className="pk-grid-templates" style={{ maxWidth: 1200, margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.1fr", gap: 64, alignItems: "center" }}>
         <div>
           <Eyebrow>{t.eyebrow}</Eyebrow>
           <SectionTitle>{t.title}</SectionTitle>
           <p style={{ fontSize: 17, color: "#52525b", marginTop: 18, lineHeight: 1.5 }}>{t.sub}</p>
-          <button onClick={replay} style={{
-            marginTop: 24, padding: "10px 18px",
-            background: "rgba(0,122,255,.08)", color: "#007aff",
-            border: "1px solid rgba(0,122,255,.15)", borderRadius: 100,
-            fontSize: 13, fontWeight: 600, cursor: "pointer",
-            fontFamily: "inherit",
-          }}>↻ {lang === "fr" ? "Rejouer l'animation" : "Replay animation"}</button>
         </div>
 
         <div style={{
@@ -56,11 +48,45 @@ function TemplatesSection({ lang, copy, density }) {
           border: "1px solid rgba(0,0,0,.06)",
           borderRadius: 24, padding: 28,
           boxShadow: "0 30px 60px -20px rgba(0,0,0,.1)",
+          position: "relative",
         }}>
-          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868b", marginBottom: 14 }}>
-            Template · Carousel 4 photos
+          {/* Card header: title · replay icon button (only after first fill) */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14, gap: 12, minHeight: 28 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: "#86868b" }}>
+              Template · Carousel 4 photos
+            </div>
+            {started && (
+              <button
+                onClick={e => {
+                  replay();
+                  const el = e.currentTarget;
+                  el.style.transform = "rotate(-360deg)";
+                  setTimeout(() => { el.style.transform = ""; }, 650);
+                }}
+                title={lang === "fr" ? "Rejouer l'animation" : "Replay animation"}
+                aria-label={lang === "fr" ? "Rejouer l'animation" : "Replay animation"}
+                className="pk-replay-btn"
+                style={{
+                  width: 28, height: 28, borderRadius: "50%",
+                  background: "rgba(0,122,255,.08)",
+                  border: "1px solid rgba(0,122,255,.18)",
+                  color: "#007aff",
+                  cursor: "pointer",
+                  display: "grid", placeItems: "center",
+                  padding: 0, lineHeight: 1,
+                  fontFamily: "inherit", fontSize: 14,
+                  transition: "transform .6s cubic-bezier(.34,1.56,.64,1), background .2s",
+                  flex: "0 0 auto",
+                  animation: "fadeIn .3s",
+                }}
+                onMouseEnter={e => {
+                  if (!e.currentTarget.style.transform) e.currentTarget.style.background = "rgba(0,122,255,.16)";
+                }}
+                onMouseLeave={e => { e.currentTarget.style.background = "rgba(0,122,255,.08)"; }}
+              >↻</button>
+            )}
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, position: "relative" }}>
             {SLOTS.map((s, i) => (
               <div key={i} style={{
                 aspectRatio: "4/5", borderRadius: 14,
@@ -75,27 +101,103 @@ function TemplatesSection({ lang, copy, density }) {
                     animation: "slotIn .4s both",
                   }}/>
                 )}
+                {/* Top-left: framing label (POV / Detail / Wide / Portrait) */}
                 <div style={{
-                  position: "absolute", top: 10, left: 10,
-                  padding: "4px 10px", borderRadius: 100,
-                  background: filled[i] ? "rgba(255,255,255,.9)" : "rgba(0,0,0,.05)",
-                  fontSize: 10, fontWeight: 700,
+                  position: "absolute", top: 8, left: 8,
+                  padding: "3px 9px", borderRadius: 100,
+                  background: filled[i] ? "rgba(255,255,255,.92)" : "rgba(0,0,0,.05)",
+                  fontSize: 9.5, fontWeight: 700,
                   color: filled[i] ? "#000" : "#86868b",
                   backdropFilter: "blur(10px)",
+                  letterSpacing: "0.04em",
                 }}>{s.label}</div>
+
+                {/* Bottom-left: pillar tags (classification result, appears after slot fills) */}
+                {filled[i] && (
+                  <div style={{
+                    position: "absolute", left: 8, bottom: 8, right: 8,
+                    display: "flex", gap: 4, flexWrap: "wrap",
+                  }}>
+                    {s.pillars.map((pid, pi) => {
+                      const pl = pillarById(pid);
+                      if (!pl) return null;
+                      return (
+                        <div key={pid} className="pk-slot-pillar-tag" style={{
+                          display: "inline-flex", alignItems: "center", gap: 5,
+                          padding: "3px 7px 3px 6px",
+                          background: "rgba(10,10,12,.62)",
+                          backdropFilter: "blur(10px) saturate(160%)",
+                          border: "1px solid " + pl.color + "55",
+                          borderRadius: 6,
+                          fontSize: 9, fontWeight: 700,
+                          color: "#fff",
+                          letterSpacing: "0.04em",
+                          fontFamily: "ui-monospace, 'Geist Mono', SF Mono, monospace",
+                          textTransform: "uppercase",
+                          animation: `fadeIn .3s ${0.4 + pi * 0.08}s both`,
+                        }}>
+                          <span style={{
+                            width: 6, height: 6, borderRadius: "50%",
+                            background: pl.color,
+                            boxShadow: "0 0 6px " + pl.color,
+                          }}/>
+                          {lang === "fr" ? pl.labelFr : pl.labelEn}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+
                 {!filled[i] && (
                   <div style={{
                     position: "absolute", inset: 0, display: "grid", placeItems: "center",
                     fontSize: 11, color: "#86868b", fontFamily: "ui-monospace, SF Mono, monospace",
                   }}>
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ opacity: .5 }}>⌕</div>
-                      <div style={{ marginTop: 4 }}>{lang === "fr" ? "Recherche..." : "Searching..."}</div>
+                    <div style={{ textAlign: "center", opacity: started ? 1 : 0.5 }}>
+                      <div style={{ opacity: .5, fontSize: 18 }}>{started ? "⌕" : "▢"}</div>
+                      {started && (
+                        <div style={{ marginTop: 4 }}>{lang === "fr" ? "Recherche..." : "Searching..."}</div>
+                      )}
                     </div>
                   </div>
                 )}
               </div>
             ))}
+
+            {/* CTA button — centered on the grid so the slot transition stays visible behind */}
+            {!started && (
+              <button
+                className="pk-fill-cta"
+                onClick={runFill}
+                style={{
+                  position: "absolute",
+                  top: "50%", left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  display: "inline-flex", alignItems: "center", gap: 10,
+                  background: "linear-gradient(135deg, #007aff 0%, #af52de 100%)",
+                  color: "#fff",
+                  border: "1px solid rgba(255,255,255,.25)",
+                  borderRadius: 100,
+                  fontSize: 14, fontWeight: 700,
+                  cursor: "pointer",
+                  boxShadow: "0 14px 36px -6px rgba(0,122,255,.55), 0 0 0 8px rgba(0,122,255,.1)",
+                  fontFamily: "inherit",
+                  letterSpacing: "-0.01em",
+                  padding: "13px 20px",
+                  overflow: "hidden",
+                  animation: "pkFillPulse 2.4s ease-in-out infinite",
+                  zIndex: 5,
+                  whiteSpace: "nowrap",
+                }}
+              >
+                <span className="pk-fill-cta-shimmer" aria-hidden="true"/>
+                <span style={{ position: "relative", display: "inline-flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ fontSize: 16 }}>✨</span>
+                  <span>{lang === "fr" ? "Remplir avec ma galerie" : "Fill from my gallery"}</span>
+                  <span style={{ fontSize: 16, marginLeft: 2 }}>→</span>
+                </span>
+              </button>
+            )}
           </div>
           <div style={{
             marginTop: 16, padding: "12px 14px",
@@ -133,7 +235,7 @@ function PlatformsSection({ lang, copy, density }) {
   const photos = ["assets/cinematic-1.webp", "assets/lifestyle-1.webp", "assets/gallery-dev-1.webp"];
 
   return (
-    <section style={{
+    <section className="pk-section" style={{
       padding: density === "airy" ? "120px 48px" : "84px 40px",
       background: "linear-gradient(180deg,#fafafa 0%,#f0f0f2 100%)",
     }}>
@@ -158,7 +260,7 @@ function PlatformsSection({ lang, copy, density }) {
           ))}
         </div>
 
-        <div style={{
+        <div className="pk-platform-shell" style={{
           maxWidth: 520, margin: "0 auto",
           display: "flex", justifyContent: "center",
         }}>
@@ -183,13 +285,13 @@ function PlatformsSection({ lang, copy, density }) {
 function PersonaSection({ lang, copy, density }) {
   const p = copy.persona;
   return (
-    <section style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
+    <section className="pk-section" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Eyebrow>{p.eyebrow}</Eyebrow>
           <SectionTitle>{p.title}</SectionTitle>
         </div>
-        <div style={{
+        <div className="pk-grid-persona" style={{
           display: "grid", gridTemplateColumns: "auto 1fr", gap: 32,
           background: "linear-gradient(145deg,#f5f5f7,#ffffff)",
           border: "1px solid rgba(0,0,0,.06)", borderRadius: 28,
@@ -204,7 +306,7 @@ function PersonaSection({ lang, copy, density }) {
           <div>
             <div style={{ fontSize: 20, fontWeight: 700, letterSpacing: "-0.02em" }}>{p.name}</div>
             <div style={{ fontSize: 13, color: "#007aff", fontWeight: 500, marginTop: 2 }}>{p.role}</div>
-            <div style={{
+            <div className="pk-persona-quote" style={{
               marginTop: 16, fontSize: 17, lineHeight: 1.55, color: "#1a1a1c",
               fontStyle: "italic", borderLeft: "3px solid #007aff", paddingLeft: 16,
             }}>"{p.quote}"</div>
@@ -219,7 +321,7 @@ function PersonaSection({ lang, copy, density }) {
 function DownloadSection({ lang, copy, density }) {
   const d = copy.download;
   return (
-    <section style={{
+    <section className="pk-section pk-download" style={{
       padding: density === "airy" ? "140px 48px" : "100px 40px",
       background: "#0a0a0c", color: "#fff",
       position: "relative", overflow: "hidden",
@@ -291,7 +393,7 @@ function WaitlistSection({ lang, copy, density, onSubmit }) {
   };
 
   return (
-    <section id="waitlist" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px", background: "#fafafa" }}>
+    <section id="waitlist" className="pk-section" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px", background: "#fafafa" }}>
       <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
         <Eyebrow>{w.eyebrow}</Eyebrow>
         <SectionTitle>{w.title}</SectionTitle>
@@ -308,7 +410,7 @@ function WaitlistSection({ lang, copy, density, onSubmit }) {
           </div>
         ) : (
           <>
-            <form onSubmit={submit} style={{ display: "flex", gap: 8, marginTop: 28, maxWidth: 480, margin: "28px auto 0" }}>
+            <form onSubmit={submit} className="pk-waitlist-form" style={{ display: "flex", gap: 8, marginTop: 28, maxWidth: 480, margin: "28px auto 0" }}>
               <input type="email" value={email} onChange={e => { setEmail(e.target.value); setError(""); }}
                 placeholder={w.placeholder} disabled={loading} required style={{
                   flex: 1, padding: "14px 18px", fontSize: 15,
@@ -342,7 +444,7 @@ function FAQSection({ lang, copy, density }) {
   const f = copy.faq;
   const [open, setOpen] = uS(0);
   return (
-    <section style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
+    <section className="pk-section pk-faq" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
       <div style={{ maxWidth: 760, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Eyebrow>{f.eyebrow}</Eyebrow>
@@ -382,7 +484,7 @@ function FAQSection({ lang, copy, density }) {
 /* ================== FOOTER ================== */
 function Footer({ copy }) {
   return (
-    <footer style={{
+    <footer className="pk-footer" style={{
       padding: "40px 48px",
       borderTop: "1px solid rgba(0,0,0,.06)",
       display: "flex", justifyContent: "space-between", alignItems: "center",

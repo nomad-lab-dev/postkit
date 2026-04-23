@@ -9,7 +9,7 @@ function Hero({ lang, copy, density, heroLayout, onCTA }) {
   useE(() => { const t = setTimeout(() => setAfterVisible(true), 600); return () => clearTimeout(t); }, []);
 
   return (
-    <section style={{
+    <section className="pk-section pk-hero" style={{
       position: "relative", padding: density === "airy" ? "140px 48px 80px" : "100px 40px 60px",
       overflow: "hidden",
     }}>
@@ -64,7 +64,7 @@ function Hero({ lang, copy, density, heroLayout, onCTA }) {
         </div>
 
         {/* Split before/after */}
-        <div style={{
+        <div className="pk-hero-split" style={{
           display: "grid", gridTemplateColumns: "1fr auto 1fr",
           gap: 20, alignItems: "center",
           maxWidth: 1040, margin: "0 auto",
@@ -86,7 +86,7 @@ function Hero({ lang, copy, density, heroLayout, onCTA }) {
             </div>
           </div>
 
-          <div style={{
+          <div className="pk-hero-arrow" style={{
             width: 44, height: 44, borderRadius: "50%",
             background: "linear-gradient(135deg,#007aff,#af52de)",
             display: "grid", placeItems: "center", color: "#fff",
@@ -124,13 +124,13 @@ function Hero({ lang, copy, density, heroLayout, onCTA }) {
 function ProblemSection({ lang, copy, density }) {
   const p = copy.problem;
   return (
-    <section style={{ padding: density === "airy" ? "100px 48px" : "72px 40px", background: "#fafafa" }}>
+    <section className="pk-section" style={{ padding: density === "airy" ? "100px 48px" : "72px 40px", background: "#fafafa" }}>
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 48 }}>
           <Eyebrow>{p.eyebrow}</Eyebrow>
           <SectionTitle>{p.title}</SectionTitle>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+        <div className="pk-grid-problem" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
           {p.points.map((pt, i) => (
             <div key={i} style={{
               background: "#fff", border: "1px solid rgba(0,0,0,.06)",
@@ -173,7 +173,7 @@ function HowSection({ lang, copy, density }) {
   }, []);
 
   return (
-    <section ref={ref} style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
+    <section ref={ref} className="pk-section" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px" }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: 64 }}>
           <Eyebrow>{h.eyebrow}</Eyebrow>
@@ -188,7 +188,7 @@ function HowSection({ lang, copy, density }) {
           borderRadius: 28, padding: 32,
           boxShadow: "0 30px 60px -20px rgba(0,0,0,.08)",
         }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 32, alignItems: "center" }}>
+          <div className="pk-grid-how-reveal" style={{ display: "grid", gridTemplateColumns: "1fr 1.2fr", gap: 32, alignItems: "center" }}>
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 3, borderRadius: 12, overflow: "hidden" }}>
                 {window.POSTKIT.CHAOS_PHOTOS.slice(0, 16).map((src, i) => {
@@ -241,7 +241,7 @@ function HowSection({ lang, copy, density }) {
         </div>
 
         {/* 3 step cards */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
+        <div className="pk-grid-how-steps" style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 20 }}>
           {h.steps.map((s, i) => (
             <div key={i} style={{
               background: "#fff", border: "1px solid rgba(0,0,0,.06)",
@@ -262,51 +262,134 @@ function HowSection({ lang, copy, density }) {
   );
 }
 
-/* ================== PILLARS SHOWCASE ================== */
-function PillarsSection({ lang, copy, density }) {
-  const p = copy.pillars;
-  const [active, setActive] = useS("dev");
-  const activePillar = window.POSTKIT.PILLARS.find(x => x.id === active);
+/* ================== PILLARS SHOWCASE — Liquid-glass folder (Variant C) ================== */
+function PillarFolder({ pillar, lang, isActive, onClick }) {
+  const photos = pillar.photos.slice(0, 3);
+  while (photos.length < 3) photos.push(...pillar.photos);
+  photos.length = 3;
+
+  const shortLabel = (lang === "fr" ? pillar.labelFr : pillar.labelEn).split(" ")[0].toUpperCase();
 
   return (
-    <section style={{ padding: density === "airy" ? "120px 48px" : "84px 40px", background: "#0a0a0c", color: "#fff" }}>
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ textAlign: "center", marginBottom: 56 }}>
+    <div
+      className={`pk-folder ${isActive ? "pk-folder-active" : ""}`}
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); }}}
+      style={{ "--pk-color": pillar.color }}
+    >
+      <div className="pk-folder-card">
+        <div className="pk-folder-icon">{pillar.emoji}</div>
+        <div className="pk-folder-label">{shortLabel} · {pillar.count}</div>
+        {photos.map((src, i) => (
+          <img key={i} src={src} className="pk-folder-photo" data-i={i} alt=""/>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function PillarsSection({ lang, copy, density }) {
+  const p = copy.pillars;
+  const pillars = window.POSTKIT.PILLARS;
+  const [activeIdx, setActiveIdx] = useS(0);
+  const [locked, setLocked] = useS(false);
+  const [isMobile, setIsMobile] = useS(false);
+  const visiblePillars = isMobile ? pillars.slice(0, 4) : pillars;
+  const safeActiveIdx = activeIdx % visiblePillars.length;
+
+  // Responsive flag
+  useE(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  // Auto-cycle — desktop only, paused when user locked
+  useE(() => {
+    if (isMobile || locked) return;
+    const id = setInterval(() => {
+      setActiveIdx(i => (i + 1) % pillars.length);
+    }, 3000);
+    return () => clearInterval(id);
+  }, [isMobile, locked, pillars.length]);
+
+  // Resume auto-cycle 8s after last click
+  useE(() => {
+    if (!locked) return;
+    const t = setTimeout(() => setLocked(false), 8000);
+    return () => clearTimeout(t);
+  }, [locked, activeIdx]);
+
+  const handleClick = (i) => {
+    setActiveIdx(i);
+    setLocked(true);
+  };
+
+  return (
+    <section className="pk-section pk-pillars-section" style={{ padding: density === "airy" ? "120px 48px" : "84px 40px", background: "#0a0a0c", color: "#fff" }}>
+      {/* "Before" state as ambient background — chaotic photo grid, blurred + dark veil.
+          Contrasts with the organized folders in the foreground. 4x repetition = 72 tiles (browser caches dupes). */}
+      <div className="pk-pillars-chaos" aria-hidden="true">
+        {Array.from({ length: 4 }).flatMap((_, rep) =>
+          window.POSTKIT.CHAOS_PHOTOS.map((src, i) => {
+            const idx = rep * window.POSTKIT.CHAOS_PHOTOS.length + i;
+            return (
+              <img
+                key={idx}
+                src={src}
+                className="pk-chaos-tile"
+                style={{ "--r": `${((idx * 47) % 14) - 7}deg` }}
+                alt=""
+              />
+            );
+          })
+        )}
+      </div>
+      <div className="pk-pillars-veil" aria-hidden="true" />
+
+      <div style={{ maxWidth: 1200, margin: "0 auto", position: "relative", zIndex: 2 }}>
+        <div className="pk-pillars-head" style={{ textAlign: "center", marginBottom: 56 }}>
           <Eyebrow dark>{p.eyebrow}</Eyebrow>
           <SectionTitle dark>{p.title}</SectionTitle>
-          <p style={{ fontSize: 16, color: "rgba(255,255,255,.6)", marginTop: 14 }}>{p.sub}</p>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,.7)", marginTop: 14, maxWidth: 520, margin: "14px auto 0" }}>{p.sub}</p>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 8, marginBottom: 40 }}>
-          {window.POSTKIT.PILLARS.map((pl) => (
-            <button key={pl.id} onClick={() => setActive(pl.id)} style={{
-              background: active === pl.id ? `${pl.color}20` : "rgba(255,255,255,.04)",
-              border: `1px solid ${active === pl.id ? pl.color + "60" : "rgba(255,255,255,.08)"}`,
-              borderRadius: 14, padding: "14px 10px", cursor: "pointer",
-              color: "#fff", textAlign: "left",
-              transition: "all .2s",
-            }}>
-              <div style={{ fontSize: 22, marginBottom: 6 }}>{pl.emoji}</div>
-              <div style={{ fontSize: 13, fontWeight: 600 }}>{lang === "fr" ? pl.labelFr : pl.labelEn}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,.5)", marginTop: 2 }}>{pl.count} photos</div>
-            </button>
+        {/* Safe zone above folders for the fan-out.
+            Mobile shows 4 pillars (2×2) so the section fits one iPhone screen without scroll. */}
+        <div className="pk-polaroid-row">
+          {visiblePillars.map((pl, i) => (
+            <PillarFolder
+              key={pl.id}
+              pillar={pl}
+              lang={lang}
+              isActive={i === safeActiveIdx}
+              onClick={() => handleClick(i)}
+            />
           ))}
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 4, borderRadius: 20, overflow: "hidden" }}>
-          {activePillar.photos.concat(activePillar.photos).slice(0, 8).map((src, i) => (
-            <img key={i} src={src} style={{
-              width: "100%", aspectRatio: "1", objectFit: "cover", display: "block",
-              animation: `fadeScale .4s ${i*0.04}s both`,
-            }}/>
-          ))}
-        </div>
+        {/* Progress dots (auto-cycle indicator, desktop only) */}
+        {!isMobile && (
+          <div className="pk-polaroid-progress">
+            {pillars.map((pl, i) => (
+              <span
+                key={pl.id}
+                className={`pk-polaroid-dot ${i === safeActiveIdx ? "is-active" : ""} ${locked ? "is-locked" : ""}`}
+                style={{ "--pk-color": pl.color }}
+                onClick={() => handleClick(i)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-Object.assign(window, { Hero, ProblemSection, HowSection, PillarsSection });
+Object.assign(window, { Hero, ProblemSection, HowSection, PillarsSection, PillarFolder });
 
 /* helper: eyebrow + section title */
 function Eyebrow({ children, dark }) {

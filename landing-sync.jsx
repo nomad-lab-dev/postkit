@@ -9,7 +9,7 @@ function SyncSection({ lang, copy, density, dark = false }) {
   const PILLARS = window.POSTKIT.PILLARS;
 
   return (
-    <section style={{
+    <section className="pk-section" style={{
       padding: density === "airy" ? "120px 48px" : "84px 40px",
       background: bg, color: dark ? "#fff" : "#0a0a0c",
     }}>
@@ -21,7 +21,7 @@ function SyncSection({ lang, copy, density, dark = false }) {
         </div>
 
         {/* Visual stage */}
-        <div style={{
+        <div className="pk-sync-stage" style={{
           position: "relative",
           background: dark
             ? "linear-gradient(145deg,rgba(255,255,255,.03),rgba(255,255,255,.01))"
@@ -42,7 +42,7 @@ function SyncSection({ lang, copy, density, dark = false }) {
             pointerEvents: "none",
           }}/>
 
-          <div style={{
+          <div className="pk-grid-sync" style={{
             display: "grid",
             gridTemplateColumns: "minmax(200px, 240px) minmax(140px, 1fr) minmax(360px, 520px)",
             gap: 24, alignItems: "center",
@@ -95,6 +95,27 @@ function SyncSection({ lang, copy, density, dark = false }) {
                       <div style={{ fontSize: 7.5, color: "#8e8e93", marginTop: 1 }}>
                         {lang === "fr" ? "Dernier scan 14:32" : "Last scan 14:32"} · <span style={{ color: "#007aff" }}>Review</span>
                       </div>
+                    </div>
+                    {/* Filter capsules — hint at filterability even though not active */}
+                    <div style={{ display: "flex", gap: 4, marginTop: 6, overflow: "hidden" }}>
+                      {[
+                        { i: "📍", l: "Bangkok" },
+                        { i: "☀️", l: lang === "fr" ? "Matin" : "Morning" },
+                      ].map((f, i) => (
+                        <div key={i} style={{
+                          display: "inline-flex", alignItems: "center", gap: 3,
+                          padding: "2.5px 6px 2.5px 5px",
+                          background: "rgba(0,0,0,.04)",
+                          border: "1px solid rgba(0,0,0,.06)",
+                          borderRadius: 100,
+                          fontSize: 7, fontWeight: 500, color: "#555",
+                          whiteSpace: "nowrap",
+                        }}>
+                          <span style={{ fontSize: 8 }}>{f.i}</span>
+                          <span>{f.l}</span>
+                          <span style={{ fontSize: 7, opacity: .5, marginLeft: 1 }}>▾</span>
+                        </div>
+                      ))}
                     </div>
                     {/* pillars grid */}
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 4, marginTop: 8 }}>
@@ -245,7 +266,31 @@ function SyncSection({ lang, copy, density, dark = false }) {
                           </div>
                         ))}
                       </div>
-                      <div style={{ padding: 6, display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 3, alignContent: "start", overflow: "hidden" }}>
+                      <div style={{ padding: 6, display: "flex", flexDirection: "column", gap: 5, overflow: "hidden" }}>
+                        {/* Filter capsules — hint at filterability. Forced single line on desktop. */}
+                        <div style={{ display: "flex", gap: 3, flexWrap: "nowrap", overflow: "hidden" }}>
+                          {[
+                            { i: "📍", l: "Bangkok" },
+                            { i: "☀️", l: lang === "fr" ? "Matin" : "Morning" },
+                            { i: "📐", l: lang === "fr" ? "Cadrage" : "Framing" },
+                          ].map((f, i) => (
+                            <div key={i} style={{
+                              display: "inline-flex", alignItems: "center", gap: 2.5,
+                              padding: "2.5px 6px 2.5px 5px",
+                              background: "rgba(0,0,0,.04)",
+                              border: "1px solid rgba(0,0,0,.06)",
+                              borderRadius: 100,
+                              fontSize: 7.5, fontWeight: 500, color: "#555",
+                              whiteSpace: "nowrap",
+                              flex: "0 0 auto",
+                            }}>
+                              <span style={{ fontSize: 8.5 }}>{f.i}</span>
+                              <span>{f.l}</span>
+                              <span style={{ fontSize: 6.5, opacity: .5, marginLeft: 1 }}>▾</span>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 3, alignContent: "start" }}>
                         {PILLARS[1].photos.concat(window.POSTKIT.CHAOS_PHOTOS).slice(0, 20).map((src, i) => (
                           <div key={i} style={{ position: "relative" }}>
                             <img src={src} style={{
@@ -263,6 +308,7 @@ function SyncSection({ lang, copy, density, dark = false }) {
                             )}
                           </div>
                         ))}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -288,7 +334,7 @@ function SyncSection({ lang, copy, density, dark = false }) {
         </div>
 
         {/* 4 bullets */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
+        <div className="pk-grid-sync-bullets" style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }}>
           {s.bullets.map((b, i) => {
             const icons = ["📱","🖥️","🔄","🔒"];
             return (

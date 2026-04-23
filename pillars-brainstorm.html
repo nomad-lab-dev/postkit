@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PostKit — Pillars brainstorm (3 variantes)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+    background: #0a0a0c;
+    color: #fff;
+    -webkit-font-smoothing: antialiased;
+    padding: 40px 24px 80px;
+    min-height: 100vh;
+  }
+  .page { max-width: 1280px; margin: 0 auto; }
+  .intro {
+    text-align: center; margin-bottom: 64px;
+  }
+  .intro h1 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 44px; font-weight: 400; letter-spacing: -0.03em;
+    margin-bottom: 10px;
+  }
+  .intro p { color: rgba(255,255,255,.6); font-size: 14px; max-width: 620px; margin: 0 auto; line-height: 1.55; }
+  .intro code { background: rgba(255,255,255,.08); padding: 2px 6px; border-radius: 4px; font-family: 'Geist Mono', monospace; font-size: 12px; }
+
+  .variant {
+    background: linear-gradient(180deg, #141418 0%, #0f0f12 100%);
+    border: 1px solid rgba(255,255,255,.06);
+    border-radius: 22px;
+    padding: 40px 32px;
+    margin-bottom: 28px;
+  }
+  .variant-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 24px; margin-bottom: 6px; flex-wrap: wrap;
+  }
+  .variant-tag {
+    font-family: 'Geist Mono', monospace;
+    font-size: 10.5px; font-weight: 700; letter-spacing: 0.16em;
+    color: #ff9500; text-transform: uppercase;
+  }
+  .variant-title {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 30px; font-weight: 400; letter-spacing: -0.025em;
+    margin-top: 2px;
+  }
+  .variant-desc {
+    font-size: 13.5px; color: rgba(255,255,255,.55);
+    line-height: 1.55; max-width: 640px; margin-top: 10px;
+  }
+  .variant-stage {
+    margin-top: 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+  .stage-cell {
+    background: radial-gradient(ellipse at center, #18181d 0%, #0c0c10 100%);
+    border-radius: 16px;
+    padding: 40px 20px 40px;
+    text-align: center;
+    min-height: 440px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;  /* push folder to bottom so photos can fly UP into empty space above */
+    position: relative;
+    overflow: visible;
+  }
+  .stage-label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em;
+    color: rgba(255,255,255,.4); text-transform: uppercase;
+    position: absolute; top: 16px; left: 18px;
+  }
+
+  /* ==================================================================
+     COMMON FOLDER BASICS (overridden per variant)
+     ================================================================== */
+  .f-wrap {
+    position: relative;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    isolation: isolate;
+  }
+  .f-meta {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 13.5px; font-weight: 500;
+    color: rgba(255,255,255,.55);
+    transition: color .3s;
+  }
+  .f-wrap.open .f-meta { color: #fff; }
+
+  /* ==================================================================
+     VARIANT A — "App tile" (icon top-center, photos hidden inside,
+     reveal out of top when active — clean iOS icon feel)
+     ================================================================== */
+  .vA .f-wrap { width: 160px; }
+  .vA .f-card {
+    position: relative;
+    width: 160px; height: 180px;
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at top, color-mix(in srgb, var(--c) 18%, transparent) 0%, transparent 60%),
+      linear-gradient(180deg, #1d1d22 0%, #131318 100%);
+    border: 1px solid rgba(255,255,255,.06);
+    box-shadow: 0 18px 30px -14px rgba(0,0,0,.55),
+                inset 0 1px 0 rgba(255,255,255,.05);
+    transition: transform .5s cubic-bezier(.34,1.56,.64,1),
+                border-color .35s, box-shadow .35s;
+    /* overflow: visible — photos must escape the card to fly up into the cell space */
+  }
+  .vA .f-wrap.open .f-card {
+    transform: translateY(6px);
+    border-color: color-mix(in srgb, var(--c) 55%, transparent);
+    box-shadow: 0 30px 50px -14px color-mix(in srgb, var(--c) 35%, transparent),
+                0 10px 20px -6px rgba(0,0,0,.5);
+  }
+  /* Icon: centered, BIG */
+  .vA .f-icon {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 78px; line-height: 1;
+    z-index: 3;
+    text-shadow: 0 8px 22px rgba(0,0,0,.45);
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+  }
+  .vA .f-wrap.open .f-icon {
+    transform: translate(-50%, -50%) scale(.88);
+  }
+  /* Photos hidden inside (stacked at center, invisible until active) */
+  .vA .f-photo {
+    position: absolute; top: 50%; left: 50%;
+    width: 72px; height: 90px;
+    margin: -45px 0 0 -36px;
+    border: 3px solid #fff;
+    border-radius: 6px; object-fit: cover;
+    box-shadow: 0 8px 18px -4px rgba(0,0,0,.5);
+    opacity: 0;
+    transform: translate(0,0) rotate(0) scale(.5);
+    transition: transform .7s cubic-bezier(.34,1.56,.64,1),
+                opacity .4s;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .vA .f-wrap.open .f-photo {
+    opacity: 1;
+  }
+  .vA .f-wrap.open .f-photo[data-i="0"] { transform: translate(-72px, -120px) rotate(-14deg) scale(1); transition-delay: 0s; }
+  .vA .f-wrap.open .f-photo[data-i="1"] { transform: translate(0, -150px) rotate(0) scale(1.05); transition-delay: .06s; }
+  .vA .f-wrap.open .f-photo[data-i="2"] { transform: translate(72px, -120px) rotate(14deg) scale(1); transition-delay: .12s; }
+
+  /* ==================================================================
+     VARIANT B — "Icon header + photo stack beneath"
+     (icon top inside card, 3 photos stacked under it in lower half)
+     ================================================================== */
+  .vB .f-wrap { width: 160px; }
+  .vB .f-card {
+    position: relative;
+    width: 160px; height: 200px;
+    border-radius: 22px;
+    background:
+      linear-gradient(180deg, color-mix(in srgb, var(--c) 12%, transparent) 0%, transparent 40%),
+      linear-gradient(180deg, #1b1b1f 0%, #111115 100%);
+    border: 1px solid rgba(255,255,255,.08);
+    box-shadow: 0 14px 28px -10px rgba(0,0,0,.5);
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1),
+                border-color .3s, box-shadow .3s;
+  }
+  .vB .f-wrap.open .f-card {
+    border-color: color-mix(in srgb, var(--c) 55%, transparent);
+    box-shadow: 0 22px 44px -10px color-mix(in srgb, var(--c) 30%, transparent),
+                0 10px 20px -6px rgba(0,0,0,.5);
+  }
+  .vB .f-icon {
+    position: absolute;
+    top: 22px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 44px; line-height: 1;
+    z-index: 1;
+    transition: transform .4s cubic-bezier(.34,1.56,.64,1), opacity .35s;
+    text-shadow: 0 4px 12px rgba(0,0,0,.3);
+  }
+  /* Icon accent: small colored tab underline */
+  .vB .f-icon::after {
+    content: ""; position: absolute;
+    bottom: -10px; left: 50%;
+    transform: translateX(-50%);
+    width: 28px; height: 3px; border-radius: 3px;
+    background: var(--c);
+    transition: width .4s;
+  }
+  .vB .f-wrap.open .f-icon::after { width: 48px; }
+  /* Photos stacked in lower half of card */
+  .vB .f-photo {
+    position: absolute;
+    width: 78px; height: 96px;
+    left: 50%;
+    top: 95px;
+    margin-left: -39px;
+    border: 3px solid #fff;
+    border-radius: 6px; object-fit: cover;
+    box-shadow: 0 6px 14px -3px rgba(0,0,0,.5);
+    transition: transform .65s cubic-bezier(.34,1.56,.64,1),
+                filter .4s;
+    z-index: 2;
+    pointer-events: none;
+    filter: brightness(.88) saturate(.9);
+  }
+  .vB .f-wrap.open .f-photo { filter: none; }
+  /* CLOSED: stacked neatly beneath icon */
+  .vB .f-photo[data-i="0"] { transform: translate(-14px, 4px) rotate(-8deg); z-index: 2; }
+  .vB .f-photo[data-i="1"] { transform: translate(0, 0) rotate(0); z-index: 4; }
+  .vB .f-photo[data-i="2"] { transform: translate(14px, 4px) rotate(8deg); z-index: 3; }
+  /* ACTIVE: fly UP ABOVE the card */
+  .vB .f-wrap.open .f-photo[data-i="0"] { transform: translate(-72px, -150px) rotate(-14deg) scale(1.05); transition-delay: 0s; }
+  .vB .f-wrap.open .f-photo[data-i="1"] { transform: translate(0, -175px) rotate(0) scale(1.1); transition-delay: .06s; }
+  .vB .f-wrap.open .f-photo[data-i="2"] { transform: translate(72px, -150px) rotate(14deg) scale(1.05); transition-delay: .12s; }
+
+  /* ==================================================================
+     VARIANT C — "Glass icon tile, photos peek from bottom"
+     (iOS Liquid Glass aesthetic — photos peek like paper pages)
+     ================================================================== */
+  .vC .f-wrap { width: 170px; }
+  .vC .f-card {
+    position: relative;
+    width: 170px; height: 200px;
+    border-radius: 28px;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06) 0%, rgba(255,255,255,.015) 50%, rgba(0,0,0,.1) 100%),
+      linear-gradient(145deg, color-mix(in srgb, var(--c) 16%, #18181c) 0%, #0e0e12 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow:
+      0 18px 36px -12px rgba(0,0,0,.6),
+      inset 0 1px 0 rgba(255,255,255,.08),
+      inset 0 -1px 0 rgba(0,0,0,.2);
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1),
+                border-color .3s, box-shadow .3s;
+  }
+  .vC .f-wrap.open .f-card {
+    transform: translateY(4px);
+    border-color: color-mix(in srgb, var(--c) 60%, transparent);
+    box-shadow:
+      0 28px 48px -10px color-mix(in srgb, var(--c) 40%, transparent),
+      0 12px 24px -8px rgba(0,0,0,.5),
+      inset 0 1px 0 rgba(255,255,255,.12);
+  }
+  .vC .f-icon {
+    position: absolute;
+    top: 28px; left: 50%;
+    transform: translateX(-50%);
+    font-size: 56px; line-height: 1;
+    z-index: 3;
+    transition: transform .45s cubic-bezier(.34,1.56,.64,1);
+    text-shadow: 0 6px 18px rgba(0,0,0,.4);
+  }
+  .vC .f-wrap.open .f-icon { transform: translateX(-50%) translateY(-4px) scale(1.06); }
+  .vC .f-label {
+    position: absolute; top: 100px; left: 0; right: 0;
+    text-align: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9.5px; font-weight: 600; letter-spacing: 0.12em;
+    color: color-mix(in srgb, var(--c) 80%, white);
+    text-transform: uppercase;
+    z-index: 2;
+  }
+  /* Photos peek from bottom of card */
+  .vC .f-photo {
+    position: absolute;
+    width: 60px; height: 78px;
+    left: 50%;
+    bottom: -20px;
+    margin-left: -30px;
+    border: 2.5px solid #fff;
+    border-radius: 5px; object-fit: cover;
+    box-shadow: 0 -4px 10px -2px rgba(0,0,0,.45);
+    transition: transform .65s cubic-bezier(.34,1.56,.64,1),
+                filter .4s, bottom .5s;
+    z-index: 2;
+    pointer-events: none;
+    filter: brightness(.9) saturate(.92);
+  }
+  .vC .f-wrap.open .f-photo { filter: none; }
+  /* CLOSED: peek ~40% from bottom of card, stacked */
+  .vC .f-photo[data-i="0"] { transform: translate(-14px, 0) rotate(-10deg); z-index: 2; }
+  .vC .f-photo[data-i="1"] { transform: translate(0, -6px) rotate(0); z-index: 4; }
+  .vC .f-photo[data-i="2"] { transform: translate(14px, 0) rotate(10deg); z-index: 3; }
+  /* ACTIVE: photos fly UP to the same height as Variant A (cell y ≈ 130/160) */
+  .vC .f-wrap.open .f-photo[data-i="0"] { transform: translate(-72px, -191px) rotate(-14deg) scale(1); transition-delay: 0s; }
+  .vC .f-wrap.open .f-photo[data-i="1"] { transform: translate(0, -221px) rotate(0) scale(1.05); transition-delay: .06s; }
+  .vC .f-wrap.open .f-photo[data-i="2"] { transform: translate(72px, -191px) rotate(14deg) scale(1); transition-delay: .12s; }
+  /* No external label for C — the in-card label+count is already the title */
+  .vC .f-meta { display: none; }
+
+  /* footer / controls */
+  .controls {
+    display: flex; justify-content: center; gap: 12px; margin-top: 24px;
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: rgba(255,255,255,.5);
+  }
+  .controls kbd {
+    background: rgba(255,255,255,.08);
+    padding: 2px 7px; border-radius: 4px;
+    border: 1px solid rgba(255,255,255,.1);
+    color: rgba(255,255,255,.85);
+  }
+
+  @media (max-width: 720px) {
+    .variant-stage { grid-template-columns: 1fr; gap: 36px; }
+    .intro h1 { font-size: 32px; }
+    .stage-cell { padding-top: 70px; min-height: 280px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <header class="intro">
+    <h1>Pillars — 3 variantes</h1>
+    <p>Chaque variante montre un dossier <code>CLOSED</code> à gauche et <code>ACTIVE</code> à droite. Tu peux cliquer pour toggler. Objectif : focus sur la grille de dossiers, sans chaos background.</p>
+  </header>
+
+  <!-- ============== VARIANT A ============== -->
+  <section class="variant vA">
+    <div class="variant-head">
+      <div>
+        <div class="variant-tag">Variant A</div>
+        <h2 class="variant-title">App tile — icon hero, photos hidden</h2>
+      </div>
+    </div>
+    <p class="variant-desc">Dossier = icône d'app iOS pure. Pas de photos visibles en closed state — juste une grosse icône centrée (78px) sur un fond dégradé avec touche de la couleur du pilier. Au click, l'icône se décale légèrement en retrait et 3 photos jaillissent du centre vers le haut en éventail. Le plus minimaliste des 3.</p>
+    <div class="variant-stage">
+      <div class="stage-cell" data-example="auto"><span class="stage-label">Closed</span></div>
+      <div class="stage-cell open" data-example="dev"><span class="stage-label">Active</span></div>
+    </div>
+  </section>
+
+  <!-- ============== VARIANT B ============== -->
+  <section class="variant vB">
+    <div class="variant-head">
+      <div>
+        <div class="variant-tag">Variant B</div>
+        <h2 class="variant-title">Icon header + photo stack beneath</h2>
+      </div>
+    </div>
+    <p class="variant-desc">Ta description directe : icône en haut de la card (44px), stack de 3 photos empilées en dessous (rotation ±8°). Un petit trait coloré sous l'icône comme accent. Au click, les photos s'envolent vers le haut et l'accent s'étend. Les photos closed ont un léger voile (brightness 0.88).</p>
+    <div class="variant-stage">
+      <div class="stage-cell" data-example="auto"><span class="stage-label">Closed</span></div>
+      <div class="stage-cell open" data-example="dev"><span class="stage-label">Active</span></div>
+    </div>
+  </section>
+
+  <!-- ============== VARIANT C ============== -->
+  <section class="variant vC">
+    <div class="variant-head">
+      <div>
+        <div class="variant-tag">Variant C</div>
+        <h2 class="variant-title">Liquid glass — icon + label, photos peek bottom</h2>
+      </div>
+    </div>
+    <p class="variant-desc">Esthétique Apple Liquid Glass : card avec backdrop-blur + translucidité, icône 56px + label Geist Mono en dessous. 3 photos peek par le BAS (depassent 40% en closed state, stackées). Au click les photos remontent drastiquement au-dessus du card en scale 1.22. Plus premium, plus Apple.</p>
+    <div class="variant-stage">
+      <div class="stage-cell" data-example="auto"><span class="stage-label">Closed</span></div>
+      <div class="stage-cell open" data-example="travel"><span class="stage-label">Active</span></div>
+    </div>
+  </section>
+
+  <div class="controls">
+    <span>Click sur un dossier pour toggler l'état · <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd> pour hard reload</span>
+  </div>
+</div>
+
+<script>
+  // Pillar data (slim copy of window.POSTKIT.PILLARS)
+  const PILLARS = {
+    auto:   { emoji: "🚗", label: "Automotive",    count: 89,  color: "#007aff", photos: ["assets/gallery-auto-1.webp","assets/gallery-auto-2.webp","assets/gallery-auto-3.webp"] },
+    dev:    { emoji: "💻", label: "Dev & Nomad",   count: 342, color: "#5856d6", photos: ["assets/gallery-dev-1.webp","assets/gallery-dev-2.webp","assets/gallery-dev-3.webp"] },
+    travel: { emoji: "✈️", label: "Travel",        count: 215, color: "#34c759", photos: ["assets/gallery-nomad-1.webp","assets/gallery-nomad-2.webp","assets/gallery-nomad-4.webp"] },
+    food:   { emoji: "🍜", label: "Food & Bangkok",count: 128, color: "#ff9500", photos: ["assets/gallery-food-1.webp","assets/gallery-food-2.webp","assets/gallery-food-3.webp"] },
+    life:   { emoji: "🎭", label: "Lifestyle",     count: 67,  color: "#af52de", photos: ["assets/gallery-life-1.webp","assets/gallery-life-2.webp","assets/gallery-life-3.webp"] },
+  };
+
+  // Template builders per variant
+  function buildA(p) {
+    const el = document.createElement('div');
+    el.className = 'f-wrap';
+    el.style.setProperty('--c', p.color);
+    el.innerHTML = `
+      <div class="f-card">
+        ${p.photos.slice(0,3).map((src, i) => `<img class="f-photo" data-i="${i}" src="${src}" alt="">`).join('')}
+        <div class="f-icon">${p.emoji}</div>
+      </div>
+      <div class="f-meta">${p.label}</div>
+    `;
+    return el;
+  }
+  function buildB(p) {
+    const el = document.createElement('div');
+    el.className = 'f-wrap';
+    el.style.setProperty('--c', p.color);
+    el.innerHTML = `
+      <div class="f-card">
+        <div class="f-icon">${p.emoji}</div>
+        ${p.photos.slice(0,3).map((src, i) => `<img class="f-photo" data-i="${i}" src="${src}" alt="">`).join('')}
+      </div>
+      <div class="f-meta">${p.label}</div>
+    `;
+    return el;
+  }
+  function buildC(p) {
+    const el = document.createElement('div');
+    el.className = 'f-wrap';
+    el.style.setProperty('--c', p.color);
+    el.innerHTML = `
+      <div class="f-card">
+        <div class="f-icon">${p.emoji}</div>
+        <div class="f-label">${p.label.split(' ')[0]} · ${p.count}</div>
+        ${p.photos.slice(0,3).map((src, i) => `<img class="f-photo" data-i="${i}" src="${src}" alt="">`).join('')}
+      </div>
+      <div class="f-meta">${p.label}</div>
+    `;
+    return el;
+  }
+
+  const builders = { vA: buildA, vB: buildB, vC: buildC };
+
+  document.querySelectorAll('.variant').forEach(v => {
+    const variantKey = Array.from(v.classList).find(c => /^v[A-C]$/.test(c));
+    const builder = builders[variantKey];
+    v.querySelectorAll('.stage-cell').forEach(cell => {
+      const key = cell.dataset.example;
+      const p = PILLARS[key];
+      const node = builder(p);
+      if (cell.classList.contains('open')) node.classList.add('open');
+      cell.appendChild(node);
+      node.addEventListener('click', () => node.classList.toggle('open'));
+    });
+  });
+</script>
+
+</body>
+</html>
