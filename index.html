@@ -9,12 +9,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Instrument+Serif&family=Geist+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   * { box-sizing: border-box; }
-  html, body { margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; overflow-x: hidden; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
     color: #0a0a0c;
     background: #fff;
+    max-width: 100vw;
   }
   @keyframes chaosIn { from { opacity: 0; transform: scale(.9); } to { opacity: 1; transform: scale(1); } }
   @keyframes slotIn { from { opacity: 0; transform: scale(1.1); filter: blur(8px); } to { opacity: 1; transform: scale(1); filter: blur(0); } }
@@ -388,17 +389,20 @@
     }
     .pk-grid-how-steps > div { padding: 22px 20px !important; }
 
-    /* Pillars: 2-col flex-wrap grid (no scroll). Mobile = 4 folders (2×2). */
+    /* Pillars: 2×2 grid (4 folders). Tight layout: grid sits close to the title,
+       generous gap between rows, photos fly up VERTICALLY so no pillar overlaps another. */
     .pk-pillars-section { padding-top: 28px !important; padding-bottom: 28px !important; }
-    .pk-pillars-head { margin-bottom: 18px !important; }
+    .pk-pillars-head { margin-bottom: 20px !important; }
     .pk-pillars-head h2 { font-size: clamp(22px, 6.5vw, 28px) !important; }
     .pk-polaroid-row {
       justify-content: center !important;
+      align-items: flex-end !important;
+      align-content: flex-end !important;
       flex-wrap: wrap !important;
       overflow: visible !important;
-      gap: 10px 12px !important;
-      padding-top: 180px !important;
-      padding-bottom: 16px !important;
+      gap: 40px 14px !important;              /* 40px vertical air between rows, 14px horizontal */
+      padding-top: 110px !important;          /* safe zone for upward photo flight */
+      padding-bottom: 24px !important;
     }
     .pk-folder { width: 150px !important; }
     .pk-folder-card { width: 150px !important; height: 176px !important; border-radius: 22px !important; }
@@ -410,14 +414,15 @@
       margin-left: -26px !important;
       border-width: 2px !important;
     }
-    /* Closed positions — tighter for smaller card */
+    /* Closed positions — tight stack, peek from bottom */
     .pk-folder-photo[data-i="0"] { transform: translate(-12px, 0) rotate(-10deg) !important; }
     .pk-folder-photo[data-i="1"] { transform: translate(0, -5px) rotate(0) !important; }
     .pk-folder-photo[data-i="2"] { transform: translate(12px, 0) rotate(10deg) !important; }
-    /* Open positions — photos fly up above card, proportional to smaller layout */
-    .pk-folder.pk-folder-active .pk-folder-photo[data-i="0"] { transform: translate(-58px, -160px) rotate(-14deg) scale(1) !important; }
-    .pk-folder.pk-folder-active .pk-folder-photo[data-i="1"] { transform: translate(0, -182px) rotate(0) scale(1.05) !important; }
-    .pk-folder.pk-folder-active .pk-folder-photo[data-i="2"] { transform: translate(58px, -160px) rotate(14deg) scale(1) !important; }
+    /* Open positions — narrower horizontal spread (±32 instead of ±58) so photos don't
+       encroach on neighboring pillar's column. Vertical flight tuned to stay within padding-top. */
+    .pk-folder.pk-folder-active .pk-folder-photo[data-i="0"] { transform: translate(-32px, -130px) rotate(-12deg) scale(1) !important; }
+    .pk-folder.pk-folder-active .pk-folder-photo[data-i="1"] { transform: translate(0, -152px) rotate(0) scale(1.06) !important; }
+    .pk-folder.pk-folder-active .pk-folder-photo[data-i="2"] { transform: translate(32px, -130px) rotate(12deg) scale(1) !important; }
 
     /* Chaos background mobile: smaller tiles, blur tuned for perf */
     .pk-pillars-chaos {
