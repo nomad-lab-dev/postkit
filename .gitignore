@@ -1,2 +1,32 @@
+# Vercel
 .vercel
+
+# Secrets — never commit API keys
 .mcp.json
+**/Secrets.xcconfig
+.env
+.env.local
+*.pem
+
+# macOS
+.DS_Store
+
+# Xcode user-specific state (per developer, not for commit)
+**/xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+
+# Xcode build output
+build/
+DerivedData/
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Swift Package Manager
+.swiftpm/
+Packages/
+
+# Python (recovery scripts)
+__pycache__/
+*.pyc
