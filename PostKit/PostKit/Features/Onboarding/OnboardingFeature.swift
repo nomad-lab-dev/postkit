@@ -85,9 +85,7 @@ struct OnboardingFeature {
                 }
 
             case .openSettingsTapped:
-                return .run { _ in
-                    await openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
+                return openSettings()
 
             case .sceneDidBecomeActive:
                 guard state.photoAccessDenied else { return .none }
@@ -210,15 +208,20 @@ struct OnboardingFeature {
                 return .none
 
             case .alert(.presented(.openSettingsTapped)):
-                return .run { _ in
-                    await openURL(URL(string: UIApplication.openSettingsURLString)!)
-                }
+                return openSettings()
 
             case .alert:
                 return .none
             }
         }
         .ifLet(\.$alert, action: \.alert)
+    }
+
+    private func openSettings() -> Effect<Action> {
+        .run { [openURL] _ in
+            guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+            await openURL(url)
+        }
     }
 }
 

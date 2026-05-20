@@ -5,21 +5,32 @@ import ComposableArchitecture
 import SwiftData
 import SwiftUI
 
+enum PostKitSchemaV1: VersionedSchema {
+    static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
+    static var models: [any PersistentModel.Type] {
+        [Pillar.self, ClassifiedPhoto.self, GeneratedPost.self, PostTemplate.self]
+    }
+}
+
+enum PostKitMigrationPlan: SchemaMigrationPlan {
+    static var schemas: [any VersionedSchema.Type] { [PostKitSchemaV1.self] }
+    static var stages: [MigrationStage] { [] }
+}
+
 @main
 struct PostKitApp: App {
     let store: StoreOf<AppFeature>
 
     init() {
-        let schema = Schema([
-            Pillar.self,
-            ClassifiedPhoto.self,
-            GeneratedPost.self,
-            PostTemplate.self,
-        ])
+        let schema = Schema(versionedSchema: PostKitSchemaV1.self)
         let container: ModelContainer
         do {
             let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-            container = try ModelContainer(for: schema, configurations: [config])
+            container = try ModelContainer(
+                for: schema,
+                migrationPlan: PostKitMigrationPlan.self,
+                configurations: [config]
+            )
         } catch {
             print("⚠️ SwiftData migration failed — resetting store: \(error)")
             if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {

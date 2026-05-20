@@ -2,7 +2,10 @@
 // ClassifiedPhoto.swift — ClassifiedPhoto SwiftData model
 
 import Foundation
+import os
 import SwiftData
+
+private let modelLogger = Logger(subsystem: "PostKit", category: "Models")
 
 @Model
 final class ClassifiedPhoto {
@@ -21,7 +24,8 @@ final class ClassifiedPhoto {
     var pillarIDs: [UUID] {
         get {
             guard let data = pillarIDsData else { return [] }
-            return (try? JSONDecoder().decode([UUID].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([UUID].self, from: data) }
+            catch { modelLogger.error("ClassifiedPhoto.pillarIDs decode failed: \(error)"); return [] }
         }
         set {
             pillarIDsData = try? JSONEncoder().encode(newValue)
@@ -31,7 +35,8 @@ final class ClassifiedPhoto {
     var tags: [String] {
         get {
             guard let data = tagsData else { return [] }
-            return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("ClassifiedPhoto.tags decode failed: \(error)"); return [] }
         }
         set {
             tagsData = try? JSONEncoder().encode(newValue)

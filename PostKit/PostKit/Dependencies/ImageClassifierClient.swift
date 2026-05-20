@@ -312,9 +312,18 @@ private enum CadrageDetector {
         }
 
         guard let best = scores.max(by: { $0.value < $1.value }), best.value > 0.05 else {
-            return .wide
+            return inferFromAspectRatio(image)
         }
         return best.key
+    }
+
+    private static func inferFromAspectRatio(_ image: UIImage) -> Cadrage {
+        let w = image.size.width * image.scale
+        let h = image.size.height * image.scale
+        let ratio = h / max(w, 1)
+        if ratio > 1.3 { return .portrait }
+        if ratio < 0.7 { return .wide }
+        return .wide
     }
 }
 

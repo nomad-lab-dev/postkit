@@ -2,7 +2,10 @@
 // Cadrage.swift — Cadrage enum, Weekday, TemplateSchedule, PostTemplate SwiftData model, and TemplateSlotData
 
 import Foundation
+import os
 import SwiftData
+
+private let modelLogger = Logger(subsystem: "PostKit", category: "Models")
 
 enum Cadrage: String, Codable, CaseIterable, Sendable {
     case any, wide, detail, portrait, pov, screenshot
@@ -93,7 +96,8 @@ final class PostTemplate {
     var slots: [TemplateSlotData] {
         get {
             guard let data = slotsData else { return [] }
-            return (try? JSONDecoder().decode([TemplateSlotData].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([TemplateSlotData].self, from: data) }
+            catch { modelLogger.error("PostTemplate.slots decode failed: \(error)"); return [] }
         }
         set {
             slotsData = try? JSONEncoder().encode(newValue)
@@ -103,7 +107,8 @@ final class PostTemplate {
     var locations: [String] {
         get {
             guard let data = locationsData else { return [] }
-            return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("PostTemplate.locations decode failed: \(error)"); return [] }
         }
         set {
             locationsData = try? JSONEncoder().encode(newValue)
@@ -113,7 +118,8 @@ final class PostTemplate {
     var schedule: TemplateSchedule {
         get {
             guard let data = scheduleData else { return TemplateSchedule() }
-            return (try? JSONDecoder().decode(TemplateSchedule.self, from: data)) ?? TemplateSchedule()
+            do { return try JSONDecoder().decode(TemplateSchedule.self, from: data) }
+            catch { modelLogger.error("PostTemplate.schedule decode failed: \(error)"); return TemplateSchedule() }
         }
         set {
             scheduleData = try? JSONEncoder().encode(newValue)

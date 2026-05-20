@@ -2,7 +2,10 @@
 // GeneratedPost.swift — GeneratedPost SwiftData model and related types
 
 import Foundation
+import os
 import SwiftData
+
+private let modelLogger = Logger(subsystem: "PostKit", category: "Models")
 
 enum SocialPlatform: String, Codable, CaseIterable, Sendable {
     case instagram, tiktok, twitter, linkedin, reddit, pinterest
@@ -58,7 +61,8 @@ final class GeneratedPost {
     var photoIDs: [String] {
         get {
             guard let data = photoIDsData else { return [] }
-            return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("GeneratedPost.photoIDs decode failed: \(error)"); return [] }
         }
         set {
             photoIDsData = try? JSONEncoder().encode(newValue)
@@ -68,7 +72,8 @@ final class GeneratedPost {
     var hashtags: [String] {
         get {
             guard let data = hashtagsData else { return [] }
-            return (try? JSONDecoder().decode([String].self, from: data)) ?? []
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("GeneratedPost.hashtags decode failed: \(error)"); return [] }
         }
         set {
             hashtagsData = try? JSONEncoder().encode(newValue)
