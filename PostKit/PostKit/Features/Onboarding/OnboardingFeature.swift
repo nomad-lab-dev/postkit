@@ -20,6 +20,7 @@ struct OnboardingFeature {
         var scanProgress: Double = 0
         var scannedCount: Int = 0
         var totalToScan: Int = 20
+        var photoAccessDenied: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
         var selectedPillarCount: Int {
@@ -37,11 +38,13 @@ struct OnboardingFeature {
 
     enum Action {
         case getStartedTapped
+        case openSettingsTapped
+        case sceneDidBecomeActive
         case authorizationResponse(PHAuthorizationStatus)
         case pillarToggled(PillarOption.ID)
         case startScanTapped
         case scanStarted(totalPhotos: Int)
-        case scanProgressed(ClassificationResult, assetIdentifier: String)
+        case scanProgressed([ClassificationResult], assetIdentifier: String)
         case scanFinished
         case startPostKitTapped
         case persistResponse(Result<Void, Error>)
@@ -58,7 +61,7 @@ struct OnboardingFeature {
     @Dependency(\.openURL) var openURL
     @Dependency(\.uuid) var uuid
 
-    private enum CancelID { case quickScan }
+    private enum CancelID: Hashable, Sendable { case quickScan }
 
     static let defaultPillars: [(name: String, emoji: String)] = [
         ("Automotive", "🚗"),
@@ -78,9 +81,23 @@ struct OnboardingFeature {
                     await send(.authorizationResponse(status))
                 }
 
+            case .openSettingsTapped:
+                return .run { _ in
+                    await openURL(URL(string: UIApplication.openSettingsURLString)!)
+                }
+
+            case .sceneDidBecomeActive:
+                guard state.photoAccessDenied else { return .none }
+                let currentStatus = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+                if currentStatus == .authorized {
+                    return .send(.authorizationResponse(.authorized))
+                }
+                return .none
+
             case let .authorizationResponse(status):
                 switch status {
-                case .authorized, .limited:
+                case .authorized:
+                    state.photoAccessDenied = false
                     state.step = .pillarSetup
                     state.availablePillars = IdentifiedArrayOf(
                         uniqueElements: Self.defaultPillars.map {
@@ -94,8 +111,8 @@ struct OnboardingFeature {
                     )
                     return .none
 
-                case .denied, .restricted:
-                    state.alert = .photoAccessDenied
+                case .limited, .denied, .restricted:
+                    state.photoAccessDenied = true
                     return .none
 
                 case .notDetermined:
@@ -113,33 +130,34 @@ struct OnboardingFeature {
                 state.step = .scanning
                 state.scannedCount = 0
                 state.scanProgress = 0
+                let pillarNames = state.availablePillars.map(\.name)
+                let fetchRecent = photoLibrary.fetchRecentPhotos
+                let fetchImage = photoLibrary.image
+                let classify = imageClassifier.classify
                 return .run { send in
-                    let assets = try await photoLibrary.fetchRecentPhotos(20)
+                    let assets = try await fetchRecent(20)
+
+                    if assets.isEmpty {
+                        await send(.scanFinished)
+                        return
+                    }
+
                     await send(.scanStarted(totalPhotos: assets.count))
-                    await withTaskGroup(of: Void.self) { group in
-                        for asset in assets {
-                            group.addTask {
-                                do {
-                                    let image = try await photoLibrary.image(
-                                        asset.localIdentifier,
-                                        CGSize(width: 224, height: 224)
-                                    )
-                                    let result = try await imageClassifier.classify(image)
-                                    await send(.scanProgressed(result, assetIdentifier: asset.localIdentifier))
-                                } catch {
-                                    await send(.scanProgressed(
-                                        ClassificationResult(
-                                            pillarName: "Uncategorized",
-                                            confidence: 0,
-                                            suggestedTags: [],
-                                            source: .coreML
-                                        ),
-                                        assetIdentifier: asset.localIdentifier
-                                    ))
-                                }
-                            }
+
+                    for asset in assets {
+                        try Task.checkCancellation()
+                        do {
+                            let image = try await fetchImage(
+                                asset.localIdentifier,
+                                CGSize(width: 224, height: 224)
+                            )
+                            let results = try await classify(image, pillarNames)
+                            await send(.scanProgressed(results, assetIdentifier: asset.localIdentifier))
+                        } catch is CancellationError {
+                            return
+                        } catch {
+                            await send(.scanProgressed([], assetIdentifier: asset.localIdentifier))
                         }
-                        await group.waitForAll()
                     }
                     await send(.scanFinished)
                 }
@@ -149,13 +167,15 @@ struct OnboardingFeature {
                 state.totalToScan = max(totalPhotos, 1)
                 return .none
 
-            case let .scanProgressed(result, _):
+            case let .scanProgressed(results, _):
                 state.scannedCount += 1
                 state.scanProgress = Double(state.scannedCount) / Double(state.totalToScan)
-                if let index = state.availablePillars.firstIndex(
-                    where: { $0.name == result.pillarName && $0.isSelected }
-                ) {
-                    state.availablePillars[index].matchedPhotos += 1
+                for result in results {
+                    if let index = state.availablePillars.firstIndex(
+                        where: { $0.name == result.pillarName && $0.isSelected }
+                    ) {
+                        state.availablePillars[index].matchedPhotos += 1
+                    }
                 }
                 return .none
 

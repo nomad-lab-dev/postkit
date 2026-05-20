@@ -22,15 +22,14 @@ struct PillarRowView: View {
 
         VStack(alignment: .leading, spacing: Layout.Stack.tight) {
             Text(pillar.name).font(Typography.headline)
-            ProgressView(value: pillar.coverage)
-                .tint(Palette.color(forHex: pillar.colorHex))
             HStack(spacing: Layout.Stack.cozy) {
-                Text("\(pillar.coveragePct)% coverage")
                 Text("\(pillar.postsPerWeek) / week")
             }
             .font(Typography.footnote)
             .foregroundStyle(Palette.secondaryText(contrast))
         }
+
+        Spacer()
 
         VStack(alignment: .trailing, spacing: 0) {
             Text("\(pillar.photoCount)").font(Typography.title3)
@@ -43,11 +42,11 @@ struct PillarRowView: View {
     VStack(spacing: 12) {
         PillarRowView(pillar: PillarSnapshot(
             name: "Automotive", emoji: "🚗", colorHex: "#007aff",
-            photoCount: 47, coverage: 0.84
+            photoCount: 47
         ))
         PillarRowView(pillar: PillarSnapshot(
             name: "Travel", emoji: "🌍", colorHex: "#af52de",
-            photoCount: 32, coverage: 0.64
+            photoCount: 32
         ))
     }
     .padding()

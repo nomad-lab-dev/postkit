@@ -4,39 +4,117 @@ import SwiftUI
 struct OnboardingView: View {
     @Bindable var store: StoreOf<OnboardingFeature>
 
+    @Environment(\.scenePhase) private var scenePhase
+
     var body: some View {
         NavigationStack {
             Group {
-                switch store.step {
-                case .welcome:
-                    WelcomeStep(onGetStarted: { store.send(.getStartedTapped) })
-                case .pillarSetup:
-                    PillarSetupStep(
-                        pillars: store.availablePillars,
-                        selectedCount: store.selectedPillarCount,
-                        onToggle: { store.send(.pillarToggled($0)) },
-                        onScan: { store.send(.startScanTapped) }
+                if store.photoAccessDenied {
+                    PhotoAccessStep(
+                        onOpenSettings: { store.send(.openSettingsTapped) }
                     )
-                case .scanning:
-                    ScanningStep(
-                        progress: store.scanProgress,
-                        scannedCount: store.scannedCount,
-                        totalToScan: store.totalToScan
-                    )
-                case .scanComplete:
-                    ScanCompleteStep(
-                        pillars: store.availablePillars.filter(\.isSelected),
-                        totalMatched: store.totalMatchedPhotos,
-                        onStart: { store.send(.startPostKitTapped) }
-                    )
+                } else {
+                    switch store.step {
+                    case .welcome:
+                        WelcomeStep(onGetStarted: { store.send(.getStartedTapped) })
+                    case .pillarSetup:
+                        PillarSetupStep(
+                            pillars: store.availablePillars,
+                            selectedCount: store.selectedPillarCount,
+                            onToggle: { store.send(.pillarToggled($0)) },
+                            onScan: { store.send(.startScanTapped) }
+                        )
+                    case .scanning:
+                        ScanningStep(
+                            progress: store.scanProgress,
+                            scannedCount: store.scannedCount,
+                            totalToScan: store.totalToScan
+                        )
+                    case .scanComplete:
+                        ScanCompleteStep(
+                            pillars: store.availablePillars.filter(\.isSelected),
+                            totalMatched: store.totalMatchedPhotos,
+                            onStart: { store.send(.startPostKitTapped) }
+                        )
+                    }
                 }
             }
             .animation(.easeInOut(duration: 0.3), value: store.step)
+            .animation(.easeInOut(duration: 0.3), value: store.photoAccessDenied)
             .navigationTitle(AppStrings.Onboarding.welcomeTitle)
             .navigationBarTitleDisplayMode(.inline)
         }
         .interactiveDismissDisabled()
         .alert($store.scope(state: \.alert, action: \.alert))
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active {
+                store.send(.sceneDidBecomeActive)
+            }
+        }
+    }
+}
+
+// MARK: - Photo Access Required
+
+private struct PhotoAccessStep: View {
+    let onOpenSettings: () -> Void
+
+    var body: some View {
+        VStack(spacing: Spacing.xxl) {
+            Spacer()
+
+            Image(systemName: "photo.badge.exclamationmark")
+                .font(.system(size: 72))
+                .foregroundStyle(Palette.accent)
+                .symbolEffect(.pulse, isActive: true)
+
+            VStack(spacing: Spacing.sm) {
+                Text("Full Photo Access Required")
+                    .font(Typography.title)
+                    .multilineTextAlignment(.center)
+
+                Text("PostKit needs to browse your entire photo library to classify and organize your content by pillar. Without full access, we can't scan your photos.")
+                    .font(Typography.body)
+                    .foregroundStyle(Palette.text3)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.lg)
+            }
+
+            VStack(spacing: Spacing.xs) {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "lock.shield")
+                        .foregroundStyle(Palette.accent)
+                    Text("Your photos never leave your device")
+                        .font(Typography.subheadline)
+                        .foregroundStyle(Palette.text2)
+                }
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "eye.slash")
+                        .foregroundStyle(Palette.accent)
+                    Text("We only store references, not copies")
+                        .font(Typography.subheadline)
+                        .foregroundStyle(Palette.text2)
+                }
+            }
+
+            Spacer()
+
+            Button {
+                Haptics.tap()
+                onOpenSettings()
+            } label: {
+                Label("Open Settings", systemImage: "gear")
+            }
+            .buttonStyle(PrimaryButton())
+            .padding(.horizontal, Spacing.xl)
+
+            Text("Go to Settings > PostKit > Photos > Full Access")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.text4)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.xl)
+                .padding(.bottom, Spacing.xxl)
+        }
     }
 }
 
@@ -66,7 +144,7 @@ private struct WelcomeStep: View {
 
             Spacer()
 
-            Button("Get Started", action: onGetStarted)
+            Button("Get Started") { Haptics.tap(); onGetStarted() }
                 .buttonStyle(PrimaryButton())
                 .padding(.horizontal, Spacing.xl)
                 .padding(.bottom, Spacing.xxl)
@@ -117,7 +195,7 @@ private struct PillarSetupStep: View {
                         .foregroundStyle(Palette.text3)
                 }
 
-                Button("Scan My Library", action: onScan)
+                Button("Scan My Library") { Haptics.heavyTap(); onScan() }
                     .buttonStyle(PrimaryButton())
                     .disabled(selectedCount == 0)
             }
@@ -132,7 +210,7 @@ private struct PillarSetupCard: View {
     let onTap: () -> Void
 
     var body: some View {
-        Button(action: onTap) {
+        Button { Haptics.selection(); onTap() } label: {
             VStack(spacing: Spacing.sm) {
                 Text(pillar.emoji).font(.system(size: 36))
                 Text(pillar.name)
@@ -240,7 +318,7 @@ private struct ScanCompleteStep: View {
 
             Spacer()
 
-            Button("Start PostKit", action: onStart)
+            Button("Start PostKit") { Haptics.success(); onStart() }
                 .buttonStyle(PrimaryButton())
                 .padding(.horizontal, Spacing.xl)
                 .padding(.bottom, Spacing.xxl)

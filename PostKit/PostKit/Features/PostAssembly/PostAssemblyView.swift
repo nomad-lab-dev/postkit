@@ -44,6 +44,7 @@ struct PostAssemblyView: View {
                     LazyVStack(spacing: Spacing.sm) {
                         ForEach(store.pillars) { pillar in
                             Button {
+                                Haptics.tap()
                                 store.send(.pillarSelected(pillar))
                             } label: {
                                 PillarRowView(pillar: pillar)
@@ -101,6 +102,7 @@ struct PostAssemblyView: View {
                                 assetIdentifier: photo.assetLocalIdentifier,
                                 isSelected: store.selectedPhotoIDs.contains(photo.assetLocalIdentifier)
                             ) {
+                                Haptics.selection()
                                 store.send(.photoToggled(photo.assetLocalIdentifier))
                             }
                         }
@@ -111,6 +113,7 @@ struct PostAssemblyView: View {
 
             if store.canGenerate {
                 Button {
+                    Haptics.tap()
                     store.send(.continueToCaption)
                 } label: {
                     Text("Generate Caption")
@@ -140,6 +143,7 @@ struct PostAssemblyView: View {
                 HStack(spacing: Spacing.xs) {
                     ForEach(SocialPlatform.allCases, id: \.self) { platform in
                         Button {
+                            Haptics.lightTap()
                             store.send(.platformChanged(platform))
                         } label: {
                             Text(platform.displayName)
@@ -226,6 +230,7 @@ struct PostAssemblyView: View {
                 if !store.isGenerating {
                     VStack(spacing: Spacing.sm) {
                         Button {
+                            Haptics.success()
                             store.send(.exportTapped)
                         } label: {
                             Label("Copy to Clipboard", systemImage: "doc.on.doc")
@@ -239,6 +244,7 @@ struct PostAssemblyView: View {
 
                         HStack(spacing: Spacing.sm) {
                             Button {
+                                Haptics.tap()
                                 store.send(.regenerateTapped)
                             } label: {
                                 Label("Regenerate", systemImage: "arrow.clockwise")
@@ -250,6 +256,7 @@ struct PostAssemblyView: View {
                             }
 
                             Button {
+                                Haptics.success()
                                 store.send(.saveTapped)
                             } label: {
                                 Label("Save Draft", systemImage: "square.and.arrow.down")

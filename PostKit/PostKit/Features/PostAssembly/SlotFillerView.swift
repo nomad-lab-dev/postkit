@@ -24,7 +24,7 @@ struct SlotFillerView: View {
                 EmptyStateView(
                     icon: "📷",
                     title: "No photos found",
-                    message: store.constrainedPillarNames.isEmpty
+                    message: store.constrainedPillarIDs.isEmpty
                         ? "Run a scan from the Dashboard to classify your photos."
                         : "No photos match this slot's pillar requirements."
                 )
@@ -41,6 +41,7 @@ struct SlotFillerView: View {
                         LazyVGrid(columns: columns, spacing: Layout.Grid.photoGrid) {
                             ForEach(store.filteredPhotos) { photo in
                                 Button {
+                                    Haptics.selection()
                                     store.send(.photoToggled(photo.assetLocalIdentifier))
                                 } label: {
                                     FillerThumbnailCell(
@@ -79,41 +80,61 @@ struct SlotFillerView: View {
     }
 
     private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: Spacing.xs) {
-                if store.constrainedPillarNames.isEmpty {
-                    FilterChipView(
-                        label: "All",
-                        isSelected: store.selectedFilter == .all
-                    ) {
-                        store.send(.filterSelected(.all))
+        VStack(spacing: Spacing.xs) {
+            if !store.displayPillars.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(store.displayPillars) { pillar in
+                            FilterChipView(
+                                label: "\(pillar.emoji) \(pillar.name)",
+                                isSelected: store.activePillarIDs.contains(pillar.id),
+                                isConfigured: store.constrainedPillarIDs.contains(pillar.id)
+                            ) {
+                                store.send(.pillarFilterToggled(pillar.id))
+                            }
+                        }
                     }
-                }
-
-                ForEach(store.displayPillars) { pillar in
-                    FilterChipView(
-                        label: "\(pillar.emoji) \(pillar.name)",
-                        isSelected: store.selectedFilter == .pillar(pillar.id)
-                    ) {
-                        store.send(.filterSelected(.pillar(pillar.id)))
-                    }
-                }
-
-                if store.constrainedPillarNames.isEmpty {
-                    FilterChipView(
-                        label: "❓ Uncategorized",
-                        isSelected: store.selectedFilter == .uncategorized
-                    ) {
-                        store.send(.filterSelected(.uncategorized))
-                    }
+                    .padding(.horizontal, Layout.Padding.screen.leading)
                 }
             }
-            .padding(.horizontal, Layout.Padding.screen.leading)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.xs) {
+                    ForEach(Cadrage.detectableCases, id: \.self) { cadrage in
+                        FilterChipView(
+                            label: cadrage.displayName,
+                            isSelected: store.activeCadrages.contains(cadrage),
+                            isConfigured: store.constrainedCadrages.contains(cadrage)
+                        ) {
+                            store.send(.cadrageFilterToggled(cadrage))
+                        }
+                    }
+                }
+                .padding(.horizontal, Layout.Padding.screen.leading)
+            }
+
+            if !store.uniqueLocations.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: Spacing.xs) {
+                        ForEach(store.uniqueLocations, id: \.self) { location in
+                            FilterChipView(
+                                label: "📍 \(location)",
+                                isSelected: store.activeLocations.contains(location),
+                                isConfigured: store.constrainedLocations.contains(location)
+                            ) {
+                                store.send(.locationFilterToggled(location))
+                            }
+                        }
+                    }
+                    .padding(.horizontal, Layout.Padding.screen.leading)
+                }
+            }
         }
     }
 
     private var confirmBar: some View {
         Button {
+            Haptics.success()
             store.send(.confirmTapped)
         } label: {
             Text("Use \(store.selectedPhotoIDs.count) photo\(store.selectedPhotoIDs.count == 1 ? "" : "s")")
@@ -133,6 +154,7 @@ struct SlotFillerView: View {
 struct FilterChipView: View {
     let label: String
     let isSelected: Bool
+    var isConfigured: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -140,22 +162,33 @@ struct FilterChipView: View {
             Text(label)
                 .font(Typography.subheadline)
                 .fontWeight(isSelected ? .semibold : .regular)
-                .foregroundStyle(isSelected ? Palette.onAccent : Palette.text2)
+                .foregroundStyle(foregroundColor)
                 .padding(.horizontal, Spacing.sm)
                 .padding(.vertical, Spacing.xxs + 2)
-                .background(
-                    isSelected ? Palette.accent : Palette.glassStrong,
-                    in: Capsule()
-                )
+                .background(backgroundColor, in: Capsule())
                 .overlay(
                     Capsule()
-                        .strokeBorder(
-                            isSelected ? Color.clear : Palette.border,
-                            lineWidth: Layout.Border.thin
-                        )
+                        .strokeBorder(borderColor, lineWidth: Layout.Border.thin)
                 )
         }
         .buttonStyle(.plain)
+    }
+
+    private var foregroundColor: Color {
+        if isSelected { return Palette.onAccent }
+        if isConfigured { return Palette.accent }
+        return Palette.text2
+    }
+
+    private var backgroundColor: Color {
+        if isSelected { return Palette.accent }
+        return Palette.glassStrong
+    }
+
+    private var borderColor: Color {
+        if isSelected { return Color.clear }
+        if isConfigured { return Palette.accent.opacity(0.5) }
+        return Palette.border
     }
 }
 

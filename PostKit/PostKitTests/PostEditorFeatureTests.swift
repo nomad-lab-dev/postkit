@@ -10,8 +10,8 @@ final class PostEditorFeatureTests: XCTestCase {
         id: UUID(0),
         name: "Carousel",
         slots: [
-            TemplateSlotData(id: UUID(1), name: "Hero", cadrage: .wide, pillarNames: ["Travel"]),
-            TemplateSlotData(id: UUID(2), name: "Detail", cadrage: .detail),
+            TemplateSlotData(id: UUID(1), name: "Hero", cadrages: [.wide], pillarIDs: [UUID(3)]),
+            TemplateSlotData(id: UUID(2), name: "Detail", cadrages: [.detail]),
         ]
     )
 
@@ -35,7 +35,8 @@ final class PostEditorFeatureTests: XCTestCase {
             $0.slotFiller = SlotFillerFeature.State(
                 slotID: UUID(1),
                 slotName: "Hero",
-                constrainedPillarNames: ["Travel"]
+                constrainedPillarIDs: [UUID(3)],
+                constrainedCadrages: [.wide]
             )
         }
     }
@@ -51,7 +52,8 @@ final class PostEditorFeatureTests: XCTestCase {
             $0.slotFiller = SlotFillerFeature.State(
                 slotID: UUID(2),
                 slotName: "Detail",
-                constrainedPillarNames: []
+                constrainedPillarIDs: [],
+                constrainedCadrages: [.detail]
             )
         }
     }
@@ -61,7 +63,8 @@ final class PostEditorFeatureTests: XCTestCase {
         state.slotFiller = SlotFillerFeature.State(
             slotID: UUID(1),
             slotName: "Hero",
-            constrainedPillarNames: ["Travel"]
+            constrainedPillarIDs: [UUID(3)],
+            constrainedCadrages: [.wide]
         )
 
         let store = TestStore(initialState: state) {
@@ -70,7 +73,8 @@ final class PostEditorFeatureTests: XCTestCase {
 
         await store.send(.slotFiller(.presented(.delegate(.didConfirm(
             slotID: UUID(1),
-            photoIDs: ["a1", "a2"]
+            photoIDs: ["a1", "a2"],
+            locationLabel: nil
         ))))) {
             $0.filledSlots[0].photoIDs = ["a1", "a2"]
         }
@@ -151,12 +155,13 @@ final class SlotFillerFeatureTests: XCTestCase {
         }
     }
 
-    func test_onAppear_constrained_filtersPhotosAndAutoSelectsFilter() async {
+    func test_onAppear_constrained_loadsAllPhotosWithPreActivatedFilters() async {
         let store = TestStore(
             initialState: SlotFillerFeature.State(
                 slotID: UUID(10),
                 slotName: "Hero",
-                constrainedPillarNames: ["Travel"]
+                constrainedPillarIDs: [UUID(0)],
+                constrainedCadrages: [.wide]
             )
         ) {
             SlotFillerFeature()
@@ -165,16 +170,17 @@ final class SlotFillerFeatureTests: XCTestCase {
             $0.persistence.fetchPhotos = { [photos] _ in photos }
         }
 
+        XCTAssertEqual(store.state.activePillarIDs, [UUID(0)])
+        XCTAssertEqual(store.state.activeCadrages, [.wide])
+
         await store.send(.onAppear) {
             $0.isLoading = true
         }
 
-        let travelPhotos = [photos[0], photos[2]]
         await store.receive(\.dataLoaded) {
             $0.pillars = self.pillars
-            $0.photos = travelPhotos
+            $0.photos = self.photos
             $0.isLoading = false
-            $0.selectedFilter = .pillar(UUID(0))
         }
     }
 
@@ -200,7 +206,7 @@ final class SlotFillerFeatureTests: XCTestCase {
         }
     }
 
-    func test_filterSelected_changesFilter() async {
+    func test_pillarFilterToggle_narrowsAndBroadens() async {
         var state = SlotFillerFeature.State(slotID: UUID(10), slotName: "Hero")
         state.photos = photos
         state.pillars = pillars
@@ -209,11 +215,44 @@ final class SlotFillerFeatureTests: XCTestCase {
             SlotFillerFeature()
         }
 
-        await store.send(.filterSelected(.pillar(UUID(0)))) {
-            $0.selectedFilter = .pillar(UUID(0))
+        XCTAssertEqual(store.state.filteredPhotos.count, 3)
+
+        await store.send(.pillarFilterToggled(UUID(0))) {
+            $0.activePillarIDs = [UUID(0)]
         }
 
         XCTAssertEqual(store.state.filteredPhotos.count, 2)
+
+        await store.send(.pillarFilterToggled(UUID(0))) {
+            $0.activePillarIDs = []
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 3)
+    }
+
+    func test_cadrageFilterToggle() async {
+        var state = SlotFillerFeature.State(
+            slotID: UUID(10),
+            slotName: "Hero",
+            constrainedCadrages: [.wide, .detail]
+        )
+        state.photos = [
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "c1", pillarID: UUID(0), status: .classified, cadrage: .wide),
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "c2", pillarID: UUID(0), status: .classified, cadrage: .detail),
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "c3", pillarID: UUID(0), status: .classified, cadrage: .portrait),
+        ]
+
+        let store = TestStore(initialState: state) {
+            SlotFillerFeature()
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 2)
+
+        await store.send(.cadrageFilterToggled(.detail)) {
+            $0.activeCadrages = [.wide]
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 1)
     }
 
     func test_preselectedPhotos_preserved() async {
@@ -224,5 +263,36 @@ final class SlotFillerFeatureTests: XCTestCase {
         )
 
         XCTAssertEqual(state.selectedPhotoIDs, ["a1", "a3"])
+    }
+
+    func test_locationFilterToggle() async {
+        var state = SlotFillerFeature.State(
+            slotID: UUID(10),
+            slotName: "Hero",
+            constrainedLocations: ["Paris, France", "Tokyo, Japan"]
+        )
+        state.photos = [
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "l1", pillarID: UUID(0), location: "Paris, France", status: .classified),
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "l2", pillarID: UUID(0), location: "Tokyo, Japan", status: .classified),
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "l3", pillarID: UUID(0), location: "Berlin, Germany", status: .classified),
+        ]
+
+        let store = TestStore(initialState: state) {
+            SlotFillerFeature()
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 2)
+
+        await store.send(.locationFilterToggled("Tokyo, Japan")) {
+            $0.activeLocations = ["Paris, France"]
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 1)
+
+        await store.send(.locationFilterToggled("Paris, France")) {
+            $0.activeLocations = []
+        }
+
+        XCTAssertEqual(store.state.filteredPhotos.count, 3)
     }
 }

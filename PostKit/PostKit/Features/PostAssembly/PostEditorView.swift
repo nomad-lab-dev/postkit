@@ -5,69 +5,305 @@ import SwiftUI
 struct PostEditorView: View {
     @Bindable var store: StoreOf<PostEditorFeature>
 
-    private var columns: [GridItem] {
-        let count = min(store.filledSlots.count, 3)
-        return Array(
-            repeating: GridItem(.flexible(), spacing: Layout.Grid.photoGrid),
-            count: max(count, 2)
-        )
-    }
+    private let columns = Array(
+        repeating: GridItem(.flexible(), spacing: Spacing.xs),
+        count: 2
+    )
 
     var body: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Spacing.lg) {
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(store.template.name)
-                        .font(Typography.title2)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Palette.text)
+            VStack(spacing: Spacing.lg) {
+                slotsGrid
+                    .padding(.horizontal, Spacing.xs)
 
-                    if !store.template.about.isEmpty {
-                        Text(store.template.about)
-                            .font(Typography.footnote)
-                            .foregroundStyle(Palette.text2)
-                    }
-
-                    HStack(spacing: Spacing.sm) {
-                        Label(
-                            "\(store.filledSlots.filter { !$0.isEmpty }.count)/\(store.filledSlots.count) filled",
-                            systemImage: "square.grid.2x2"
-                        )
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.text3)
-
-                        if store.totalPhotoCount > 0 {
-                            Label(
-                                "\(store.totalPhotoCount) photo\(store.totalPhotoCount == 1 ? "" : "s")",
-                                systemImage: "photo"
-                            )
-                            .font(Typography.caption)
-                            .foregroundStyle(Palette.text3)
-                        }
-                    }
-                    .padding(.top, Spacing.xxs)
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    captionSection
+                    hashtagsSection
+                    shareSection
                 }
-
-                LazyVGrid(columns: columns, spacing: Layout.Grid.photoGrid) {
-                    ForEach(store.filledSlots) { slot in
-                        SlotCardView(slot: slot) {
-                            store.send(.slotTapped(slot.id))
-                        } onClear: {
-                            store.send(.clearSlotTapped(slot.id))
-                        }
-                    }
-                }
+                .padding(.horizontal, Layout.Padding.screen.leading)
             }
-            .screenPadding()
+            .padding(.vertical, Layout.Padding.screen.top)
         }
         .background(Palette.bg)
-        .navigationTitle("Post Editor")
+        .navigationTitle(store.template.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Close") {
+                    store.send(.closeTapped)
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    Haptics.success()
+                    store.send(.saveDraftTapped)
+                } label: {
+                    Text("Save")
+                        .fontWeight(.semibold)
+                }
+            }
+        }
         .sheet(item: $store.scope(state: \.slotFiller, action: \.slotFiller)) { fillerStore in
             NavigationStack {
                 SlotFillerView(store: fillerStore)
             }
             .presentationDetents([.large])
+        }
+        .sheet(isPresented: Binding(
+            get: { store.shareImages != nil },
+            set: { if !$0 { store.send(.shareDismissed) } }
+        )) {
+            if let images = store.shareImages {
+                ShareSheet(items: images)
+            }
+        }
+    }
+
+    // MARK: - Slots Grid
+
+    private var slotsGrid: some View {
+        VStack(spacing: Spacing.sm) {
+            LazyVGrid(columns: columns, spacing: Spacing.sm) {
+                ForEach(store.filledSlots) { slot in
+                    VStack(spacing: Spacing.xxs) {
+                        SlotCardView(slot: slot, pillars: store.availablePillars) {
+                            store.send(.slotTapped(slot.id))
+                        } onClear: {
+                            store.send(.clearSlotTapped(slot.id))
+                        } onReshuffle: {
+                            Haptics.tap()
+                            store.send(.reshuffleSlotTapped(slot.id))
+                        }
+
+                        HStack(spacing: Spacing.xxs) {
+                            Text(slot.slotData.name)
+                                .font(Typography.caption2)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Palette.text2)
+                                .lineLimit(1)
+
+                            if let location = slot.locationLabel ?? slot.slotData.locations.first {
+                                Text("·")
+                                    .foregroundStyle(Palette.text4)
+                                HStack(spacing: 2) {
+                                    Image(systemName: "mappin")
+                                        .font(.system(size: 8))
+                                    Text(location)
+                                        .font(Typography.caption2)
+                                }
+                                .foregroundStyle(Palette.text3)
+                                .lineLimit(1)
+                            }
+
+                            Spacer()
+                        }
+                    }
+                }
+            }
+
+            if store.filledSlots.contains(where: \.isEmpty) {
+                dateFilterRow
+
+                Button {
+                    Haptics.tap()
+                    store.send(.autoFillTapped)
+                } label: {
+                    Label("Auto-fill from library", systemImage: "dice")
+                        .font(Typography.subheadline)
+                        .foregroundStyle(Palette.accent)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.button))
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    // MARK: - Date Filter
+
+    @ViewBuilder
+    private var dateFilterRow: some View {
+        VStack(spacing: Spacing.xs) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "calendar")
+                    .font(.system(size: 14))
+                    .foregroundStyle(Palette.accent)
+
+                DatePicker(
+                    "From",
+                    selection: Binding(
+                        get: { store.filterStartDate ?? .now },
+                        set: { store.send(.filterStartDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .font(Typography.caption)
+                .labelsHidden()
+
+                Image(systemName: "arrow.right")
+                    .font(.system(size: 10, weight: .semibold))
+                    .foregroundStyle(Palette.text4)
+
+                DatePicker(
+                    "To",
+                    selection: Binding(
+                        get: { store.filterEndDate ?? .now },
+                        set: { store.send(.filterEndDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .font(Typography.caption)
+                .labelsHidden()
+
+                if store.filterStartDate != nil || store.filterEndDate != nil {
+                    Button {
+                        store.send(.filterStartDateChanged(nil))
+                        store.send(.filterEndDateChanged(nil))
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundStyle(Palette.text4)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, Spacing.sm)
+            .padding(.vertical, Spacing.xs)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.button))
+            .overlay(
+                RoundedRectangle(cornerRadius: Radius.button)
+                    .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+            )
+        }
+    }
+
+    // MARK: - Caption
+
+    @ViewBuilder
+    private var captionSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Text("Caption")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.text)
+                Spacer()
+                if store.totalPhotoCount > 0 && !store.isGenerating {
+                    Button {
+                        Haptics.tap()
+                        store.send(.generateCaptionTapped)
+                    } label: {
+                        Label("Generate", systemImage: "sparkles")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.accent)
+                    }
+                }
+            }
+
+            if store.isGenerating {
+                HStack(spacing: Spacing.sm) {
+                    ProgressView()
+                    Text("Generating…")
+                        .font(Typography.subheadline)
+                        .foregroundStyle(Palette.text3)
+                }
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(.vertical, Spacing.xl)
+            } else {
+                TextEditor(text: $store.caption)
+                    .font(Typography.body)
+                    .frame(minHeight: 100)
+                    .scrollContentBackground(.hidden)
+                    .padding(Spacing.sm)
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.input))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.input)
+                            .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+                    )
+            }
+        }
+    }
+
+    // MARK: - Hashtags
+
+    @ViewBuilder
+    private var hashtagsSection: some View {
+        if !store.hashtags.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text("Hashtags")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.text)
+
+                Text(store.hashtags.joined(separator: " "))
+                    .font(Typography.footnote)
+                    .foregroundStyle(Palette.accent)
+                    .padding(Spacing.sm)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.input))
+            }
+        }
+    }
+
+    // MARK: - Share
+
+    private var shareSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Share")
+                .font(Typography.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(Palette.text)
+
+            HStack(spacing: Spacing.sm) {
+                Button {
+                    Haptics.tap()
+                    store.send(.shareTapped)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        if store.isLoadingShare {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                                .tint(Palette.onAccent)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
+                        }
+                        Text(store.isLoadingShare ? "Preparing..." : "Share Photos")
+                    }
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.onAccent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm + 2)
+                    .background(Palette.accent, in: RoundedRectangle(cornerRadius: Radius.button))
+                }
+                .buttonStyle(.plain)
+                .disabled(store.allPhotoIDs.isEmpty || store.isLoadingShare)
+
+                Button {
+                    Haptics.tap()
+                    store.send(.copyTapped)
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "doc.on.doc")
+                        Text("Copy Text")
+                    }
+                    .font(Typography.subheadline)
+                    .foregroundStyle(Palette.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.sm + 2)
+                    .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.button))
+                }
+                .buttonStyle(.plain)
+                .disabled(store.caption.isEmpty && store.hashtags.isEmpty)
+            }
+
+            if !store.caption.isEmpty || !store.hashtags.isEmpty {
+                Text("Caption & hashtags are copied to clipboard when sharing")
+                    .font(Typography.caption2)
+                    .foregroundStyle(Palette.text4)
+            }
         }
     }
 }
@@ -76,101 +312,191 @@ struct PostEditorView: View {
 
 private struct SlotCardView: View {
     let slot: FilledSlot
+    let pillars: [PillarSnapshot]
     let onTap: () -> Void
     let onClear: () -> Void
+    let onReshuffle: () -> Void
+
+    @State private var currentPage: Int = 0
+
+    private var matchedPillars: [PillarSnapshot] {
+        pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
+    }
+
+    private var activePillar: PillarSnapshot? {
+        if let activeID = slot.activePillarID {
+            return pillars.first { $0.id == activeID }
+        }
+        return matchedPillars.first
+    }
+
+    private var sortedPhotoIDs: [String] {
+        slot.photoIDs.sorted()
+    }
 
     var body: some View {
-        Button(action: onTap) {
-            VStack(spacing: 0) {
-                if slot.isEmpty {
-                    emptyContent
-                } else {
-                    filledContent
-                }
+        ZStack {
+            if slot.isEmpty {
+                emptyContent
+            } else {
+                filledContent
+            }
 
-                slotLabel
-            }
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: Radius.card)
-                    .strokeBorder(
-                        slot.isEmpty ? Palette.border : Palette.accent.opacity(0.3),
-                        lineWidth: Layout.Border.thin,
-                        antialiased: true
-                    )
-            )
-        }
-        .buttonStyle(.plain)
-        .contextMenu {
+            // Overlays for filled slots
             if !slot.isEmpty {
-                Button(role: .destructive) {
-                    onClear()
-                } label: {
-                    Label("Clear Slot", systemImage: "xmark.circle")
+                VStack {
+                    // Top row: reshuffle + delete
+                    HStack {
+                        Button {
+                            onReshuffle()
+                        } label: {
+                            Image(systemName: "shuffle")
+                                .font(.system(size: 13, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(width: 30, height: 30)
+                                .background(Palette.accent, in: Circle())
+                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                        }
+
+                        Spacer()
+
+                        Button {
+                            Haptics.lightTap()
+                            onClear()
+                        } label: {
+                            Image(systemName: "xmark")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundStyle(.white)
+                                .frame(width: 30, height: 30)
+                                .background(Color.black.opacity(0.55), in: Circle())
+                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                        }
+                    }
+
+                    Spacer()
+
+                    // Bottom row: pillar emoji + location + cadrage tag
+                    HStack(spacing: Spacing.xxs) {
+                        if let pillar = activePillar {
+                            Text(pillar.emoji)
+                                .font(.system(size: 14))
+                                .frame(width: 26, height: 26)
+                                .background(.ultraThinMaterial, in: Circle())
+                        }
+
+                        if let location = slot.locationLabel {
+                            HStack(spacing: 2) {
+                                Image(systemName: "mappin")
+                                    .font(.system(size: 8, weight: .semibold))
+                                Text(location)
+                                    .font(.system(size: 9, weight: .semibold))
+                            }
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 3)
+                            .background(.ultraThinMaterial, in: Capsule())
+                            .lineLimit(1)
+                        }
+
+                        Spacer()
+
+                        if let cadrage = slot.slotData.cadrages.first {
+                            Text(cadrage.displayName)
+                                .font(.system(size: 10, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 3)
+                                .background(.ultraThinMaterial, in: Capsule())
+                        }
+                    }
                 }
+                .padding(Spacing.xs)
             }
         }
+        .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.card)
+                .strokeBorder(
+                    slot.isEmpty ? Palette.border : Color.clear,
+                    lineWidth: Layout.Border.thin
+                )
+        )
+        .onTapGesture { onTap() }
     }
 
     private var emptyContent: some View {
-        VStack(spacing: Spacing.xs) {
-            Image(systemName: "plus.circle.dashed")
-                .font(.system(size: Typography.IconSize.lg))
-                .foregroundStyle(Palette.text4)
+        Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+                VStack(spacing: Spacing.sm) {
+                    HStack(spacing: -6) {
+                        ForEach(matchedPillars.prefix(3)) { pillar in
+                            Text(pillar.emoji)
+                                .font(.system(size: 22))
+                                .frame(width: 36, height: 36)
+                                .background(Palette.surface, in: Circle())
+                                .overlay(Circle().strokeBorder(Palette.border, lineWidth: 0.5))
+                        }
 
-            Text(slot.slotData.cadrage.displayName)
-                .font(Typography.caption2)
-                .foregroundStyle(Palette.text3)
-        }
-        .frame(maxWidth: .infinity)
-        .aspectRatio(slot.slotData.cadrage == .portrait ? 3/4 : 4/3, contentMode: .fit)
+                        if matchedPillars.isEmpty {
+                            Image(systemName: "photo.badge.plus")
+                                .font(.system(size: 28))
+                                .foregroundStyle(Palette.text4)
+                        }
+                    }
+
+                    if !slot.slotData.cadrages.isEmpty {
+                        HStack(spacing: 4) {
+                            ForEach(slot.slotData.cadrages, id: \.self) { cadrage in
+                                Text(cadrage.displayName)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(Palette.accent)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(Palette.accentTint, in: Capsule())
+                            }
+                        }
+                    }
+
+                    Text("Tap to fill")
+                        .font(Typography.caption2)
+                        .foregroundStyle(Palette.text4)
+                }
+            }
+            .background(Palette.surface)
     }
 
     private var filledContent: some View {
-        ZStack {
-            if let firstID = slot.photoIDs.first {
-                SlotThumbnail(assetIdentifier: firstID)
-            }
-
-            if slot.photoIDs.count > 1 {
-                VStack {
-                    Spacer()
-                    HStack {
-                        Spacer()
-                        Text("+\(slot.photoIDs.count - 1)")
-                            .font(Typography.caption2)
-                            .fontWeight(.bold)
-                            .foregroundStyle(Palette.onDark)
-                            .padding(.horizontal, Spacing.xxs + 2)
-                            .padding(.vertical, 2)
-                            .background(Palette.scrim, in: Capsule())
-                            .padding(Spacing.xxs)
+        ZStack(alignment: .bottom) {
+            let ids = sortedPhotoIDs
+            if ids.count == 1 {
+                SlotThumbnail(assetIdentifier: ids[0])
+            } else {
+                TabView(selection: $currentPage) {
+                    ForEach(Array(ids.enumerated()), id: \.element) { index, assetID in
+                        SlotThumbnail(assetIdentifier: assetID)
+                            .tag(index)
                     }
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+            }
+
+            if ids.count > 1 {
+                HStack(spacing: 4) {
+                    ForEach(0..<ids.count, id: \.self) { index in
+                        Circle()
+                            .fill(index == currentPage ? Color.white : Color.white.opacity(0.45))
+                            .frame(width: 5, height: 5)
+                    }
+                }
+                .padding(.vertical, 4)
+                .padding(.horizontal, Spacing.xs)
+                .background(Palette.scrim, in: Capsule())
+                .padding(.bottom, Spacing.sm + 26)
             }
         }
-        .aspectRatio(slot.slotData.cadrage == .portrait ? 3/4 : 4/3, contentMode: .fit)
+        .aspectRatio(1, contentMode: .fit)
         .clipped()
-    }
-
-    private var slotLabel: some View {
-        HStack(spacing: Spacing.xxs) {
-            Text(slot.slotData.name)
-                .font(Typography.caption2)
-                .fontWeight(.medium)
-                .foregroundStyle(Palette.text2)
-                .lineLimit(1)
-
-            Spacer(minLength: 0)
-
-            if !slot.isEmpty {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(Typography.caption2)
-                    .foregroundStyle(Palette.green)
-            }
-        }
-        .padding(.horizontal, Spacing.xs)
-        .padding(.vertical, Spacing.xxs)
     }
 }
 
@@ -180,9 +506,9 @@ private struct SlotThumbnail: View {
     let assetIdentifier: String
     @State private var image: UIImage?
 
-    private static let thumbnailPx: CGFloat = {
+    private static let targetPx: CGFloat = {
         let screen = UIScreen.main.bounds.width
-        let cellPt = (screen - 2 * Layout.Padding.screen.leading - Layout.Grid.photoGrid) / 2
+        let cellPt = (screen - 3 * Spacing.xs) / 2
         return ceil(cellPt * UIScreen.main.scale)
     }()
 
@@ -203,10 +529,12 @@ private struct SlotThumbnail: View {
                     withLocalIdentifiers: [assetIdentifier], options: nil
                 )
                 guard let asset = fetchResult.firstObject else { return }
-                let size = CGSize(width: Self.thumbnailPx, height: Self.thumbnailPx)
+                let px = Self.targetPx
+                let size = CGSize(width: px, height: px)
                 let options = PHImageRequestOptions()
-                options.deliveryMode = .opportunistic
-                options.isNetworkAccessAllowed = false
+                options.deliveryMode = .highQualityFormat
+                options.resizeMode = .exact
+                options.isNetworkAccessAllowed = true
                 PHImageManager.default().requestImage(
                     for: asset, targetSize: size,
                     contentMode: .aspectFill, options: options
@@ -216,4 +544,16 @@ private struct SlotThumbnail: View {
                 }
             }
     }
+}
+
+// MARK: - Share Sheet
+
+private struct ShareSheet: UIViewControllerRepresentable {
+    let items: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: items, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }

@@ -6,53 +6,39 @@ struct AppView: View {
 
     var body: some View {
         TabView(selection: $store.selectedTab) {
-            NavigationStack(path: $store.scope(state: \.homePath, action: \.homePath)) {
-                Text(AppStrings.Dashboard.title)
-                    .font(.largeTitle)
-            } destination: { store in
-                switch store.case {
-                case .pillarDetail:
-                    Text("Pillar Detail")
-                case .pillarEditor:
-                    Text("Pillar Editor")
-                }
+            NavigationStack {
+                DashboardView(store: store.scope(state: \.dashboard, action: \.dashboard))
             }
             .tabItem { Label(AppStrings.Tab.dashboard, systemImage: "house") }
-            .tag(AppFeature.Tab.home)
+            .tag(AppTab.home)
 
-            NavigationStack(path: $store.scope(state: \.classifyPath, action: \.classifyPath)) {
-                Text(AppStrings.Classification.queueTitle)
-                    .font(.largeTitle)
-            } destination: { store in
-                switch store.case {
-                case .classify:
-                    Text("Classify Photo")
-                }
+            NavigationStack {
+                ExploreView(store: store.scope(state: \.explore, action: \.explore))
             }
-            .tabItem { Label(AppStrings.Tab.classify, systemImage: "photo.stack") }
-            .tag(AppFeature.Tab.classify)
+            .tabItem { Label(AppStrings.Tab.explore, systemImage: "magnifyingglass") }
+            .tag(AppTab.explore)
 
-            NavigationStack(path: $store.scope(state: \.createPath, action: \.createPath)) {
-                Text(AppStrings.PostAssembly.title)
-                    .font(.largeTitle)
-            } destination: { store in
-                switch store.case {
-                case .photoSelection:
-                    Text("Photo Selection")
-                case .platformExport:
-                    Text("Platform Export")
-                }
+            NavigationStack {
+                SmartPostView(store: store.scope(state: \.smartPost, action: \.smartPost))
+            }
+            .tabItem { Label("Smart Post", systemImage: "sparkles") }
+            .tag(AppTab.smartPost)
+
+            NavigationStack {
+                CreateHubView(store: store.scope(state: \.create, action: \.create))
             }
             .tabItem { Label(AppStrings.Tab.create, systemImage: "square.and.pencil") }
-            .tag(AppFeature.Tab.create)
+            .tag(AppTab.create)
 
-            Text(AppStrings.Settings.title)
-                .font(.largeTitle)
-                .tabItem { Label(AppStrings.Tab.settings, systemImage: "gearshape") }
-                .tag(AppFeature.Tab.settings)
+            NavigationStack {
+                Text(AppStrings.Settings.title)
+                    .font(.largeTitle)
+            }
+            .tabItem { Label(AppStrings.Tab.settings, systemImage: "gearshape") }
+            .tag(AppTab.settings)
         }
-        .sheet(isPresented: $store.isOnboardingPresented) {
-            Text("Onboarding (Slice 1)")
+        .sheet(item: $store.scope(state: \.onboarding, action: \.onboarding)) { onboardingStore in
+            OnboardingView(store: onboardingStore)
         }
         .task { await store.send(.appLaunched).finish() }
     }

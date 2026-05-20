@@ -96,9 +96,6 @@ final class PostAssemblyFeatureTests: XCTestCase {
 
         await store.send(.continueToCaption) {
             $0.step = .editCaption
-        }
-
-        await store.receive(\.generateTapped) {
             $0.isGenerating = true
         }
 
@@ -132,11 +129,11 @@ final class PostAssemblyFeatureTests: XCTestCase {
 
         await store.receive(\.saved) {
             $0.alert = AlertState {
-                TextState("Post Saved")
+                TextState("Saved")
             } actions: {
                 ButtonState(role: .cancel) { TextState("OK") }
             } message: {
-                TextState("Your post has been saved and is ready to publish.")
+                TextState("Draft saved successfully.")
             }
         }
 

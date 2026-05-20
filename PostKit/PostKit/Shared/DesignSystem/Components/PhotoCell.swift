@@ -14,15 +14,6 @@ struct PhotoCell: View {
                 Color(.systemGray5)
             }
 
-            if let emoji = snapshot.pillarEmoji {
-                Text("\(emoji) \(snapshot.pillarName ?? "")")
-                    .font(Typography.caption2)
-                    .foregroundStyle(.white)
-                    .padding(Layout.Padding.chip)
-                    .background(.black.opacity(0.55), in: Capsule())
-                    .padding(Spacing.xxs)
-            }
-
             StatusDot(status: snapshot.status)
                 .padding(Spacing.xxs)
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
@@ -60,12 +51,10 @@ struct StatusDot: View {
 #Preview("Photo Cells") {
     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Layout.Grid.photoGrid), count: 3), spacing: Layout.Grid.photoGrid) {
         PhotoCell(snapshot: ClassifiedPhotoSnapshot(
-            assetLocalIdentifier: "1", pillarName: "Automotive", pillarEmoji: "🚗",
-            status: .classified
+            assetLocalIdentifier: "1", status: .classified
         ), image: nil)
         PhotoCell(snapshot: ClassifiedPhotoSnapshot(
-            assetLocalIdentifier: "2", pillarName: "Travel", pillarEmoji: "🌍",
-            status: .pending
+            assetLocalIdentifier: "2", status: .pending
         ), image: nil)
         PhotoCell(snapshot: ClassifiedPhotoSnapshot(
             assetLocalIdentifier: "3", status: .rejected

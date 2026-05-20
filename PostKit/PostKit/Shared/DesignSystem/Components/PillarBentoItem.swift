@@ -1,5 +1,14 @@
+import Foundation
 import SwiftUI
 import UIKit
+
+struct PillarSuggestion: Identifiable, Equatable, Sendable {
+    let id: UUID
+    var name: String
+    var emoji: String
+    var count: Int
+    var isSelected: Bool
+}
 
 struct PillarBentoItem: View {
     let suggestion: PillarSuggestion

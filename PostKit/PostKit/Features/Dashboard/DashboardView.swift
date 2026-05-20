@@ -1,132 +1,251 @@
-import AudioToolbox
 import ComposableArchitecture
 import SwiftUI
 
 struct DashboardView: View {
     @Bindable var store: StoreOf<DashboardFeature>
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: Spacing.lg) {
-                metricsRow
-                pillarsSection
-            }
-            .screenPadding()
-        }
-        .background(Palette.bg)
-        .overlay(alignment: .bottom) {
-            if store.isScanning {
-                scanProgressBar
-                    .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .overlay(alignment: .top) {
-            if store.showScanCompleteToast {
-                ScanCompleteToast(photoCount: store.totalPhotosSorted)
-                    .transition(.move(edge: .top).combined(with: .opacity))
-                    .padding(.top, Spacing.md)
-                    .onAppear {
-                        UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        AudioServicesPlaySystemSound(1315)
+        ZStack(alignment: .bottom) {
+            if store.isInitialLoading {
+                dashboardSkeleton
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: Spacing.lg) {
+                        DashboardStatusBanner(
+                            status: store.derivedStatus,
+                            onPrimary: { store.send(.statusPrimaryTapped) }
+                        )
+                        .padding(.top, Spacing.xs)
+
+                        if !store.scheduledTemplates.isEmpty {
+                            PlannedTodaySection(
+                                templates: store.scheduledTemplates,
+                                now: Date(),
+                                onTap: { store.send(.scheduledTemplateTapped($0)) }
+                            )
+                        } else {
+                            TemplateNudgeCard {
+                                store.send(.composePostTapped)
+                            }
+                        }
+
+                        if store.pillars.isEmpty {
+                            EmptyPillarsState { store.send(.addPillarTapped) }
+                        } else {
+                            PillarsBentoSection(
+                                pillars: store.pillars,
+                                onTap: { store.send(.pillarTapped($0)) }
+                            )
+                        }
+
+                        QuickActionsSection(
+                            onCompose: { store.send(.composePostTapped) },
+                            onNewTemplate: { store.send(.newTemplateTapped) }
+                        )
+
+                        Spacer(minLength: Spacing.xxl)
                     }
+                    .padding(.horizontal, Spacing.lg)
+                }
+                .scrollIndicators(.hidden)
+                .refreshable { await store.send(.pullToRefresh).finish() }
+            }
+
+            if store.showScanCompleteToast {
+                ScanCompleteToast()
+                    .padding(.horizontal, Spacing.lg)
+                    .padding(.bottom, Spacing.md)
+                    .transition(.asymmetric(
+                        insertion: .move(edge: .bottom).combined(with: .opacity),
+                        removal: .opacity
+                    ))
             }
         }
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.isScanning)
-        .animation(.spring(response: 0.4, dampingFraction: 0.8), value: store.showScanCompleteToast)
-        .navigationTitle(AppStrings.Dashboard.title)
+        .background(Palette.bg.ignoresSafeArea())
+        .navigationTitle("Dashboard")
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                Button {
-                    store.send(.addPillarTapped)
-                } label: {
-                    Image(systemName: "plus")
-                }
+            ToolbarItem(placement: .topBarTrailing) {
+                ScanStatusTag(
+                    remaining: store.remainingToScan,
+                    isScanning: store.isScanning,
+                    onTap: { store.send(.startFullScanRequested) }
+                )
             }
         }
         .task { await store.send(.onAppear).finish() }
-    }
-
-    private var metricsRow: some View {
-        HStack(spacing: Spacing.md) {
-            StatCard(
-                value: store.totalPhotosSorted,
-                label: "Photos sorted",
-                delta: nil
-            )
-            StatCard(
-                value: store.pillars.count,
-                label: "Active pillars",
-                delta: nil,
-                tint: Palette.purple
-            )
+        .navigationDestination(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
+            PillarDetailView(store: detailStore)
         }
+        .sheet(item: $store.scope(state: \.classificationQueue, action: \.classificationQueue)) { queueStore in
+            NavigationStack {
+                ClassificationQueueView(store: queueStore)
+            }
+        }
+        .sheet(item: $store.scope(state: \.scheduledEditor, action: \.scheduledEditor)) { editorStore in
+            NavigationStack {
+                PostEditorView(store: editorStore)
+            }
+        }
+        .animation(
+            reduceMotion
+                ? .easeInOut(duration: 0.2)
+                : .spring(response: 0.45, dampingFraction: 0.82),
+            value: store.showScanCompleteToast
+        )
+        .animation(.snappy(duration: 0.35), value: store.derivedStatus)
     }
 
-    @ViewBuilder
-    private var pillarsSection: some View {
-        if store.pillars.isEmpty {
-            EmptyStateView(
-                icon: "📌",
-                title: "No pillars yet",
-                message: "Add your first content pillar to get started.",
-                actionTitle: "Add Pillar",
-                onAction: { store.send(.addPillarTapped) }
-            )
-            .padding(.top, Spacing.xxl)
-        } else {
-            SectionHeader(title: "Your Pillars")
+    private var dashboardSkeleton: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: Spacing.lg) {
+                SkeletonRect(height: 60, radius: Radius.card)
+                    .padding(.top, Spacing.xs)
 
-            LazyVStack(spacing: Spacing.sm) {
-                ForEach(store.pillars) { pillar in
-                    Button {
-                        store.send(.pillarTapped(pillar))
-                    } label: {
-                        PillarRowView(pillar: pillar)
+                SkeletonRect(height: 80, radius: Radius.card)
+
+                VStack(alignment: .leading, spacing: Spacing.sm) {
+                    SkeletonRect(width: 80, height: 14)
+                    LazyVGrid(
+                        columns: [GridItem(.flexible()), GridItem(.flexible())],
+                        spacing: Spacing.sm
+                    ) {
+                        ForEach(0..<4, id: \.self) { _ in
+                            SkeletonRect(height: 90, radius: Radius.card)
+                        }
                     }
-                    .buttonStyle(.plain)
+                }
+
+                HStack(spacing: Spacing.sm) {
+                    SkeletonRect(height: 56, radius: Radius.card)
+                    SkeletonRect(height: 56, radius: Radius.card)
                 }
             }
+            .padding(.horizontal, Spacing.lg)
         }
-    }
-
-    private var scanProgressBar: some View {
-        HStack(spacing: Spacing.md) {
-            ProgressView()
-                .tint(Palette.accent)
-            Text("Scanning library…")
-                .font(Typography.footnote)
-                .foregroundStyle(Palette.text2)
-            Spacer()
-            Button {
-                store.send(.cancelScanTapped)
-            } label: {
-                Image(systemName: "xmark.circle.fill")
-                    .foregroundStyle(Palette.text3)
-            }
-        }
-        .padding(Layout.Padding.card)
-        .background(.ultraThinMaterial)
+        .scrollIndicators(.hidden)
     }
 }
 
-// MARK: - Scan Complete Toast
+// MARK: - Scan Status Tag
 
-private struct ScanCompleteToast: View {
-    let photoCount: Int
+private struct ScanStatusTag: View {
+    let remaining: Int
+    let isScanning: Bool
+    let onTap: () -> Void
+
+    @State private var rotating = false
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "checkmark.circle.fill")
-                .foregroundStyle(Palette.green)
-                .font(.system(size: 22))
-            Text("Scan complete · \(photoCount) photos sorted")
-                .font(Typography.subheadline)
-                .fontWeight(.medium)
+        if isScanning {
+            tagContent(
+                icon: "arrow.triangle.2.circlepath",
+                text: "Scan en cours…",
+                color: Palette.accent,
+                spinning: true
+            )
+            .onAppear { rotating = true }
+            .onDisappear { rotating = false }
+        } else if remaining > 0 {
+            Button(action: onTap) {
+                tagContent(
+                    icon: "viewfinder",
+                    text: "\(remaining) à scanner",
+                    color: Palette.accent
+                )
+            }
+        } else {
+            tagContent(
+                icon: "checkmark.circle.fill",
+                text: "Galerie triée",
+                color: Palette.green
+            )
         }
-        .padding(.horizontal, Spacing.lg)
-        .padding(.vertical, Spacing.sm)
-        .background(.ultraThinMaterial)
-        .clipShape(Capsule())
-        .shadow(color: .black.opacity(0.1), radius: 12, y: 4)
+    }
+
+    private func tagContent(icon: String, text: String, color: Color, spinning: Bool = false) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .semibold))
+                .rotationEffect(.degrees(rotating && spinning ? 360 : 0))
+                .animation(
+                    rotating && spinning
+                        ? .linear(duration: 1.2).repeatForever(autoreverses: false)
+                        : .default,
+                    value: rotating
+                )
+            Text(text)
+                .font(Typography.caption.weight(.medium))
+        }
+        .foregroundStyle(color)
+        .padding(.horizontal, Spacing.sm)
+        .padding(.vertical, Spacing.xxs + 2)
+        .background(color.opacity(0.12), in: Capsule())
+    }
+}
+
+// MARK: - Previews
+
+#Preview("Idle — all caught up") {
+    NavigationStack {
+        DashboardView(store: Store(initialState: DashboardFeature.State(
+            pillars: IdentifiedArrayOf(uniqueElements: [
+                PillarSnapshot(name: "Automotive", emoji: "🚗", photoCount: 47),
+                PillarSnapshot(name: "Food", emoji: "🍽️", photoCount: 32),
+                PillarSnapshot(name: "Business", emoji: "💼", photoCount: 115),
+            ]),
+            isInitialLoading: false,
+            lastScanCompletedAt: Date().addingTimeInterval(-7200)
+        )) {
+            DashboardFeature()
+        } withDependencies: {
+            $0.persistence = .previewValue
+            $0.photoLibrary = .previewValue
+            $0.imageClassifier = .previewValue
+        })
+    }
+}
+
+#Preview("New items") {
+    NavigationStack {
+        DashboardView(store: Store(initialState: DashboardFeature.State(
+            pillars: IdentifiedArrayOf(uniqueElements: [
+                PillarSnapshot(name: "Automotive", emoji: "🚗", photoCount: 47),
+            ]),
+            isInitialLoading: false,
+            newPhotoCount: 47
+        )) {
+            DashboardFeature()
+        })
+    }
+}
+
+#Preview("Review needed") {
+    NavigationStack {
+        DashboardView(store: Store(initialState: DashboardFeature.State(
+            pillars: IdentifiedArrayOf(uniqueElements: [
+                PillarSnapshot(name: "Automotive", emoji: "🚗", photoCount: 47),
+            ]),
+            isInitialLoading: false,
+            pendingReviewCount: 12
+        )) {
+            DashboardFeature()
+        })
+    }
+}
+
+#Preview("Scanning") {
+    NavigationStack {
+        DashboardView(store: Store(initialState: DashboardFeature.State(
+            pillars: IdentifiedArrayOf(uniqueElements: [
+                PillarSnapshot(name: "Automotive", emoji: "🚗", photoCount: 12),
+            ]),
+            isInitialLoading: false,
+            isScanning: true,
+            scanProgress: 0.13,
+            totalPhotosToScan: 1204
+        )) {
+            DashboardFeature()
+        })
     }
 }

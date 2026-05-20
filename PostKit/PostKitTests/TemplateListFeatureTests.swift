@@ -11,8 +11,8 @@ final class TemplateListFeatureTests: XCTestCase {
             id: UUID(0),
             name: "Carousel 4",
             slots: [
-                TemplateSlotData(name: "Hero", cadrage: .wide),
-                TemplateSlotData(name: "Detail", cadrage: .detail),
+                TemplateSlotData(name: "Hero", cadrages: [.wide]),
+                TemplateSlotData(name: "Detail", cadrages: [.detail]),
             ]
         ),
         TemplateSnapshot(id: UUID(1), name: "Story", slots: [TemplateSlotData()]),
@@ -45,7 +45,7 @@ final class TemplateListFeatureTests: XCTestCase {
         }
     }
 
-    func test_templateTapped_opensBuilderWithExisting() async {
+    func test_templateTapped_opensEditor() async {
         var state = TemplateListFeature.State()
         state.templates = templates
 
@@ -54,7 +54,7 @@ final class TemplateListFeatureTests: XCTestCase {
         }
 
         await store.send(.templateTapped(templates[0])) {
-            $0.builder = TemplateBuilderFeature.State(existing: self.templates[0])
+            $0.editor = PostEditorFeature.State(template: self.templates[0])
         }
     }
 
@@ -90,44 +90,96 @@ final class TemplateBuilderFeatureTests: XCTestCase {
         PillarSnapshot(id: UUID(1), name: "Food", emoji: "🍽️"),
     ]
 
-    func test_onAppear_loadsPillars() async {
+    func test_onAppear_loadsPillarsAndLocations() async {
         let store = TestStore(initialState: TemplateBuilderFeature.State()) {
             TemplateBuilderFeature()
         } withDependencies: {
             $0.persistence.fetchPillars = { [pillars] in pillars }
+            $0.persistence.fetchPhotos = { _ in
+                [
+                    ClassifiedPhotoSnapshot(assetLocalIdentifier: "a1", pillarID: UUID(0), location: "Paris, France", status: .classified),
+                    ClassifiedPhotoSnapshot(assetLocalIdentifier: "a2", pillarID: UUID(1), location: "Tokyo, Japan", status: .classified),
+                ]
+            }
         }
 
         await store.send(.onAppear) {
             $0.isLoading = true
         }
 
-        await store.receive(\.pillarsLoaded) {
+        await store.receive(\.dataLoaded) {
             $0.availablePillars = self.pillars
+            $0.availableLocations = ["Paris, France", "Tokyo, Japan"]
             $0.isLoading = false
         }
     }
 
-    func test_addSlot_opensEditorWithNewSlot() async {
+    func test_addSlot_opensEditorSheet() async {
         var state = TemplateBuilderFeature.State()
         state.availablePillars = pillars
 
         let store = TestStore(initialState: state) {
             TemplateBuilderFeature()
+        } withDependencies: {
+            $0.uuid = .incrementing
         }
 
         await store.send(.addSlotTapped) {
             $0.slotEditor = SlotEditorFeature.State(
-                slot: TemplateSlotData(name: "Slot 1"),
-                availablePillars: self.pillars
+                slot: TemplateSlotData(id: UUID(0), name: "Slot 1"),
+                availablePillars: self.pillars,
+                isNew: true
             )
         }
+    }
+
+    func test_locationSelected_addsToSelectedLocations() async {
+        var state = TemplateBuilderFeature.State()
+        state.availableLocations = ["Paris, France", "Tokyo, Japan", "Bangkok, Thailand"]
+
+        let store = TestStore(initialState: state) {
+            TemplateBuilderFeature()
+        }
+
+        await store.send(.locationSelected("Paris, France")) {
+            $0.selectedLocations = ["Paris, France"]
+        }
+
+        await store.send(.locationSelected("Tokyo, Japan")) {
+            $0.selectedLocations = ["Paris, France", "Tokyo, Japan"]
+        }
+    }
+
+    func test_locationRemoved_removesFromSelectedLocations() async {
+        var state = TemplateBuilderFeature.State()
+        state.selectedLocations = ["Paris, France", "Tokyo, Japan"]
+
+        let store = TestStore(initialState: state) {
+            TemplateBuilderFeature()
+        }
+
+        await store.send(.locationRemoved("Paris, France")) {
+            $0.selectedLocations = ["Tokyo, Japan"]
+        }
+    }
+
+    func test_suggestedLocations_filtersCorrectly() {
+        var state = TemplateBuilderFeature.State()
+        state.availableLocations = ["Paris, France", "Bangkok, Thailand", "Bang Na, Thailand"]
+        state.selectedLocations = ["Bangkok, Thailand"]
+
+        state.locationQuery = "ban"
+        XCTAssertEqual(state.suggestedLocations, ["Bang Na, Thailand"])
+
+        state.locationQuery = ""
+        XCTAssertEqual(state.suggestedLocations, [])
     }
 
     func test_slotEditorSave_addsSlot() async {
         var state = TemplateBuilderFeature.State()
         state.availablePillars = pillars
         let slotID = UUID(42)
-        let newSlot = TemplateSlotData(id: slotID, name: "Hero", cadrage: .wide, pillarNames: ["Travel"])
+        let newSlot = TemplateSlotData(id: slotID, name: "Hero", cadrages: [.wide], pillarIDs: [UUID(0)])
         state.slotEditor = SlotEditorFeature.State(
             slot: newSlot,
             availablePillars: pillars
@@ -148,11 +200,11 @@ final class TemplateBuilderFeatureTests: XCTestCase {
 
     func test_slotEditorSave_updatesExistingSlot() async {
         let slotID = UUID(42)
-        let originalSlot = TemplateSlotData(id: slotID, name: "Slot 1", cadrage: .any)
+        let originalSlot = TemplateSlotData(id: slotID, name: "Slot 1")
         var state = TemplateBuilderFeature.State()
         state.slots = [originalSlot]
         state.availablePillars = pillars
-        let updatedSlot = TemplateSlotData(id: slotID, name: "Hero Shot", cadrage: .wide, pillarNames: ["Travel"])
+        let updatedSlot = TemplateSlotData(id: slotID, name: "Hero Shot", cadrages: [.wide], pillarIDs: [UUID(0)])
         state.slotEditor = SlotEditorFeature.State(
             slot: updatedSlot,
             availablePillars: pillars
@@ -225,15 +277,23 @@ final class TemplateBuilderFeatureTests: XCTestCase {
 @MainActor
 final class SlotEditorFeatureTests: XCTestCase {
 
-    func test_cadragePicked_updatesSlot() async {
+    func test_cadrageToggled_updatesSlot() async {
         let store = TestStore(
             initialState: SlotEditorFeature.State(slot: TemplateSlotData())
         ) {
             SlotEditorFeature()
         }
 
-        await store.send(.cadragePicked(.portrait)) {
-            $0.slot.cadrage = .portrait
+        await store.send(.cadrageToggled(.portrait)) {
+            $0.slot.cadrages = [.portrait]
+        }
+
+        await store.send(.cadrageToggled(.wide)) {
+            $0.slot.cadrages = [.portrait, .wide]
+        }
+
+        await store.send(.cadrageToggled(.portrait)) {
+            $0.slot.cadrages = [.wide]
         }
     }
 
@@ -244,55 +304,18 @@ final class SlotEditorFeatureTests: XCTestCase {
             SlotEditorFeature()
         }
 
-        await store.send(.pillarToggled("Travel")) {
-            $0.slot.pillarNames = ["Travel"]
+        await store.send(.pillarToggled(UUID(0))) {
+            $0.slot.pillarIDs = [UUID(0)]
         }
 
-        await store.send(.pillarToggled("Food")) {
-            $0.slot.pillarNames = ["Travel", "Food"]
+        await store.send(.pillarToggled(UUID(1))) {
+            $0.slot.pillarIDs = [UUID(0), UUID(1)]
         }
 
-        await store.send(.pillarToggled("Travel")) {
-            $0.slot.pillarNames = ["Food"]
-        }
-    }
-
-    func test_addTag_appendsAndClearsInput() async {
-        var state = SlotEditorFeature.State(slot: TemplateSlotData())
-        state.tagInput = "urban"
-
-        let store = TestStore(initialState: state) {
-            SlotEditorFeature()
-        }
-
-        await store.send(.addTagTapped) {
-            $0.slot.tags = ["urban"]
-            $0.tagInput = ""
+        await store.send(.pillarToggled(UUID(0))) {
+            $0.slot.pillarIDs = [UUID(1)]
         }
     }
 
-    func test_addTag_ignoresDuplicates() async {
-        var state = SlotEditorFeature.State(slot: TemplateSlotData(tags: ["urban"]))
-        state.tagInput = "urban"
 
-        let store = TestStore(initialState: state) {
-            SlotEditorFeature()
-        }
-
-        await store.send(.addTagTapped)
-    }
-
-    func test_removeTag_deletesTag() async {
-        let store = TestStore(
-            initialState: SlotEditorFeature.State(
-                slot: TemplateSlotData(tags: ["urban", "night"])
-            )
-        ) {
-            SlotEditorFeature()
-        }
-
-        await store.send(.removeTag("urban")) {
-            $0.slot.tags = ["night"]
-        }
-    }
 }

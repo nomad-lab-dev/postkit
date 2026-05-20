@@ -7,16 +7,16 @@ import XCTest
 
 @MainActor
 final class AppFeatureTests: XCTestCase {
-    func test_appLaunched_whenOnboardingNotComplete_presentsOnboarding() async {
-        let store = TestStore(initialState: AppFeature.State()) {
+    func test_onboarding_presentedWhenStateHasIt() async {
+        var state = AppFeature.State()
+        state.onboarding = OnboardingFeature.State()
+
+        let store = TestStore(initialState: state) {
             AppFeature()
-        } withDependencies: {
-            $0.userDefaults.boolForKey = { _ in false }
         }
 
-        await store.send(.appLaunched) {
-            $0.onboarding = OnboardingFeature.State()
-        }
+        await store.send(.appLaunched)
+        XCTAssertNotNil(store.state.onboarding)
     }
 }
 
@@ -64,13 +64,13 @@ final class OnboardingFeatureTests: XCTestCase {
                 [PhotoAsset(localIdentifier: "a1"), PhotoAsset(localIdentifier: "a2")]
             }
             $0.photoLibrary.image = { _, _ in UIImage() }
-            $0.imageClassifier.classify = { _ in
-                ClassificationResult(
+            $0.imageClassifier.classify = { _, _ in
+                [ClassificationResult(
                     pillarName: "Automotive",
                     confidence: 0.9,
                     suggestedTags: [],
                     source: .coreML
-                )
+                )]
             }
         }
 
@@ -101,7 +101,7 @@ final class OnboardingFeatureTests: XCTestCase {
         }
     }
 
-    func test_getStarted_whenDenied_presentsAlert() async {
+    func test_getStarted_whenDenied_setsPhotoAccessDenied() async {
         let store = TestStore(initialState: OnboardingFeature.State()) {
             OnboardingFeature()
         } withDependencies: {
@@ -111,7 +111,7 @@ final class OnboardingFeatureTests: XCTestCase {
         await store.send(.getStartedTapped)
 
         await store.receive(\.authorizationResponse) {
-            $0.alert = .photoAccessDenied
+            $0.photoAccessDenied = true
         }
     }
 

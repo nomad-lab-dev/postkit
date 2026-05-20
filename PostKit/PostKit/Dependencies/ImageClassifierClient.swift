@@ -16,42 +16,57 @@ enum ClassificationSource: Sendable, Equatable {
 
 @DependencyClient
 struct ImageClassifierClient: Sendable {
-    var classify: @Sendable (_ image: UIImage, _ pillarNames: [String]) async throws -> ClassificationResult
+    var classify: @Sendable (_ image: UIImage, _ pillarNames: [String]) async throws -> [ClassificationResult]
+    var detectCadrage: @Sendable (_ image: UIImage) async throws -> Cadrage
 }
 
 extension ImageClassifierClient: DependencyKey {
+    private static let highConfidence: Float = 0.70
+    private static let minConfidence: Float = 0.55
+    private static let geminiFloor: Float = 0.30
+
     static let liveValue = ImageClassifierClient(
         classify: { image, pillarNames in
-            // 1. Core ML (Vision) — free, fast, on-device
-            let visionResult = try? await VisionClassifier.classify(image, pillarNames: Set(pillarNames))
-            if let visionResult, visionResult.confidence >= 0.70 {
-                return visionResult
+            let visionResults = (try? await VisionClassifier.classifyAll(image, pillarNames: Set(pillarNames))) ?? []
+
+            let confidentResults = visionResults.filter { $0.confidence >= highConfidence }
+            if !confidentResults.isEmpty {
+                return confidentResults
             }
 
-            // 2. Gemini Flash fallback — Vision unavailable (simulator) or low confidence
-            if let apiKey = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,
+            let bestVision = visionResults.max(by: { $0.confidence < $1.confidence })
+            if let bestVision, bestVision.confidence >= geminiFloor,
+               let apiKey = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,
                !apiKey.isEmpty,
-               let geminiResult = try? await GeminiClassifier.classify(
+               let geminiResults = try? await GeminiClassifier.classifyAll(
                    image, pillarNames: pillarNames, apiKey: apiKey
                ) {
-                return geminiResult
+                let valid = geminiResults.filter { $0.confidence >= minConfidence }
+                if !valid.isEmpty { return valid }
             }
 
-            // 3. Return best Vision result or uncategorized
-            return visionResult ?? ClassificationResult(
-                pillarName: "Uncategorized", confidence: 0, suggestedTags: [], source: .coreML
-            )
+            let viable = visionResults.filter { $0.confidence >= minConfidence }
+            return viable
+        },
+        detectCadrage: { image in
+            try await CadrageDetector.detect(image)
         }
     )
 
     static let previewValue = ImageClassifierClient(
         classify: { _, pillarNames in
-            ClassificationResult(
-                pillarName: pillarNames.randomElement() ?? "Uncategorized",
-                confidence: .random(in: 0.65...0.95),
-                suggestedTags: [],
-                source: .coreML
-            )
+            let count = Int.random(in: 1...min(2, pillarNames.count))
+            return pillarNames.shuffled().prefix(count).map {
+                ClassificationResult(
+                    pillarName: $0,
+                    confidence: .random(in: 0.65...0.95),
+                    suggestedTags: [],
+                    source: .coreML
+                )
+            }
+        },
+        detectCadrage: { _ in
+            Cadrage.detectableCases.randomElement() ?? .wide
         }
     )
 }
@@ -66,10 +81,8 @@ extension DependencyValues {
 // MARK: - Vision (Core ML on-device)
 
 private enum VisionClassifier {
-    static func classify(_ image: UIImage, pillarNames: Set<String>) async throws -> ClassificationResult {
-        guard let cgImage = image.cgImage else {
-            return ClassificationResult(pillarName: "Uncategorized", confidence: 0, suggestedTags: [], source: .coreML)
-        }
+    static func classifyAll(_ image: UIImage, pillarNames: Set<String>) async throws -> [ClassificationResult] {
+        guard let cgImage = image.cgImage else { return [] }
 
         return try await withCheckedThrowingContinuation { continuation in
             let request = VNClassifyImageRequest { request, error in
@@ -78,7 +91,7 @@ private enum VisionClassifier {
                     return
                 }
                 let observations = (request.results as? [VNClassificationObservation]) ?? []
-                continuation.resume(returning: mapToPillar(observations, validPillars: pillarNames))
+                continuation.resume(returning: mapToAllPillars(observations, validPillars: pillarNames))
             }
 
             do {
@@ -120,10 +133,10 @@ private enum VisionClassifier {
         ]),
     ]
 
-    private static func mapToPillar(
+    private static func mapToAllPillars(
         _ observations: [VNClassificationObservation],
         validPillars: Set<String>
-    ) -> ClassificationResult {
+    ) -> [ClassificationResult] {
         var scores: [String: Float] = [:]
         var tags: [String: [String]] = [:]
 
@@ -137,43 +150,50 @@ private enum VisionClassifier {
             }
         }
 
-        if let best = scores.max(by: { $0.value < $1.value }) {
-            return ClassificationResult(
-                pillarName: best.key,
-                confidence: min(best.value, 1.0),
-                suggestedTags: Array((tags[best.key] ?? []).prefix(5)),
-                source: .coreML
-            )
-        }
-
-        return ClassificationResult(
-            pillarName: "Uncategorized",
-            confidence: 0,
-            suggestedTags: observations.prefix(3).map(\.identifier),
-            source: .coreML
-        )
+        return scores
+            .sorted { $0.value > $1.value }
+            .map { pillar, score in
+                ClassificationResult(
+                    pillarName: pillar,
+                    confidence: min(score, 1.0),
+                    suggestedTags: Array((tags[pillar] ?? []).prefix(5)),
+                    source: .coreML
+                )
+            }
     }
 }
 
 // MARK: - Gemini Flash (cloud fallback)
 
 private enum GeminiClassifier {
-    static func classify(
+    private static var cachedModel: GenerativeModel?
+    private static var cachedKey: String?
+
+    private static func model(apiKey: String) -> GenerativeModel {
+        if let cachedModel, cachedKey == apiKey { return cachedModel }
+        let model = GenerativeModel(name: "gemini-2.0-flash", apiKey: apiKey)
+        cachedModel = model
+        cachedKey = apiKey
+        return model
+    }
+
+    static func classifyAll(
         _ image: UIImage,
         pillarNames: [String],
         apiKey: String
-    ) async throws -> ClassificationResult {
-        let model = GenerativeModel(name: "gemini-2.0-flash", apiKey: apiKey)
+    ) async throws -> [ClassificationResult] {
+        let model = model(apiKey: apiKey)
 
         let pillarList = pillarNames.joined(separator: ", ")
         let prompt = """
-        Classify this photo into exactly ONE of these content pillars:
+        Classify this photo into ALL matching content pillars from this list:
         \(pillarList).
 
-        If the photo does not clearly match any pillar, use "Uncategorized".
+        A photo can match multiple pillars. Only include pillars that genuinely fit.
+        If the photo does not match any pillar, return an empty array.
 
-        Reply ONLY with a JSON object (no markdown, no explanation):
-        {"pillarName": "...", "confidence": 0.XX, "tags": ["tag1", "tag2", "tag3"]}
+        Reply ONLY with a JSON array (no markdown, no explanation):
+        [{"pillarName": "...", "confidence": 0.XX, "tags": ["tag1", "tag2"]}]
         """
 
         let response = try await model.generateContent(prompt, image)
@@ -182,29 +202,109 @@ private enum GeminiClassifier {
             throw ClassificationError.noResponse
         }
 
-        return try parse(text, validPillars: Set(pillarNames))
+        return try parseAll(text, validPillars: Set(pillarNames))
     }
 
-    private static func parse(_ text: String, validPillars: Set<String>) throws -> ClassificationResult {
+    private static func parseAll(_ text: String, validPillars: Set<String>) throws -> [ClassificationResult] {
         let cleaned = text
             .replacingOccurrences(of: "```json", with: "")
             .replacingOccurrences(of: "```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        guard let data = cleaned.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-              let pillarName = json["pillarName"] as? String else {
+        guard let data = cleaned.data(using: .utf8) else {
             throw ClassificationError.invalidResponse
         }
 
-        let finalName = validPillars.contains(pillarName) ? pillarName : "Uncategorized"
+        if let array = try? JSONSerialization.jsonObject(with: data) as? [[String: Any]] {
+            return array.compactMap { json -> ClassificationResult? in
+                guard let name = json["pillarName"] as? String,
+                      validPillars.contains(name) else { return nil }
+                return ClassificationResult(
+                    pillarName: name,
+                    confidence: (json["confidence"] as? NSNumber)?.floatValue ?? 0.85,
+                    suggestedTags: (json["tags"] as? [String]) ?? [],
+                    source: .gemini
+                )
+            }
+        }
 
-        return ClassificationResult(
-            pillarName: finalName,
-            confidence: (json["confidence"] as? NSNumber)?.floatValue ?? 0.85,
-            suggestedTags: (json["tags"] as? [String]) ?? [],
-            source: .gemini
-        )
+        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+           let name = json["pillarName"] as? String,
+           validPillars.contains(name) {
+            return [ClassificationResult(
+                pillarName: name,
+                confidence: (json["confidence"] as? NSNumber)?.floatValue ?? 0.85,
+                suggestedTags: (json["tags"] as? [String]) ?? [],
+                source: .gemini
+            )]
+        }
+
+        throw ClassificationError.invalidResponse
+    }
+}
+
+// MARK: - Cadrage Detection (on-device)
+
+private enum CadrageDetector {
+    static func detect(_ image: UIImage) async throws -> Cadrage {
+        if isScreenshot(image) { return .screenshot }
+
+        guard let cgImage = image.cgImage else { return .wide }
+
+        return try await withCheckedThrowingContinuation { continuation in
+            let request = VNClassifyImageRequest { request, error in
+                if let error {
+                    continuation.resume(throwing: error)
+                    return
+                }
+                let observations = (request.results as? [VNClassificationObservation]) ?? []
+                continuation.resume(returning: mapToCadrage(observations, image: image))
+            }
+
+            do {
+                try VNImageRequestHandler(cgImage: cgImage).perform([request])
+            } catch {
+                continuation.resume(throwing: error)
+            }
+        }
+    }
+
+    private static func isScreenshot(_ image: UIImage) -> Bool {
+        let w = image.size.width * image.scale
+        let h = image.size.height * image.scale
+        let ratio = max(w, h) / max(min(w, h), 1)
+        let phoneRatios: [ClosedRange<CGFloat>] = [
+            2.1...2.25,   // Modern iPhones (19.5:9 ≈ 2.167)
+            1.75...1.80,  // Older iPhones (16:9 = 1.778)
+        ]
+        let isPhoneRatio = phoneRatios.contains { $0.contains(ratio) }
+        let isExactWidth = [750, 1080, 1125, 1170, 1179, 1242, 1284, 1290, 1320].contains(Int(min(w, h)))
+        return isPhoneRatio && isExactWidth
+    }
+
+    private static let cadrageTerms: [(cadrage: Cadrage, terms: [String], weight: Float)] = [
+        (.portrait, ["face", "portrait", "selfie", "person", "head", "profile", "people"], 1.0),
+        (.wide, ["landscape", "sky", "beach", "mountain", "panoram", "outdoor", "aerial", "scenic", "horizon", "field", "ocean", "lake", "cityscape"], 1.0),
+        (.detail, ["close", "macro", "food", "flower", "texture", "jewelry", "insect", "leaf", "fruit", "vegetable", "dessert"], 1.0),
+        (.pov, ["hand", "holding", "desk", "table", "keyboard", "screen", "laptop", "book"], 0.6),
+    ]
+
+    private static func mapToCadrage(_ observations: [VNClassificationObservation], image: UIImage) -> Cadrage {
+        var scores: [Cadrage: Float] = [:]
+
+        for obs in observations where obs.confidence > 0.02 {
+            let id = obs.identifier.lowercased()
+            for (cadrage, terms, weight) in cadrageTerms {
+                if terms.contains(where: { id.contains($0) }) {
+                    scores[cadrage, default: 0] += obs.confidence * weight
+                }
+            }
+        }
+
+        guard let best = scores.max(by: { $0.value < $1.value }), best.value > 0.05 else {
+            return .wide
+        }
+        return best.key
     }
 }
 

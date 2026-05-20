@@ -4,6 +4,7 @@ enum AppStrings {
     enum Tab {
         static let dashboard = String(localized: "Dashboard")
         static let classify = String(localized: "Classify")
+        static let explore = String(localized: "Explore")
         static let create = String(localized: "Create")
         static let settings = String(localized: "Settings")
     }

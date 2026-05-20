@@ -1,5 +1,6 @@
 import ComposableArchitecture
 import Foundation
+import SwiftUI
 
 @Reducer
 struct TemplateListFeature {
@@ -8,6 +9,7 @@ struct TemplateListFeature {
         var templates: [TemplateSnapshot] = []
         var isLoading: Bool = false
         @Presents var builder: TemplateBuilderFeature.State?
+        @Presents var editor: PostEditorFeature.State?
         @Presents var alert: AlertState<Action.Alert>?
     }
 
@@ -16,9 +18,11 @@ struct TemplateListFeature {
         case templatesLoaded([TemplateSnapshot])
         case newTemplateTapped
         case templateTapped(TemplateSnapshot)
+        case editTemplateTapped(TemplateSnapshot)
         case deleteTemplate(IndexSet)
         case deleted
         case builder(PresentationAction<TemplateBuilderFeature.Action>)
+        case editor(PresentationAction<PostEditorFeature.Action>)
         case alert(PresentationAction<Alert>)
 
         enum Alert: Equatable {}
@@ -46,6 +50,10 @@ struct TemplateListFeature {
                 return .none
 
             case let .templateTapped(template):
+                state.editor = PostEditorFeature.State(template: template)
+                return .none
+
+            case let .editTemplateTapped(template):
                 state.builder = TemplateBuilderFeature.State(existing: template)
                 return .none
 
@@ -68,12 +76,15 @@ struct TemplateListFeature {
                     await send(.templatesLoaded(templates))
                 }
 
-            case .builder, .alert:
+            case .builder, .editor, .alert:
                 return .none
             }
         }
         .ifLet(\.$builder, action: \.builder) {
             TemplateBuilderFeature()
+        }
+        .ifLet(\.$editor, action: \.editor) {
+            PostEditorFeature()
         }
         .ifLet(\.$alert, action: \.alert)
     }

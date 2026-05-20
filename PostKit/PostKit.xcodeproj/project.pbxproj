@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		12B3EA582FBA6C1D0090A113 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 12B3EA572FBA6C1D0090A113 /* ComposableArchitecture */; };
+		12B3EA5B2FBA6C310090A113 /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = 12B3EA5A2FBA6C310090A113 /* GoogleGenerativeAI */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		123EBF7E2FB0BEB900F6A1CA /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -27,11 +32,25 @@
 		123EBF6E2FB0BEB800F6A1CA /* PostKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PostKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		123EBF7D2FB0BEB900F6A1CA /* PostKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PostKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		123EBF872FB0BEB900F6A1CA /* PostKitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PostKitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		127D62392FBAFC66000C0CB2 /* Exceptions for "PostKit" folder in "PostKit" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 123EBF6D2FB0BEB800F6A1CA /* PostKit */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		123EBF702FB0BEB800F6A1CA /* PostKit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				127D62392FBAFC66000C0CB2 /* Exceptions for "PostKit" folder in "PostKit" target */,
+			);
 			path = PostKit;
 			sourceTree = "<group>";
 		};
@@ -52,6 +71,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				12B3EA582FBA6C1D0090A113 /* ComposableArchitecture in Frameworks */,
+				12B3EA5B2FBA6C310090A113 /* GoogleGenerativeAI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -75,6 +96,7 @@
 		123EBF652FB0BEB800F6A1CA = {
 			isa = PBXGroup;
 			children = (
+				127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */,
 				123EBF702FB0BEB800F6A1CA /* PostKit */,
 				123EBF802FB0BEB900F6A1CA /* PostKitTests */,
 				123EBF8A2FB0BEB900F6A1CA /* PostKitUITests */,
@@ -112,6 +134,8 @@
 			);
 			name = PostKit;
 			packageProductDependencies = (
+				12B3EA572FBA6C1D0090A113 /* ComposableArchitecture */,
+				12B3EA5A2FBA6C310090A113 /* GoogleGenerativeAI */,
 			);
 			productName = PostKit;
 			productReference = 123EBF6E2FB0BEB800F6A1CA /* PostKit.app */;
@@ -195,6 +219,10 @@
 			);
 			mainGroup = 123EBF652FB0BEB800F6A1CA;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				12B3EA562FBA6C1D0090A113 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */,
+				12B3EA592FBA6C310090A113 /* XCRemoteSwiftPackageReference "generative-ai-swift" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 123EBF6F2FB0BEB800F6A1CA /* Products */;
 			projectDirPath = "";
@@ -271,6 +299,7 @@
 /* Begin XCBuildConfiguration section */
 		123EBF8F2FB0BEB900F6A1CA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -333,6 +362,7 @@
 		};
 		123EBF902FB0BEB900F6A1CA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -398,6 +428,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PostKit/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -420,7 +451,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -442,6 +473,7 @@
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = PostKit/Info.plist;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]" = YES;
 				"INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]" = YES;
@@ -464,7 +496,7 @@
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = nonisolated;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
@@ -615,6 +647,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		12B3EA562FBA6C1D0090A113 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/pointfreeco/swift-composable-architecture";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.25.5;
+			};
+		};
+		12B3EA592FBA6C310090A113 /* XCRemoteSwiftPackageReference "generative-ai-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/generative-ai-swift";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 0.5.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		12B3EA572FBA6C1D0090A113 /* ComposableArchitecture */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12B3EA562FBA6C1D0090A113 /* XCRemoteSwiftPackageReference "swift-composable-architecture" */;
+			productName = ComposableArchitecture;
+		};
+		12B3EA5A2FBA6C310090A113 /* GoogleGenerativeAI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 12B3EA592FBA6C310090A113 /* XCRemoteSwiftPackageReference "generative-ai-swift" */;
+			productName = GoogleGenerativeAI;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 123EBF662FB0BEB800F6A1CA /* Project object */;
 }

@@ -1,35 +1,32 @@
 import ComposableArchitecture
 
+enum AppTab: Int, Sendable {
+    case home, explore, smartPost, create, settings
+}
+
 @Reducer
 struct AppFeature {
     @ObservableState
     struct State: Equatable {
-        var selectedTab: Tab = .home
-        var isOnboardingPresented = false
+        var selectedTab: AppTab = .home
+        @Presents var onboarding: OnboardingFeature.State?
         var dashboard = DashboardFeature.State()
-        var classify = ClassificationQueueFeature.State()
-        var create = PostAssemblyEntryFeature.State()
+        var explore = ExploreFeature.State()
+        var smartPost = SmartPostFeature.State()
+        var create = CreateHubFeature.State()
         var settings = SettingsFeature.State()
-        var homePath = StackState<HomePath.State>()
-        var classifyPath = StackState<ClassifyPath.State>()
-        var createPath = StackState<CreatePath.State>()
-    }
-
-    enum Tab: Equatable, Hashable, Sendable {
-        case home, classify, create, settings
     }
 
     enum Action: BindableAction {
         case binding(BindingAction<State>)
         case appLaunched
-        case tabSelected(Tab)
+        case tabSelected(AppTab)
+        case onboarding(PresentationAction<OnboardingFeature.Action>)
         case dashboard(DashboardFeature.Action)
-        case classify(ClassificationQueueFeature.Action)
-        case create(PostAssemblyEntryFeature.Action)
+        case explore(ExploreFeature.Action)
+        case smartPost(SmartPostFeature.Action)
+        case create(CreateHubFeature.Action)
         case settings(SettingsFeature.Action)
-        case homePath(StackAction<HomePath.State, HomePath.Action>)
-        case classifyPath(StackAction<ClassifyPath.State, ClassifyPath.Action>)
-        case createPath(StackAction<CreatePath.State, CreatePath.Action>)
     }
 
     @Dependency(\.userDefaults) var userDefaults
@@ -38,29 +35,40 @@ struct AppFeature {
         BindingReducer()
 
         Scope(state: \.dashboard, action: \.dashboard) { DashboardFeature() }
-        Scope(state: \.classify, action: \.classify) { ClassificationQueueFeature() }
-        Scope(state: \.create, action: \.create) { PostAssemblyEntryFeature() }
+        Scope(state: \.explore, action: \.explore) { ExploreFeature() }
+        Scope(state: \.smartPost, action: \.smartPost) { SmartPostFeature() }
+        Scope(state: \.create, action: \.create) { CreateHubFeature() }
         Scope(state: \.settings, action: \.settings) { SettingsFeature() }
 
         Reduce { state, action in
             switch action {
             case .appLaunched:
-                if !userDefaults.boolForKey("onboardingComplete") {
-                    state.isOnboardingPresented = true
-                }
                 return .none
+
+            case .onboarding(.presented(.persistResponse(.success))):
+                state.onboarding = nil
+                return .run { [userDefaults] send in
+                    userDefaults.setBool(true, "onboardingComplete")
+                    await send(.dashboard(.onAppear))
+                }
 
             case let .tabSelected(tab):
                 state.selectedTab = tab
                 return .none
 
-            case .binding, .dashboard, .classify, .create, .settings,
-                 .homePath, .classifyPath, .createPath:
+            case .dashboard(.browsePhotosTapped):
+                state.selectedTab = .explore
+                return .none
+
+            case .smartPost(.delegate(.didSavePost)):
+                return .send(.create(.onAppear))
+
+            case .binding, .dashboard, .explore, .smartPost, .create, .settings, .onboarding:
                 return .none
             }
         }
-        .forEach(\.homePath, action: \.homePath)
-        .forEach(\.classifyPath, action: \.classifyPath)
-        .forEach(\.createPath, action: \.createPath)
+        .ifLet(\.$onboarding, action: \.onboarding) {
+            OnboardingFeature()
+        }
     }
 }

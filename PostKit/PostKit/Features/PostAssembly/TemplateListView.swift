@@ -151,7 +151,7 @@ private struct TemplateRowView: View {
                     .fill(Palette.accentTint)
                     .frame(
                         width: 16,
-                        height: slot.cadrage == .portrait ? 20 : 14
+                        height: slot.cadrages == [.portrait] ? 20 : 14
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: 3)

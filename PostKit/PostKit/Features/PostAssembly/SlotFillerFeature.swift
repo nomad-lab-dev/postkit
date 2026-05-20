@@ -7,54 +7,98 @@ struct SlotFillerFeature {
     struct State: Equatable {
         let slotID: UUID
         let slotName: String
-        let constrainedPillarNames: [String]
+        let constrainedPillarIDs: [UUID]
+        let constrainedCadrages: [Cadrage]
+        let constrainedLocations: [String]
         var photos: [ClassifiedPhotoSnapshot] = []
         var pillars: [PillarSnapshot] = []
-        var selectedFilter: PillarFilter = .all
+        var activePillarIDs: Set<UUID> = []
+        var activeCadrages: Set<Cadrage> = []
+        var activeLocations: Set<String> = []
         var selectedPhotoIDs: Set<String> = []
         var isLoading: Bool = false
 
         var filteredPhotos: [ClassifiedPhotoSnapshot] {
-            switch selectedFilter {
-            case .all:
-                return photos
-            case .pillar(let id):
-                return photos.filter { $0.pillarID == id }
-            case .uncategorized:
-                return photos.filter { $0.pillarID == nil }
+            photos.filter { photo in
+                let matchesPillar: Bool
+                if activePillarIDs.isEmpty {
+                    matchesPillar = true
+                } else if let pid = photo.pillarID {
+                    matchesPillar = activePillarIDs.contains(pid)
+                } else {
+                    matchesPillar = false
+                }
+
+                let matchesCadrage: Bool
+                if activeCadrages.isEmpty {
+                    matchesCadrage = true
+                } else if let cadrage = photo.cadrage {
+                    matchesCadrage = activeCadrages.contains(cadrage)
+                } else {
+                    matchesCadrage = false
+                }
+
+                let matchesLocation: Bool
+                if activeLocations.isEmpty {
+                    matchesLocation = true
+                } else if let location = photo.location {
+                    matchesLocation = activeLocations.contains(location)
+                } else {
+                    matchesLocation = false
+                }
+
+                return matchesPillar && matchesCadrage && matchesLocation
             }
         }
 
         var displayPillars: [PillarSnapshot] {
-            if constrainedPillarNames.isEmpty {
-                return pillars
-            }
-            return pillars.filter { constrainedPillarNames.contains($0.name) }
+            guard !constrainedPillarIDs.isEmpty else { return pillars }
+            let ids = Set(constrainedPillarIDs)
+            let constrained = pillars.filter { ids.contains($0.id) }
+            let others = pillars.filter { !ids.contains($0.id) }
+            return constrained + others
+        }
+
+        var uniqueLocations: [String] {
+            let all = Set(photos.compactMap(\.location))
+            let constrainedSet = Set(constrainedLocations)
+            let constrained = all.filter { constrainedSet.contains($0) }.sorted()
+            let others = all.subtracting(constrainedSet).sorted()
+            return constrained + others
         }
 
         init(
             slotID: UUID,
             slotName: String,
-            constrainedPillarNames: [String] = [],
+            constrainedPillarIDs: [UUID] = [],
+            constrainedCadrages: [Cadrage] = [],
+            constrainedLocations: [String] = [],
             preselectedPhotoIDs: Set<String> = []
         ) {
             self.slotID = slotID
             self.slotName = slotName
-            self.constrainedPillarNames = constrainedPillarNames
+            self.constrainedPillarIDs = constrainedPillarIDs
+            self.constrainedCadrages = constrainedCadrages
+            self.constrainedLocations = constrainedLocations
             self.selectedPhotoIDs = preselectedPhotoIDs
+            self.activePillarIDs = Set(constrainedPillarIDs)
+            self.activeCadrages = Set(constrainedCadrages)
+            self.activeLocations = Set(constrainedLocations)
         }
     }
 
     enum Action {
         case onAppear
         case dataLoaded(pillars: [PillarSnapshot], photos: [ClassifiedPhotoSnapshot])
-        case filterSelected(PillarFilter)
+        case pillarFilterToggled(UUID)
+        case cadrageFilterToggled(Cadrage)
+        case locationFilterToggled(String)
         case photoToggled(String)
         case confirmTapped
         case delegate(Delegate)
 
         enum Delegate: Equatable {
-            case didConfirm(slotID: UUID, photoIDs: Set<String>)
+            case didConfirm(slotID: UUID, photoIDs: Set<String>, locationLabel: String?)
         }
     }
 
@@ -67,24 +111,9 @@ struct SlotFillerFeature {
             case .onAppear:
                 guard state.photos.isEmpty else { return .none }
                 state.isLoading = true
-                let constrainedNames = state.constrainedPillarNames
                 return .run { send in
                     let pillars = try await persistence.fetchPillars()
-                    let allPhotos = try await persistence.fetchPhotos(nil)
-                    let photos: [ClassifiedPhotoSnapshot]
-                    if constrainedNames.isEmpty {
-                        photos = allPhotos
-                    } else {
-                        let allowedIDs = Set(
-                            pillars
-                                .filter { constrainedNames.contains($0.name) }
-                                .map(\.id)
-                        )
-                        photos = allPhotos.filter { photo in
-                            guard let pid = photo.pillarID else { return false }
-                            return allowedIDs.contains(pid)
-                        }
-                    }
+                    let photos = try await persistence.fetchPhotos(nil)
                     await send(.dataLoaded(pillars: pillars, photos: photos))
                 }
 
@@ -92,14 +121,30 @@ struct SlotFillerFeature {
                 state.pillars = pillars
                 state.photos = photos
                 state.isLoading = false
-                if !state.constrainedPillarNames.isEmpty,
-                   let firstPillar = state.displayPillars.first {
-                    state.selectedFilter = .pillar(firstPillar.id)
+                return .none
+
+            case let .pillarFilterToggled(id):
+                if state.activePillarIDs.contains(id) {
+                    state.activePillarIDs.remove(id)
+                } else {
+                    state.activePillarIDs.insert(id)
                 }
                 return .none
 
-            case let .filterSelected(filter):
-                state.selectedFilter = filter
+            case let .cadrageFilterToggled(cadrage):
+                if state.activeCadrages.contains(cadrage) {
+                    state.activeCadrages.remove(cadrage)
+                } else {
+                    state.activeCadrages.insert(cadrage)
+                }
+                return .none
+
+            case let .locationFilterToggled(location):
+                if state.activeLocations.contains(location) {
+                    state.activeLocations.remove(location)
+                } else {
+                    state.activeLocations.insert(location)
+                }
                 return .none
 
             case let .photoToggled(assetID):
@@ -113,8 +158,10 @@ struct SlotFillerFeature {
             case .confirmTapped:
                 let slotID = state.slotID
                 let photoIDs = state.selectedPhotoIDs
+                let locationLabel = state.photos
+                    .first { state.selectedPhotoIDs.contains($0.assetLocalIdentifier) }?.location
                 return .run { send in
-                    await send(.delegate(.didConfirm(slotID: slotID, photoIDs: photoIDs)))
+                    await send(.delegate(.didConfirm(slotID: slotID, photoIDs: photoIDs, locationLabel: locationLabel)))
                     await dismiss()
                 }
 

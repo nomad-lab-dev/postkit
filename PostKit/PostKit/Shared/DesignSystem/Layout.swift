@@ -23,4 +23,9 @@ enum Layout {
         static let bento:     CGFloat = 8
         static let pills:     CGFloat = 6
     }
+
+    enum Border {
+        static let thin: CGFloat = 1
+        static let regular: CGFloat = 2
+    }
 }

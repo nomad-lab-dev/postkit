@@ -14,15 +14,15 @@ final class ExploreFeatureTests: XCTestCase {
         let photos = [
             ClassifiedPhotoSnapshot(
                 assetLocalIdentifier: "a1", pillarID: UUID(0),
-                pillarName: "Travel", confidence: 0.9, status: .classified
+                confidence: 0.9, status: .classified, cadrage: .wide
             ),
             ClassifiedPhotoSnapshot(
                 assetLocalIdentifier: "a2", pillarID: UUID(1),
-                pillarName: "Food", confidence: 0.85, status: .classified
+                confidence: 0.85, status: .classified, cadrage: .portrait
             ),
             ClassifiedPhotoSnapshot(
                 assetLocalIdentifier: "a3",
-                pillarName: "Uncategorized", confidence: 0.3, status: .classified
+                confidence: 0.3, status: .classified, cadrage: .detail
             ),
         ]
 
@@ -51,13 +51,13 @@ final class ExploreFeatureTests: XCTestCase {
         ]
         state.photos = [
             ClassifiedPhotoSnapshot(
-                assetLocalIdentifier: "a1", pillarID: UUID(0), status: .classified
+                assetLocalIdentifier: "a1", pillarID: UUID(0), status: .classified, cadrage: .wide
             ),
             ClassifiedPhotoSnapshot(
-                assetLocalIdentifier: "a2", pillarID: UUID(1), status: .classified
+                assetLocalIdentifier: "a2", pillarID: UUID(1), status: .classified, cadrage: .portrait
             ),
             ClassifiedPhotoSnapshot(
-                assetLocalIdentifier: "a3", status: .classified
+                assetLocalIdentifier: "a3", status: .classified, cadrage: .detail
             ),
         ]
 
@@ -86,7 +86,7 @@ final class ExploreFeatureTests: XCTestCase {
     func test_onAppear_doesNotReloadIfAlreadyLoaded() async {
         var state = ExploreFeature.State()
         state.photos = [
-            ClassifiedPhotoSnapshot(assetLocalIdentifier: "a1", status: .classified),
+            ClassifiedPhotoSnapshot(assetLocalIdentifier: "a1", status: .classified, cadrage: .wide),
         ]
 
         let store = TestStore(initialState: state) {

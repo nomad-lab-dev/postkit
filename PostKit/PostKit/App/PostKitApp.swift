@@ -11,16 +11,36 @@ struct PostKitApp: App {
             Pillar.self,
             ClassifiedPhoto.self,
             GeneratedPost.self,
+            PostTemplate.self,
         ])
-        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         let container: ModelContainer
         do {
-            container = try ModelContainer(for: schema, configurations: [configuration])
+            let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+            container = try ModelContainer(for: schema, configurations: [config])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            print("⚠️ SwiftData migration failed — resetting store: \(error)")
+            if let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first {
+                for name in ["default.store", "default.store-wal", "default.store-shm"] {
+                    try? FileManager.default.removeItem(at: appSupport.appending(path: name))
+                }
+            }
+            UserDefaults.standard.removeObject(forKey: "onboardingComplete")
+            UserDefaults.standard.removeObject(forKey: "fullScanComplete")
+            UserDefaults.standard.removeObject(forKey: "fullScanCancelled")
+            do {
+                let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+                container = try ModelContainer(for: schema, configurations: [config])
+            } catch {
+                fatalError("Could not create ModelContainer after reset: \(error)")
+            }
         }
 
-        self.store = Store(initialState: AppFeature.State()) {
+        var initialState = AppFeature.State()
+        if !UserDefaults.standard.bool(forKey: "onboardingComplete") {
+            initialState.onboarding = OnboardingFeature.State()
+        }
+
+        self.store = Store(initialState: initialState) {
             AppFeature()
         } withDependencies: {
             $0.persistence = .live(container: container)
