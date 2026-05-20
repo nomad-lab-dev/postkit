@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SmartPostFeature.swift — SmartPost reducer: AI chat, template generation, slot filling
+
 import ComposableArchitecture
 import Foundation
 
@@ -143,45 +146,7 @@ struct SmartPostFeature {
                 state.isFillingSlots = true
                 let slots = template.slots
                 return .run { send in
-                    var filledSlots: [FilledSlot] = []
-                    var usedIDs: Set<String> = []
-                    for slot in slots {
-                        let allPhotos: [ClassifiedPhotoSnapshot]
-                        if slot.pillarIDs.isEmpty {
-                            allPhotos = try await persistence.fetchPhotos(.classified)
-                        } else {
-                            var photos: [ClassifiedPhotoSnapshot] = []
-                            for pillarID in slot.pillarIDs {
-                                photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
-                            }
-                            allPhotos = photos
-                        }
-                        var available = allPhotos.filter { !usedIDs.contains($0.assetLocalIdentifier) }
-                        if !slot.locations.isEmpty {
-                            let locationFiltered = available.filter { photo in
-                                guard let loc = photo.location else { return false }
-                                return slot.locations.contains(loc)
-                            }
-                            if !locationFiltered.isEmpty { available = locationFiltered }
-                        }
-                        if slot.startDate != nil || slot.endDate != nil {
-                            let dateFiltered = available.filter { photo in
-                                guard let captured = photo.capturedAt else { return false }
-                                if let s = slot.startDate, captured < s { return false }
-                                if let e = slot.endDate, captured > e { return false }
-                                return true
-                            }
-                            if !dateFiltered.isEmpty { available = dateFiltered }
-                        }
-                        var filled = FilledSlot(slotData: slot, photoIDs: [])
-                        if let picked = available.randomElement() {
-                            filled.photoIDs = [picked.assetLocalIdentifier]
-                            filled.activePillarID = picked.pillarID
-                            filled.locationLabel = picked.location
-                            usedIDs.insert(picked.assetLocalIdentifier)
-                        }
-                        filledSlots.append(filled)
-                    }
+                    let filledSlots = try await SlotFiller.fill(slots: slots, using: persistence)
                     await send(.slotsFilled(filledSlots))
                 }
 

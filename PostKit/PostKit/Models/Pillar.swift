@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// Pillar.swift — Pillar SwiftData model and PillarTone enum
+
 import Foundation
 import SwiftData
 

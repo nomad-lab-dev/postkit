@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SlotMachineFeature.swift — Slot machine reducer: auto-fills template slots with random matching photos
+
 import ComposableArchitecture
 import Foundation
 

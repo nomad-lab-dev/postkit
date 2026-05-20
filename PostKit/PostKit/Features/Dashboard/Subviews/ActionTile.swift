@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ActionTile.swift — Reusable tappable tile with icon, title, and subtitle
+
 import SwiftUI
 
 struct ActionTile: View {

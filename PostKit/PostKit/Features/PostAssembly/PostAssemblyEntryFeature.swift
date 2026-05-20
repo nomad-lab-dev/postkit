@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PostAssemblyEntryFeature.swift — Post assembly reducer: pillar pick, photo selection, caption generation
+
 import ComposableArchitecture
 import SwiftUI
 import UIKit

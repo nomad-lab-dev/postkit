@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PostAssemblyView.swift — Post assembly UI: pillar picker, photo picker, caption editor steps
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ExploreFeature.swift — Explore reducer: photo browsing with pillar and status filters
+
 import ComposableArchitecture
 import Foundation
 import UIKit

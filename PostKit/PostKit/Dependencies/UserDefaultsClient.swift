@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// UserDefaultsClient.swift — UserDefaults key-value dependency
+
 import ComposableArchitecture
 import Foundation
 

@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PhotoLibraryClient.swift — PhotoKit library access dependency
+
 import ComposableArchitecture
 import CoreLocation
 @preconcurrency import Photos

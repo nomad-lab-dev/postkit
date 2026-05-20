@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// OnboardingFeature.swift — Onboarding reducer: welcome, pillar setup, quick scan, completion
+
 import ComposableArchitecture
 import Foundation
 @preconcurrency import Photos

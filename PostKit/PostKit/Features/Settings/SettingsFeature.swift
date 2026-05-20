@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SettingsFeature.swift — Settings reducer: placeholder for future user preferences
+
 import ComposableArchitecture
 
 @Reducer

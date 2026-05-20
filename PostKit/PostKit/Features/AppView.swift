@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// AppView.swift — Root tab bar: dashboard, explore, smart post, create, and settings tabs
+
 import ComposableArchitecture
 import SwiftUI
 

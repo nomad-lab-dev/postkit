@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// CreateHubFeature.swift — Create tab reducer: templates, posts, slot machine
+
 import ComposableArchitecture
 import Foundation
 
@@ -133,12 +136,7 @@ struct CreateHubFeature {
                 return .none
 
             case .builder(.presented(.delegate(.didSave))):
-                return .run { send in
-                    let templates = try await persistence.fetchTemplates()
-                    let pillars = try await persistence.fetchPillars()
-                    let posts = try await persistence.fetchPosts(nil)
-                    await send(.dataLoaded(templates: templates, pillars: pillars, posts: posts))
-                }
+                return .send(.onAppear)
 
             case let .slotMachine(.presented(.delegate(.openEditor(template, filledSlots)))):
                 state.slotMachine = nil
@@ -148,12 +146,7 @@ struct CreateHubFeature {
                 return .none
 
             case .editor(.presented(.delegate(.didSave))):
-                return .run { send in
-                    let templates = try await persistence.fetchTemplates()
-                    let pillars = try await persistence.fetchPillars()
-                    let posts = try await persistence.fetchPosts(nil)
-                    await send(.dataLoaded(templates: templates, pillars: pillars, posts: posts))
-                }
+                return .send(.onAppear)
 
             case .builder, .slotMachine, .editor, .alert, .binding:
                 return .none

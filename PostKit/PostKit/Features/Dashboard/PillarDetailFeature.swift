@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PillarDetailFeature.swift — Pillar detail reducer: loads and displays photos for a single pillar
+
 import ComposableArchitecture
 
 @Reducer

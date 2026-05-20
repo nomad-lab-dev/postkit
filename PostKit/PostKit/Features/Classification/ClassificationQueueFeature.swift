@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ClassificationQueueFeature.swift — Classification queue reducer: pending photos, accept-all, cadrage backfill
+
 import ComposableArchitecture
 import Foundation
 

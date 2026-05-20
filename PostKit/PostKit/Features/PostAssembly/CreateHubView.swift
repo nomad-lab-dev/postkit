@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// CreateHubView.swift — Create tab UI: template carousel, posts list, new template action
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

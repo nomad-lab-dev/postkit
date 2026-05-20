@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// DashboardFeature.swift — Dashboard reducer: scan orchestration, pillar loading, scheduled templates
+
 import ComposableArchitecture
 import UIKit
 
@@ -300,45 +303,7 @@ struct DashboardFeature {
                 state.isFillingScheduledSlots = true
                 let slots = template.slots
                 return .run { send in
-                    var filledSlots: [FilledSlot] = []
-                    var usedIDs: Set<String> = []
-                    for slotData in slots {
-                        let allPhotos: [ClassifiedPhotoSnapshot]
-                        if slotData.pillarIDs.isEmpty {
-                            allPhotos = try await persistence.fetchPhotos(.classified)
-                        } else {
-                            var photos: [ClassifiedPhotoSnapshot] = []
-                            for pillarID in slotData.pillarIDs {
-                                photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
-                            }
-                            allPhotos = photos
-                        }
-                        var available = allPhotos.filter { !usedIDs.contains($0.assetLocalIdentifier) }
-                        if !slotData.locations.isEmpty {
-                            let filtered = available.filter { photo in
-                                guard let loc = photo.location else { return false }
-                                return slotData.locations.contains(loc)
-                            }
-                            if !filtered.isEmpty { available = filtered }
-                        }
-                        if slotData.startDate != nil || slotData.endDate != nil {
-                            let filtered = available.filter { photo in
-                                guard let captured = photo.capturedAt else { return false }
-                                if let s = slotData.startDate, captured < s { return false }
-                                if let e = slotData.endDate, captured > e { return false }
-                                return true
-                            }
-                            if !filtered.isEmpty { available = filtered }
-                        }
-                        var filled = FilledSlot(slotData: slotData, photoIDs: [])
-                        if let picked = available.randomElement() {
-                            filled.photoIDs = [picked.assetLocalIdentifier]
-                            filled.activePillarID = picked.pillarID
-                            filled.locationLabel = picked.location
-                            usedIDs.insert(picked.assetLocalIdentifier)
-                        }
-                        filledSlots.append(filled)
-                    }
+                    let filledSlots = try await SlotFiller.fill(slots: slots, using: persistence)
                     await send(.scheduledSlotsFilled(template: template, slots: filledSlots))
                 }
 

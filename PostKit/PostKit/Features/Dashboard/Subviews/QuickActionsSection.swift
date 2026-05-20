@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// QuickActionsSection.swift — Dashboard quick actions: compose a post or create a new template
+
 import SwiftUI
 
 struct QuickActionsSection: View {

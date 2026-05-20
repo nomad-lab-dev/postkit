@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// TemplateListFeature.swift — Template list reducer: CRUD operations, builder and editor presentation
+
 import ComposableArchitecture
 import Foundation
 import SwiftUI

@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SlotFillerView.swift — Slot filler UI: photo grid with pillar, cadrage, and location filters
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

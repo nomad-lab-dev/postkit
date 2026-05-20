@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// EmptyPillarsState.swift — Placeholder view shown when no pillars are configured
+
 import SwiftUI
 
 struct EmptyPillarsState: View {

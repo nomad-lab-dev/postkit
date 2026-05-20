@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ScanCompleteToast.swift — Toast notification displayed when library scan finishes
+
 import SwiftUI
 
 struct ScanCompleteToast: View {

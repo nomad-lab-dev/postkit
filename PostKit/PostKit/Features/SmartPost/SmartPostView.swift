@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SmartPostView.swift — SmartPost UI: chat bubbles, template preview, input bar
+
 import ComposableArchitecture
 import SwiftUI
 

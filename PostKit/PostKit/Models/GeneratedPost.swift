@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// GeneratedPost.swift — GeneratedPost SwiftData model and related types
+
 import Foundation
 import SwiftData
 

@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ClassifiedPhoto.swift — ClassifiedPhoto SwiftData model
+
 import Foundation
 import SwiftData
 

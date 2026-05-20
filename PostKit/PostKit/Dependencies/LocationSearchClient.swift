@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// LocationSearchClient.swift — Map location search dependency
+
 import ComposableArchitecture
 import MapKit
 

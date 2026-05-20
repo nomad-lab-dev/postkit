@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// TemplateBuilderFeature.swift — Template builder reducer with slot editor and notifications
+
 import ComposableArchitecture
 import Foundation
 import SwiftUI
@@ -202,6 +205,7 @@ struct TemplateBuilderFeature {
 
                     if snapshot.schedule.reminderEnabled && !snapshot.schedule.isEmpty {
                         for day in snapshot.schedule.weekdays {
+                            // Convert Monday-based enum (1=Mon…7=Sun) to Calendar weekday (1=Sun…7=Sat)
                             let calWeekday = day == .sunday ? 1 : day.rawValue + 1
                             try? await notification.scheduleWeekly(
                                 "template-\(snapshot.id)-\(day.rawValue)",

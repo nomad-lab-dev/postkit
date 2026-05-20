@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ClassificationCardFeature.swift — Classification card reducer: swipe-to-classify with undo stack
+
 import ComposableArchitecture
 import UIKit
 

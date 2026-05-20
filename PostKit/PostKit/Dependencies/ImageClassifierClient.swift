@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ImageClassifierClient.swift — Core ML + Vision image classification dependency
+
 import ComposableArchitecture
 import GoogleGenerativeAI
 import UIKit

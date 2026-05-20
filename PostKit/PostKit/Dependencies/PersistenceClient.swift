@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PersistenceClient.swift — SwiftData persistence dependency client
+
 import ComposableArchitecture
 import Foundation
 import SwiftData

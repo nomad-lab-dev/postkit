@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// TemplateNudgeCard.swift — CTA card nudging the user to assemble a post from a template
+
 import SwiftUI
 
 struct TemplateNudgeCard: View {

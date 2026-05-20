@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// Snapshots.swift — Value-type snapshots for pillars, photos, posts, and templates
+
 import Foundation
 
 struct PillarSnapshot: Equatable, Identifiable, Sendable {

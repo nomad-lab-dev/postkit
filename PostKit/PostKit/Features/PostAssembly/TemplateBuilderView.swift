@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// TemplateBuilderView.swift — Template builder UI: name, location, slots grid, schedule, prompt
+
 import ComposableArchitecture
 import SwiftUI
 

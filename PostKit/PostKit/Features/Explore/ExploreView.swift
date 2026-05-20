@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ExploreView.swift — Explore UI: filterable photo grid with pillar and status chips
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

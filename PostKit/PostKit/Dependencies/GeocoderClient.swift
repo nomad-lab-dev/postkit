@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// GeocoderClient.swift — Reverse geocoding dependency
+
 import ComposableArchitecture
 import CoreLocation
 

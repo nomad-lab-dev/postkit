@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PostGeneratorClient.swift — Gemini AI post generation dependency
+
 import ComposableArchitecture
 import GoogleGenerativeAI
 import UIKit

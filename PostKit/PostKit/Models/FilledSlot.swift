@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// FilledSlot.swift — FilledSlot model and PostEditorFeature reducer
+
 import ComposableArchitecture
 import Foundation
 import UIKit
@@ -10,6 +13,66 @@ struct FilledSlot: Equatable, Identifiable, Sendable {
 
     var id: UUID { slotData.id }
     var isEmpty: Bool { photoIDs.isEmpty }
+}
+
+// MARK: - Shared Slot Filling
+
+/// Auto-fills template slots by picking one random photo per slot that matches its constraints.
+/// Each slot's pillar, location, and date filters are applied as soft constraints — if no
+/// photo matches all filters, the broader pool is used. Photos are not reused across slots.
+enum SlotFiller {
+    static func fill(
+        slots: [TemplateSlotData],
+        using persistence: PersistenceClient
+    ) async throws -> [FilledSlot] {
+        var filledSlots: [FilledSlot] = []
+        var usedIDs: Set<String> = []
+
+        for slot in slots {
+            let allPhotos: [ClassifiedPhotoSnapshot]
+            if slot.pillarIDs.isEmpty {
+                allPhotos = try await persistence.fetchPhotos(.classified)
+            } else {
+                var photos: [ClassifiedPhotoSnapshot] = []
+                for pillarID in slot.pillarIDs {
+                    photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
+                }
+                allPhotos = photos
+            }
+
+            var available = allPhotos.filter { !usedIDs.contains($0.assetLocalIdentifier) }
+
+            // Soft constraint: prefer photos matching slot locations
+            if !slot.locations.isEmpty {
+                let filtered = available.filter { photo in
+                    guard let loc = photo.location else { return false }
+                    return slot.locations.contains(loc)
+                }
+                if !filtered.isEmpty { available = filtered }
+            }
+
+            // Soft constraint: prefer photos within the slot's date range
+            if slot.startDate != nil || slot.endDate != nil {
+                let filtered = available.filter { photo in
+                    guard let captured = photo.capturedAt else { return false }
+                    if let s = slot.startDate, captured < s { return false }
+                    if let e = slot.endDate, captured > e { return false }
+                    return true
+                }
+                if !filtered.isEmpty { available = filtered }
+            }
+
+            var filled = FilledSlot(slotData: slot, photoIDs: [])
+            if let picked = available.randomElement() {
+                filled.photoIDs = [picked.assetLocalIdentifier]
+                filled.activePillarID = picked.pillarID
+                filled.locationLabel = picked.location
+                usedIDs.insert(picked.assetLocalIdentifier)
+            }
+            filledSlots.append(filled)
+        }
+        return filledSlots
+    }
 }
 
 @Reducer

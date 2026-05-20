@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ClassificationQueueView.swift — Classification queue UI: photo grid with accept-all and per-photo review
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

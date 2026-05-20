@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PostKitApp.swift — App entry point: SwiftData container setup and TCA store initialization
+
 import ComposableArchitecture
 import SwiftData
 import SwiftUI

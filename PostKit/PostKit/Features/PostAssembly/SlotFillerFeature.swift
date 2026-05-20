@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SlotFillerFeature.swift — Slot filler reducer: photo filtering by pillar, cadrage, and location
+
 import ComposableArchitecture
 import Foundation
 

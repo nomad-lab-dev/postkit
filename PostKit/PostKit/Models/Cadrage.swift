@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// Cadrage.swift — Cadrage enum, Weekday, TemplateSchedule, PostTemplate SwiftData model, and TemplateSlotData
+
 import Foundation
 import SwiftData
 
@@ -52,10 +55,11 @@ enum Weekday: Int, Codable, CaseIterable, Identifiable, Sendable, Comparable {
         String(shortName.prefix(1))
     }
 
+    /// Maps `Calendar.component(.weekday)` (1=Sun…7=Sat) to our enum (1=Mon…7=Sun).
     static func current(from date: Date, calendar: Calendar = .current) -> Weekday {
         let w = calendar.component(.weekday, from: date)
         let mondayBased = w == 1 ? 7 : w - 1
-        return Weekday(rawValue: mondayBased)!
+        return Weekday(rawValue: mondayBased) ?? .monday
     }
 
     static func < (lhs: Weekday, rhs: Weekday) -> Bool {

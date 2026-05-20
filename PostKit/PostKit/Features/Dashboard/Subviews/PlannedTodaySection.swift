@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PlannedTodaySection.swift — Horizontal scroll of today's planned templates
+
 import SwiftUI
 
 struct PlannedTodaySection: View {

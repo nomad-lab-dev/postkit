@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PillarsBentoSection.swift — Two-column bento grid of pillar cards with photo thumbnails
+
 import ComposableArchitecture
 import Photos
 import SwiftUI

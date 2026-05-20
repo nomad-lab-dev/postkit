@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SmartPostModels.swift — AI intent models and template resolution for smart post creation
+
 import Foundation
 
 struct ChatMessage: Equatable, Identifiable, Sendable {

@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// NotificationClient.swift — Local notification scheduling dependency
+
 import ComposableArchitecture
 import UserNotifications
 

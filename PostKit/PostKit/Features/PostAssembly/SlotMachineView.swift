@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// SlotMachineView.swift — Slot machine UI: loading, shuffling animation, and revealed slots
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

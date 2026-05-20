@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PlannedTemplateCard.swift — Card for a scheduled template in the dashboard
+
 import SwiftUI
 
 struct PlannedTemplateCard: View {

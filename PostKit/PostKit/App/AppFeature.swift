@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// AppFeature.swift — Root app reducer: tab routing, onboarding presentation, child feature composition
+
 import ComposableArchitecture
 
 enum AppTab: Int, Sendable {

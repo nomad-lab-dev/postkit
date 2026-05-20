@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// OnboardingView.swift — Onboarding UI: welcome, pillar setup, scanning progress, and completion steps
+
 import ComposableArchitecture
 import SwiftUI
 

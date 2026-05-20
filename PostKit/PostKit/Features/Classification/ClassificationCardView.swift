@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// ClassificationCardView.swift — Classification card UI: swipeable photo card with pillar assignment
+
 import ComposableArchitecture
 import SwiftUI
 

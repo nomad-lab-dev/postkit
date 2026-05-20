@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// TemplateListView.swift — Template list UI: list of saved templates with create, edit, and delete
+
 import ComposableArchitecture
 import SwiftUI
 

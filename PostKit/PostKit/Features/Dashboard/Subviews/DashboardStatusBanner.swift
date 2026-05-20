@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// DashboardStatusBanner.swift — Scan status banner with progress indicator
+
 import SwiftUI
 
 struct DashboardStatusBanner: View {

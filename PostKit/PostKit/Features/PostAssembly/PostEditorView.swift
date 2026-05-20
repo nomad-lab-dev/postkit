@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// PostEditorView.swift — Post editor UI: slot grid, caption, hashtags, share
+
 import ComposableArchitecture
 @preconcurrency import Photos
 import SwiftUI

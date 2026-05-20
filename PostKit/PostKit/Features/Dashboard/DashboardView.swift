@@ -1,3 +1,6 @@
+// MARK: - PostKit
+// DashboardView.swift — Dashboard UI: status banner, planned today, pillars grid
+
 import ComposableArchitecture
 import SwiftUI
 
