@@ -49,7 +49,7 @@ struct ClassificationQueueFeature {
                 let detectCadrage = imageClassifier.detectCadrage
                 return .run { send in
                     for assetID in missing {
-                        guard let img = try? await fetchImage(assetID, CGSize(width: 224, height: 224)) else { continue }
+                        guard let img = try? await fetchImage(assetID, Layout.ImageSize.classification) else { continue }
                         let cadrage = (try? await detectCadrage(img)) ?? .wide
                         await send(.cadrageBackfilled(assetID: assetID, cadrage: cadrage))
                         await Task.yield()

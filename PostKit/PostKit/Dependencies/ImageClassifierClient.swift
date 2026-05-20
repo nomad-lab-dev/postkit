@@ -3,6 +3,7 @@
 
 import ComposableArchitecture
 import GoogleGenerativeAI
+import os
 import UIKit
 import Vision
 
@@ -169,15 +170,15 @@ private enum VisionClassifier {
 // MARK: - Gemini Flash (cloud fallback)
 
 private enum GeminiClassifier {
-    private static var cachedModel: GenerativeModel?
-    private static var cachedKey: String?
+    private static let cache = OSAllocatedUnfairLock<(model: GenerativeModel, key: String)?>(initialState: nil)
 
     private static func model(apiKey: String) -> GenerativeModel {
-        if let cachedModel, cachedKey == apiKey { return cachedModel }
-        let model = GenerativeModel(name: "gemini-2.0-flash", apiKey: apiKey)
-        cachedModel = model
-        cachedKey = apiKey
-        return model
+        cache.withLock { cached in
+            if let cached, cached.key == apiKey { return cached.model }
+            let model = GenerativeModel(name: "gemini-2.0-flash", apiKey: apiKey)
+            cached = (model, apiKey)
+            return model
+        }
     }
 
     static func classifyAll(
@@ -199,7 +200,13 @@ private enum GeminiClassifier {
         [{"pillarName": "...", "confidence": 0.XX, "tags": ["tag1", "tag2"]}]
         """
 
-        let response = try await model.generateContent(prompt, image)
+        let response: GenerateContentResponse
+        do {
+            response = try await model.generateContent(prompt, image)
+        } catch {
+            try await Task.sleep(for: .milliseconds(500))
+            response = try await model.generateContent(prompt, image)
+        }
 
         guard let text = response.text else {
             throw ClassificationError.noResponse

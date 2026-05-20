@@ -152,7 +152,7 @@ struct OnboardingFeature {
                         do {
                             let image = try await fetchImage(
                                 asset.localIdentifier,
-                                CGSize(width: 224, height: 224)
+                                Layout.ImageSize.classification
                             )
                             let results = try await classify(image, pillarNames)
                             await send(.scanProgressed(results, assetIdentifier: asset.localIdentifier))

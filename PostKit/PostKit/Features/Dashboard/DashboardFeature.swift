@@ -2,6 +2,7 @@
 // DashboardFeature.swift — Dashboard reducer: scan orchestration, pillar loading, scheduled templates
 
 import ComposableArchitecture
+import os
 import UIKit
 
 enum DashboardStatus: Equatable, Sendable {
@@ -111,7 +112,10 @@ struct DashboardFeature {
                     let templates = (try? await persistence.fetchTemplates()) ?? []
                     let scheduled = templates.filter { !$0.schedule.isEmpty && $0.schedule.weekdays.contains(today) }
                     await send(.scheduledTemplatesLoaded(scheduled))
-                } catch: { _, _ in }
+                } catch: { error, _ in
+                    Logger(subsystem: "PostKit", category: "Dashboard")
+                        .error("Dashboard load failed: \(error)")
+                }
 
             case let .dashboardLoaded(pillars, totalSorted, scanDone, pendingCount, libraryCount, classifiedCount):
                 state.isInitialLoading = false
@@ -190,7 +194,7 @@ struct DashboardFeature {
                             do {
                                 let img = try await fetchImage(
                                     asset.localIdentifier,
-                                    CGSize(width: 224, height: 224)
+                                    Layout.ImageSize.classification
                                 )
                                 let results = try await classify(img, pillarNames)
                                 let cadrage = (try? await detectCadrage(img)) ?? .wide
@@ -237,7 +241,12 @@ struct DashboardFeature {
                             await Task.yield()
                         }
 
-                        try? await batchSave(photosToSave)
+                        do {
+                            try await batchSave(photosToSave)
+                        } catch {
+                            Logger(subsystem: "PostKit", category: "Dashboard")
+                                .error("Batch save failed (\(photosToSave.count) photos): \(error)")
+                        }
                         await send(.batchProcessed(count: batchCount, perPillar: perPillar, pendingCount: pendingInBatch))
                     }
                     await send(.scanFinished)

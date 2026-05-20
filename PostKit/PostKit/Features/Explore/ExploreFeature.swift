@@ -80,7 +80,7 @@ struct ExploreFeature {
                 let detectCadrage = imageClassifier.detectCadrage
                 return .run { send in
                     for assetID in missing {
-                        guard let img = try? await fetchImage(assetID, CGSize(width: 224, height: 224)) else { continue }
+                        guard let img = try? await fetchImage(assetID, Layout.ImageSize.classification) else { continue }
                         let cadrage = (try? await detectCadrage(img)) ?? .wide
                         await send(.cadrageBackfilled(assetID: assetID, cadrage: cadrage))
                         await Task.yield()
@@ -108,7 +108,7 @@ struct ExploreFeature {
             case let .copyPhotoTapped(assetID):
                 let fetchImage = photoLibrary.image
                 return .run { _ in
-                    if let image = try? await fetchImage(assetID, CGSize(width: 1080, height: 1080)) {
+                    if let image = try? await fetchImage(assetID, Layout.ImageSize.export) {
                         await MainActor.run {
                             UIPasteboard.general.image = image
                         }

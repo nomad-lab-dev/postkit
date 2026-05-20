@@ -28,4 +28,10 @@ enum Layout {
         static let thin: CGFloat = 1
         static let regular: CGFloat = 2
     }
+
+    enum ImageSize {
+        static let classification = CGSize(width: 224, height: 224)
+        static let caption = CGSize(width: 512, height: 512)
+        static let export = CGSize(width: 1080, height: 1080)
+    }
 }

@@ -180,7 +180,7 @@ struct PostAssemblyEntryFeature {
             let images = try await withThrowingTaskGroup(of: UIImage.self) { group in
                 for id in photoIDs {
                     group.addTask {
-                        try await fetchImage(id, CGSize(width: 512, height: 512))
+                        try await fetchImage(id, Layout.ImageSize.caption)
                     }
                 }
                 var results: [UIImage] = []

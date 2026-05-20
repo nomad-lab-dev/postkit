@@ -3,6 +3,7 @@
 
 import ComposableArchitecture
 import CoreLocation
+import os
 @preconcurrency import Photos
 import UIKit
 
@@ -94,7 +95,7 @@ extension PhotoLibraryClient: DependencyKey {
                 options.resizeMode = isThumb ? .fast : .exact
                 options.isNetworkAccessAllowed = !isThumb
                 options.isSynchronous = false
-                var hasResumed = false
+                let resumed = OSAllocatedUnfairLock(initialState: false)
                 PHImageManager.default().requestImage(
                     for: asset,
                     targetSize: size,
@@ -102,8 +103,11 @@ extension PhotoLibraryClient: DependencyKey {
                     options: options
                 ) { image, info in
                     let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                    guard !hasResumed, !isDegraded else { return }
-                    hasResumed = true
+                    guard !isDegraded else { return }
+                    let alreadyResumed = resumed.withLock { val in
+                        let was = val; val = true; return was
+                    }
+                    guard !alreadyResumed else { return }
                     if let image {
                         continuation.resume(returning: image)
                     } else {
@@ -121,7 +125,7 @@ extension PhotoLibraryClient: DependencyKey {
         },
         fetchAllPhotos: { _ in .finished },
         countAllPhotos: { 0 },
-        image: { _, _ in UIImage(systemName: "photo")! }
+        image: { _, _ in UIImage(systemName: "photo") ?? UIImage() }
     )
 }
 

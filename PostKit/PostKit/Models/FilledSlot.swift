@@ -18,60 +18,84 @@ struct FilledSlot: Equatable, Identifiable, Sendable {
 // MARK: - Shared Slot Filling
 
 /// Auto-fills template slots by picking one random photo per slot that matches its constraints.
-/// Each slot's pillar, location, and date filters are applied as soft constraints — if no
-/// photo matches all filters, the broader pool is used. Photos are not reused across slots.
+/// Pillar, location, and date filters are soft constraints — if nothing matches, the broader pool is used.
 enum SlotFiller {
+    struct Options: Sendable {
+        var excludeIDs: Set<String> = []
+        var locationOverrides: [String] = []
+        var dateRange: (start: Date?, end: Date?) = (nil, nil)
+        var fallbackToAny: Bool = false
+    }
+
     static func fill(
         slots: [TemplateSlotData],
-        using persistence: PersistenceClient
+        using persistence: PersistenceClient,
+        options: Options = Options()
     ) async throws -> [FilledSlot] {
         var filledSlots: [FilledSlot] = []
-        var usedIDs: Set<String> = []
+        var opts = options
 
         for slot in slots {
-            let allPhotos: [ClassifiedPhotoSnapshot]
-            if slot.pillarIDs.isEmpty {
-                allPhotos = try await persistence.fetchPhotos(.classified)
-            } else {
-                var photos: [ClassifiedPhotoSnapshot] = []
-                for pillarID in slot.pillarIDs {
-                    photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
-                }
-                allPhotos = photos
-            }
-
-            var available = allPhotos.filter { !usedIDs.contains($0.assetLocalIdentifier) }
-
-            // Soft constraint: prefer photos matching slot locations
-            if !slot.locations.isEmpty {
-                let filtered = available.filter { photo in
-                    guard let loc = photo.location else { return false }
-                    return slot.locations.contains(loc)
-                }
-                if !filtered.isEmpty { available = filtered }
-            }
-
-            // Soft constraint: prefer photos within the slot's date range
-            if slot.startDate != nil || slot.endDate != nil {
-                let filtered = available.filter { photo in
-                    guard let captured = photo.capturedAt else { return false }
-                    if let s = slot.startDate, captured < s { return false }
-                    if let e = slot.endDate, captured > e { return false }
-                    return true
-                }
-                if !filtered.isEmpty { available = filtered }
-            }
-
-            var filled = FilledSlot(slotData: slot, photoIDs: [])
-            if let picked = available.randomElement() {
-                filled.photoIDs = [picked.assetLocalIdentifier]
-                filled.activePillarID = picked.pillarID
-                filled.locationLabel = picked.location
-                usedIDs.insert(picked.assetLocalIdentifier)
+            let filled = try await fillOne(slot: slot, using: persistence, options: opts)
+            if !filled.isEmpty {
+                opts.excludeIDs.formUnion(filled.photoIDs)
             }
             filledSlots.append(filled)
         }
         return filledSlots
+    }
+
+    static func fillOne(
+        slot: TemplateSlotData,
+        using persistence: PersistenceClient,
+        options: Options = Options()
+    ) async throws -> FilledSlot {
+        let allPhotos: [ClassifiedPhotoSnapshot]
+        if slot.pillarIDs.isEmpty {
+            allPhotos = try await persistence.fetchPhotos(.classified)
+        } else {
+            var photos: [ClassifiedPhotoSnapshot] = []
+            for pillarID in slot.pillarIDs {
+                photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
+            }
+            allPhotos = photos
+        }
+
+        var available = allPhotos.filter { !options.excludeIDs.contains($0.assetLocalIdentifier) }
+
+        let locations = !slot.locations.isEmpty ? slot.locations : options.locationOverrides
+        if !locations.isEmpty {
+            let filtered = available.filter { photo in
+                guard let loc = photo.location else { return false }
+                return locations.contains(loc)
+            }
+            if !filtered.isEmpty { available = filtered }
+        }
+
+        let startDate = slot.startDate ?? options.dateRange.start
+        let endDate = slot.endDate ?? options.dateRange.end
+        if startDate != nil || endDate != nil {
+            let filtered = available.filter { photo in
+                guard let captured = photo.capturedAt else { return false }
+                if let s = startDate, captured < s { return false }
+                if let e = endDate, captured > e { return false }
+                return true
+            }
+            if !filtered.isEmpty { available = filtered }
+        }
+
+        var filled = FilledSlot(slotData: slot, photoIDs: [])
+        if let picked = available.randomElement() {
+            filled.photoIDs = [picked.assetLocalIdentifier]
+            filled.activePillarID = picked.pillarID
+            filled.locationLabel = picked.location
+        } else if options.fallbackToAny,
+                  let fallback = allPhotos.filter({ !options.excludeIDs.contains($0.assetLocalIdentifier) }).randomElement() {
+            filled.photoIDs = [fallback.assetLocalIdentifier]
+            filled.activePillarID = fallback.pillarID
+            filled.locationLabel = fallback.location
+        }
+        return filled
     }
 }
 
@@ -183,7 +207,7 @@ struct PostEditorFeature {
                 return .none
 
             case .autoFillTapped:
-                let emptySlots = state.filledSlots.filter(\.isEmpty)
+                let emptySlots = state.filledSlots.filter(\.isEmpty).map(\.slotData)
                 guard !emptySlots.isEmpty else { return .none }
                 let templateLocations = state.template.locations
                 let startDate = state.filterStartDate.flatMap {
@@ -193,42 +217,14 @@ struct PostEditorFeature {
                     Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: $0))
                 }
                 return .run { send in
+                    let options = SlotFiller.Options(
+                        locationOverrides: templateLocations,
+                        dateRange: (startDate, endDate)
+                    )
+                    let filled = try await SlotFiller.fill(slots: emptySlots, using: persistence, options: options)
                     var result: [UUID: (photos: Set<String>, pillarID: UUID?, locationLabel: String?)] = [:]
-                    var usedIDs: Set<String> = []
-                    for slot in emptySlots {
-                        let pillarIDs = slot.slotData.pillarIDs
-                        let allPhotos: [ClassifiedPhotoSnapshot]
-                        if pillarIDs.isEmpty {
-                            allPhotos = try await persistence.fetchPhotos(.classified)
-                        } else {
-                            var photos: [ClassifiedPhotoSnapshot] = []
-                            for pillarID in pillarIDs {
-                                let pillarPhotos = try await persistence.fetchPhotosForPillar(pillarID)
-                                photos.append(contentsOf: pillarPhotos)
-                            }
-                            allPhotos = photos
-                        }
-                        var available = allPhotos.filter { !usedIDs.contains($0.assetLocalIdentifier) }
-                        if !templateLocations.isEmpty {
-                            let locationFiltered = available.filter { photo in
-                                guard let loc = photo.location else { return false }
-                                return templateLocations.contains(loc)
-                            }
-                            if !locationFiltered.isEmpty { available = locationFiltered }
-                        }
-                        if startDate != nil || endDate != nil {
-                            let dateFiltered = available.filter { photo in
-                                guard let captured = photo.capturedAt else { return false }
-                                if let s = startDate, captured < s { return false }
-                                if let e = endDate, captured > e { return false }
-                                return true
-                            }
-                            if !dateFiltered.isEmpty { available = dateFiltered }
-                        }
-                        if let picked = available.randomElement() {
-                            result[slot.id] = (photos: [picked.assetLocalIdentifier], pillarID: picked.pillarID, locationLabel: picked.location)
-                            usedIDs.insert(picked.assetLocalIdentifier)
-                        }
+                    for slot in filled where !slot.isEmpty {
+                        result[slot.id] = (photos: slot.photoIDs, pillarID: slot.activePillarID, locationLabel: slot.locationLabel)
                     }
                     await send(.autoFillCompleted(result))
                 }
@@ -247,13 +243,10 @@ struct PostEditorFeature {
                 guard let slot = state.filledSlots.first(where: { $0.id == slotID }) else {
                     return .none
                 }
-                let currentIDs = slot.photoIDs
-                let otherUsedIDs = Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
-                let pillarIDs = slot.slotData.pillarIDs
-                let slotLocations = slot.slotData.locations
+                let excludeIDs = slot.photoIDs.union(
+                    Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
+                )
                 let templateLocations = state.template.locations
-                let slotStartDate = slot.slotData.startDate
-                let slotEndDate = slot.slotData.endDate
                 let filterStartDate = state.filterStartDate.flatMap {
                     Calendar.current.startOfDay(for: $0)
                 }
@@ -261,43 +254,15 @@ struct PostEditorFeature {
                     Calendar.current.date(byAdding: .day, value: 1, to: Calendar.current.startOfDay(for: $0))
                 }
                 return .run { send in
-                    let allPhotos: [ClassifiedPhotoSnapshot]
-                    if pillarIDs.isEmpty {
-                        allPhotos = try await persistence.fetchPhotos(.classified)
-                    } else {
-                        var photos: [ClassifiedPhotoSnapshot] = []
-                        for pillarID in pillarIDs {
-                            photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
-                        }
-                        allPhotos = photos
-                    }
-                    var available = allPhotos.filter {
-                        !otherUsedIDs.contains($0.assetLocalIdentifier) &&
-                        !currentIDs.contains($0.assetLocalIdentifier)
-                    }
-                    let locationsToMatch = !slotLocations.isEmpty ? slotLocations : templateLocations
-                    if !locationsToMatch.isEmpty {
-                        let locationFiltered = available.filter { photo in
-                            guard let loc = photo.location else { return false }
-                            return locationsToMatch.contains(loc)
-                        }
-                        if !locationFiltered.isEmpty { available = locationFiltered }
-                    }
-                    let startDate = slotStartDate ?? filterStartDate
-                    let endDate = slotEndDate ?? filterEndDate
-                    if startDate != nil || endDate != nil {
-                        let dateFiltered = available.filter { photo in
-                            guard let captured = photo.capturedAt else { return false }
-                            if let s = startDate, captured < s { return false }
-                            if let e = endDate, captured > e { return false }
-                            return true
-                        }
-                        if !dateFiltered.isEmpty { available = dateFiltered }
-                    }
-                    if let picked = available.randomElement() {
-                        await send(.reshuffleSlotCompleted(slotID: slotID, photos: [picked.assetLocalIdentifier], pillarID: picked.pillarID, locationLabel: picked.location))
-                    } else if let fallback = allPhotos.filter({ !otherUsedIDs.contains($0.assetLocalIdentifier) }).randomElement() {
-                        await send(.reshuffleSlotCompleted(slotID: slotID, photos: [fallback.assetLocalIdentifier], pillarID: fallback.pillarID, locationLabel: fallback.location))
+                    let options = SlotFiller.Options(
+                        excludeIDs: excludeIDs,
+                        locationOverrides: templateLocations,
+                        dateRange: (filterStartDate, filterEndDate),
+                        fallbackToAny: true
+                    )
+                    let filled = try await SlotFiller.fillOne(slot: slot.slotData, using: persistence, options: options)
+                    if !filled.isEmpty {
+                        await send(.reshuffleSlotCompleted(slotID: slotID, photos: filled.photoIDs, pillarID: filled.activePillarID, locationLabel: filled.locationLabel))
                     }
                 }
 
@@ -321,7 +286,7 @@ struct PostEditorFeature {
                 return .run { send in
                     var images: [UIImage] = []
                     for id in photoIDs.prefix(4) {
-                        if let img = try? await fetchImage(id, CGSize(width: 512, height: 512)) {
+                        if let img = try? await fetchImage(id, Layout.ImageSize.caption) {
                             images.append(img)
                         }
                     }
@@ -351,8 +316,9 @@ struct PostEditorFeature {
                 guard hasContent else {
                     return .run { _ in await dismiss() }
                 }
+                let activePillarID = state.filledSlots.first(where: { !$0.isEmpty })?.activePillarID
                 let snapshot = GeneratedPostSnapshot(
-                    pillarID: UUID(),
+                    pillarID: activePillarID ?? state.availablePillars.first?.id ?? UUID(),
                     templateID: state.template.id,
                     photoIDs: state.allPhotoIDs,
                     caption: state.caption,
@@ -388,7 +354,7 @@ struct PostEditorFeature {
                 return .run { send in
                     var images: [UIImage] = []
                     for id in photoIDs {
-                        if let img = try? await fetchImage(id, CGSize(width: 1080, height: 1080)) {
+                        if let img = try? await fetchImage(id, Layout.ImageSize.export) {
                             images.append(img)
                         }
                     }
