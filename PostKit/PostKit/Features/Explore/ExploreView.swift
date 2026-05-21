@@ -334,6 +334,7 @@ private struct StatusChip: View {
 private struct ExploreThumbnailCell: View {
     let photo: ClassifiedPhotoSnapshot
     @State private var image: UIImage?
+    @State private var requestID: PHImageRequestID?
 
     private static let thumbnailSize: CGFloat = {
         let screen = UIScreen.main.bounds.width
@@ -366,7 +367,18 @@ private struct ExploreThumbnailCell: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: Radius.tile))
         .task(id: photo.assetLocalIdentifier) {
+            if let oldID = requestID {
+                PHImageManager.default().cancelImageRequest(oldID)
+                requestID = nil
+            }
+            image = nil
             await loadThumbnail()
+        }
+        .onDisappear {
+            if let id = requestID {
+                PHImageManager.default().cancelImageRequest(id)
+                requestID = nil
+            }
         }
     }
 
@@ -396,10 +408,10 @@ private struct ExploreThumbnailCell: View {
 
         let size = CGSize(width: Self.thumbnailSize, height: Self.thumbnailSize)
         let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
+        options.deliveryMode = .fastFormat
         options.isNetworkAccessAllowed = false
 
-        PHImageManager.default().requestImage(
+        let id = PHImageManager.default().requestImage(
             for: asset,
             targetSize: size,
             contentMode: .aspectFill,
@@ -410,5 +422,6 @@ private struct ExploreThumbnailCell: View {
                 self.image = result
             }
         }
+        self.requestID = id
     }
 }

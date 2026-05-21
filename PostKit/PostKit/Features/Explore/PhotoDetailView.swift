@@ -44,7 +44,7 @@ struct PhotoDetailView: View {
         }
         .sheet(isPresented: Binding(
             get: { store.showPillarPicker },
-            set: { _ in store.send(.pillarPickerToggled) }
+            set: { newValue in if !newValue { store.send(.pillarPickerToggled) } }
         )) {
             PillarPickerSheet(
                 pillars: store.availablePillars,

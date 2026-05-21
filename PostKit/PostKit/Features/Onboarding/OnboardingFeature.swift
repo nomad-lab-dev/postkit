@@ -307,6 +307,7 @@ struct OnboardingFeature {
                 }
 
             case .persistResponse(.success):
+                state.isSaving = false
                 return .none
 
             case .persistResponse(.failure):

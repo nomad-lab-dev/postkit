@@ -2,6 +2,7 @@
 // PillarsBentoSection.swift — Two-column bento grid of pillar cards with photo thumbnails
 
 import ComposableArchitecture
+import os
 import Photos
 import SwiftUI
 
@@ -126,7 +127,7 @@ private struct BentoThumbnail: View {
                 let scale = UIScreen.main.scale
                 let side = ceil(100 * scale)
                 let options = PHImageRequestOptions()
-                options.deliveryMode = .opportunistic
+                options.deliveryMode = .fastFormat
                 options.isNetworkAccessAllowed = false
                 let loaded = await loadImage(asset: asset, size: CGSize(width: side, height: side), options: options)
                 guard !Task.isCancelled, let loaded else { return }
@@ -144,13 +145,18 @@ private struct BentoThumbnail: View {
 
     @MainActor
     private func loadImage(asset: PHAsset, size: CGSize, options: PHImageRequestOptions) async -> UIImage? {
-        await withCheckedContinuation { continuation in
+        let resumed = OSAllocatedUnfairLock(initialState: false)
+        return await withCheckedContinuation { continuation in
             let id = PHImageManager.default().requestImage(
                 for: asset, targetSize: size,
                 contentMode: .aspectFill, options: options
             ) { result, info in
                 let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
                 if isDegraded { return }
+                let alreadyResumed = resumed.withLock { val in
+                    let was = val; val = true; return was
+                }
+                guard !alreadyResumed else { return }
                 continuation.resume(returning: result)
             }
             self.requestID = id
