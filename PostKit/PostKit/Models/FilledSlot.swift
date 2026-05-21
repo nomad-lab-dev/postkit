@@ -36,6 +36,7 @@ enum SlotFiller {
         var opts = options
 
         for slot in slots {
+            try Task.checkCancellation()
             let filled = try await fillOne(slot: slot, using: persistence, options: opts)
             if !filled.isEmpty {
                 opts.excludeIDs.formUnion(filled.photoIDs)
@@ -54,11 +55,18 @@ enum SlotFiller {
         if slot.pillarIDs.isEmpty {
             allPhotos = try await persistence.fetchPhotos(.classified)
         } else {
-            var photos: [ClassifiedPhotoSnapshot] = []
-            for pillarID in slot.pillarIDs {
-                photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
+            allPhotos = try await withThrowingTaskGroup(of: [ClassifiedPhotoSnapshot].self) { group in
+                for pillarID in slot.pillarIDs {
+                    group.addTask {
+                        try await persistence.fetchPhotosForPillar(pillarID)
+                    }
+                }
+                var photos: [ClassifiedPhotoSnapshot] = []
+                for try await batch in group {
+                    photos.append(contentsOf: batch)
+                }
+                return photos
             }
-            allPhotos = photos
         }
 
         var available = allPhotos.filter { !options.excludeIDs.contains($0.assetLocalIdentifier) }
@@ -80,6 +88,14 @@ enum SlotFiller {
                 if let s = startDate, captured < s { return false }
                 if let e = endDate, captured > e { return false }
                 return true
+            }
+            if !filtered.isEmpty { available = filtered }
+        }
+
+        if !slot.cadrages.isEmpty {
+            let filtered = available.filter { photo in
+                guard let cadrage = photo.cadrage else { return false }
+                return slot.cadrages.contains(cadrage)
             }
             if !filtered.isEmpty { available = filtered }
         }
@@ -113,6 +129,8 @@ struct PostEditorFeature {
         var shareImages: [UIImage]? = nil
         var filterStartDate: Date? = nil
         var filterEndDate: Date? = nil
+        var schedule: TemplateSchedule = TemplateSchedule()
+        var existingPostID: UUID?
         @Presents var slotFiller: SlotFillerFeature.State?
 
         var allSlotsFilled: Bool {
@@ -158,6 +176,8 @@ struct PostEditorFeature {
         case shareTapped
         case shareImagesLoaded([UIImage])
         case shareDismissed
+        case weekdayToggled(Weekday)
+        case reminderToggled
         case slotFiller(PresentationAction<SlotFillerFeature.Action>)
         case delegate(Delegate)
 
@@ -169,6 +189,7 @@ struct PostEditorFeature {
     @Dependency(\.persistence) var persistence
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.photoLibrary) var photoLibrary
+    @Dependency(\.notification) var notification
     @Dependency(\.dismiss) var dismiss
 
     private enum CancelID: Hashable { case generation }
@@ -185,9 +206,13 @@ struct PostEditorFeature {
                 state.slotFiller = SlotFillerFeature.State(
                     slotID: slotID,
                     slotName: slot.slotData.name,
+                    slotAbout: slot.slotData.about,
                     constrainedPillarIDs: slot.slotData.pillarIDs,
                     constrainedCadrages: slot.slotData.cadrages,
-                    constrainedLocations: state.template.locations,
+                    constrainedLocations: slot.slotData.locations.isEmpty
+                        ? state.template.locations : slot.slotData.locations,
+                    constrainedStartDate: slot.slotData.startDate,
+                    constrainedEndDate: slot.slotData.endDate,
                     preselectedPhotoIDs: slot.photoIDs
                 )
                 return .none
@@ -219,7 +244,8 @@ struct PostEditorFeature {
                 return .run { send in
                     let options = SlotFiller.Options(
                         locationOverrides: templateLocations,
-                        dateRange: (startDate, endDate)
+                        dateRange: (startDate, endDate),
+                        fallbackToAny: true
                     )
                     let filled = try await SlotFiller.fill(slots: emptySlots, using: persistence, options: options)
                     var result: [UUID: (photos: Set<String>, pillarID: UUID?, locationLabel: String?)] = [:]
@@ -284,11 +310,15 @@ struct PostEditorFeature {
                 let generateHashtags = postGenerator.generateHashtags
                 let pillar = PillarSnapshot(name: templateName, emoji: "📝")
                 return .run { send in
-                    var images: [UIImage] = []
-                    for id in photoIDs.prefix(4) {
-                        if let img = try? await fetchImage(id, Layout.ImageSize.caption) {
-                            images.append(img)
+                    let images = await withTaskGroup(of: UIImage?.self) { group in
+                        for id in photoIDs.prefix(4) {
+                            group.addTask { try? await fetchImage(id, Layout.ImageSize.caption) }
                         }
+                        var result: [UIImage] = []
+                        for await img in group {
+                            if let img { result.append(img) }
+                        }
+                        return result
                     }
                     let caption = try await generateCaption(images, pillar, .instagram)
                     let hashtags = try await generateHashtags(caption, pillar, .instagram)
@@ -318,12 +348,14 @@ struct PostEditorFeature {
                 }
                 let activePillarID = state.filledSlots.first(where: { !$0.isEmpty })?.activePillarID
                 let snapshot = GeneratedPostSnapshot(
+                    id: state.existingPostID ?? UUID(),
                     pillarID: activePillarID ?? state.availablePillars.first?.id ?? UUID(),
                     templateID: state.template.id,
                     photoIDs: state.allPhotoIDs,
                     caption: state.caption,
                     hashtags: state.hashtags,
-                    status: .draft
+                    status: .draft,
+                    schedule: state.schedule
                 )
                 return .run { send in
                     try await persistence.savePost(snapshot)
@@ -331,18 +363,37 @@ struct PostEditorFeature {
                 }
 
             case .saved:
-                return .merge(
-                    .send(.delegate(.didSave)),
-                    .run { _ in await dismiss() }
-                )
+                let schedule = state.schedule
+                let postID = state.existingPostID ?? state.template.id
+                let templateName = state.template.name
+                return .run { [notification] send in
+                    let allIDs = Weekday.allCases.map { "post-\(postID)-\($0.rawValue)" }
+                    await notification.removePending(allIDs)
+
+                    if schedule.reminderEnabled && !schedule.isEmpty {
+                        for day in schedule.weekdays {
+                            let calWeekday = day == .sunday ? 1 : day.rawValue + 1
+                            try? await notification.scheduleWeekly(
+                                "post-\(postID)-\(day.rawValue)",
+                                calWeekday, 9, 0,
+                                "Time to post — \(day.shortName)",
+                                "Create a fresh \(templateName) post"
+                            )
+                        }
+                    }
+
+                    await send(.delegate(.didSave))
+                    await dismiss()
+                }
 
             case .copyTapped:
                 var text = state.caption
                 if !state.hashtags.isEmpty {
                     text += "\n\n" + state.hashtags.joined(separator: " ")
                 }
-                UIPasteboard.general.string = text
-                return .none
+                return .run { _ in
+                    await MainActor.run { UIPasteboard.general.string = text }
+                }
 
             case .shareTapped:
                 guard !state.allPhotoIDs.isEmpty else { return .none }
@@ -352,18 +403,22 @@ struct PostEditorFeature {
                 let hashtagText = state.hashtags.joined(separator: " ")
                 let fetchImage = photoLibrary.image
                 return .run { send in
-                    var images: [UIImage] = []
-                    for id in photoIDs {
-                        if let img = try? await fetchImage(id, Layout.ImageSize.export) {
-                            images.append(img)
+                    let images = await withTaskGroup(of: UIImage?.self) { group in
+                        for id in photoIDs {
+                            group.addTask { try? await fetchImage(id, Layout.ImageSize.export) }
                         }
+                        var result: [UIImage] = []
+                        for await img in group {
+                            if let img { result.append(img) }
+                        }
+                        return result
                     }
                     if !captionText.isEmpty || !hashtagText.isEmpty {
                         var text = captionText
                         if !hashtagText.isEmpty {
                             text += text.isEmpty ? hashtagText : "\n\n" + hashtagText
                         }
-                        UIPasteboard.general.string = text
+                        await MainActor.run { UIPasteboard.general.string = text }
                     }
                     await send(.shareImagesLoaded(images))
                 }
@@ -377,10 +432,31 @@ struct PostEditorFeature {
                 state.shareImages = nil
                 return .none
 
-            case let .slotFiller(.presented(.delegate(.didConfirm(slotID, photoIDs, locationLabel)))):
+            case let .slotFiller(.presented(.delegate(.didConfirm(slotID, photoIDs, locationLabel, updatedSlotData)))):
                 if let index = state.filledSlots.firstIndex(where: { $0.id == slotID }) {
-                    state.filledSlots[index].photoIDs = photoIDs
-                    state.filledSlots[index].locationLabel = locationLabel
+                    state.filledSlots[index] = FilledSlot(
+                        slotData: updatedSlotData,
+                        photoIDs: photoIDs,
+                        activePillarID: state.filledSlots[index].activePillarID,
+                        locationLabel: locationLabel
+                    )
+                }
+                return .none
+
+            case let .weekdayToggled(day):
+                if state.schedule.weekdays.contains(day) {
+                    state.schedule.weekdays.remove(day)
+                } else {
+                    state.schedule.weekdays.insert(day)
+                }
+                return .none
+
+            case .reminderToggled:
+                state.schedule.reminderEnabled.toggle()
+                if state.schedule.reminderEnabled {
+                    return .run { [notification] _ in
+                        _ = try? await notification.requestAuthorization()
+                    }
                 }
                 return .none
 

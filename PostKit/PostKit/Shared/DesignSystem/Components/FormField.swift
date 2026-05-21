@@ -24,9 +24,9 @@ struct FormField: View {
 
 #Preview("Form Fields") {
     VStack(spacing: 16) {
-        FormField(value: .constant("Automotive"), placeholder: "Pillar name")
-        FormField(value: .constant("Developer"), placeholder: "Pillar name", error: "This pillar already exists")
-        FormField(value: .constant(""), placeholder: "What is this pillar about?")
+        FormField(value: .constant("Automotive"), placeholder: "Topic name")
+        FormField(value: .constant("Developer"), placeholder: "Topic name", error: "This topic already exists")
+        FormField(value: .constant(""), placeholder: "What is this topic about?")
     }
     .padding()
     .background(Palette.bg)

@@ -370,7 +370,7 @@ struct SlotEditorView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
-                    Text("Pillar")
+                    Text("Topic")
                         .font(Typography.caption)
                         .foregroundStyle(Palette.text3)
 
@@ -405,7 +405,7 @@ struct SlotEditorView: View {
                     }
 
                     if store.slot.pillarIDs.isEmpty {
-                        Text("No pillar selected — any pillar will match")
+                        Text("No topic selected — any topic will match")
                             .font(Typography.caption)
                             .foregroundStyle(Palette.text3)
                             .italic()
@@ -473,7 +473,7 @@ struct SlotEditorView: View {
 
 // MARK: - Flow Layout
 
-private struct FlowLayout: SwiftUI.Layout {
+struct FlowLayout: SwiftUI.Layout {
     var spacing: CGFloat
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: SwiftUI.Layout.Subviews, cache: inout ()) -> CGSize {

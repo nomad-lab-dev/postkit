@@ -29,7 +29,7 @@ struct DestructiveButton: ButtonStyle {
         Button("Get Started →") {}
             .buttonStyle(PrimaryButton())
 
-        Button("Delete Pillar") {}
+        Button("Delete Topic") {}
             .buttonStyle(DestructiveButton())
     }
     .padding()

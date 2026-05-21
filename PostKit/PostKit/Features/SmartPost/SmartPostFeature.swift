@@ -3,6 +3,9 @@
 
 import ComposableArchitecture
 import Foundation
+import os
+
+private let log = Logger(subsystem: "PostKit", category: "SmartPost")
 
 @Reducer
 struct SmartPostFeature {
@@ -11,7 +14,12 @@ struct SmartPostFeature {
     struct State: Equatable {
         var pillars: [PillarSnapshot] = []
         var locationClusters: String = ""
-        var messages: [ChatMessage] = []
+        var messages: [ChatMessage] = [
+            ChatMessage(
+                role: .assistant,
+                text: "Hey! Describe the post you want — topic, vibe, number of slides, locations. I'll build a template from your photo library."
+            )
+        ]
         var inputText: String = ""
         var isAIThinking: Bool = false
         var isLoadingData: Bool = true
@@ -19,13 +27,14 @@ struct SmartPostFeature {
         var generatedTemplate: TemplateSnapshot?
         var showSaveAsTemplate: Bool = false
         var lastSavedTemplate: TemplateSnapshot?
+        var quickReplies: [String] = []
         @Presents var editor: PostEditorFeature.State?
 
         var galleryContext: String {
             var lines: [String] = []
             let pillarSummary = pillars
                 .filter { $0.photoCount > 0 }
-                .map { "\($0.emoji) \($0.name) (\($0.photoCount) photos)" }
+                .map { "\($0.name) (\($0.photoCount) photos)" }
                 .joined(separator: ", ")
             if !pillarSummary.isEmpty { lines.append("PILLARS: \(pillarSummary)") }
             lines.append("CADRAGES: \(Cadrage.allCases.map(\.rawValue).joined(separator: ", "))")
@@ -38,6 +47,7 @@ struct SmartPostFeature {
         case onAppear
         case dataLoaded(pillars: [PillarSnapshot], locationClusters: String)
         case sendMessageTapped
+        case quickReplyTapped(String)
         case templateIntentReceived(AITemplateIntent)
         case aiError(String)
         case createPostTapped
@@ -56,6 +66,7 @@ struct SmartPostFeature {
         }
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.uuid) var uuid
@@ -68,26 +79,40 @@ struct SmartPostFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                guard state.pillars.isEmpty else { return .none }
+                guard state.pillars.isEmpty else {
+                    let count = state.pillars.count
+                    log.info("⏭️ onAppear skipped — already have \(count) pillars")
+                    return .none
+                }
+                let msgCount = state.messages.count
+                log.info("⏳ onAppear — messages=\(msgCount), starting data load")
                 state.isLoadingData = true
-                state.messages = [
-                    ChatMessage(
-                        role: .assistant,
-                        text: "Hey! Describe the post you want — topic, vibe, number of slides, locations. I'll build a template from your photo library."
-                    )
-                ]
-                return .run { send in
-                    let pillars = try await persistence.fetchPillars()
-                    let photos = try await persistence.fetchPhotos(.classified)
+                return .run { [gallery] send in
+                    log.info("⏳ SmartPost gallery.pillars start")
+                    async let pillarsTask = gallery.pillars()
+                    async let photosTask = gallery.photos(.classified)
+                    let pillars = try await pillarsTask
+                    log.info("✅ SmartPost gallery.pillars — \(pillars.count)")
+                    let photos = (try? await photosTask) ?? []
+                    log.info("✅ SmartPost gallery.photos(.classified) — \(photos.count)")
                     let clusters = Self.buildLocationClusters(photos: photos, pillars: pillars)
+                    log.info("📤 sending dataLoaded")
                     await send(.dataLoaded(pillars: pillars, locationClusters: clusters))
+                } catch: { error, send in
+                    log.error("❌ SmartPost data load FAILED: \(error)")
+                    await send(.dataLoaded(pillars: [], locationClusters: ""))
                 }
 
             case let .dataLoaded(pillars, locationClusters):
+                log.info("✅ dataLoaded — \(pillars.count) pillars, clusters=\(locationClusters.count) chars")
                 state.pillars = pillars
                 state.locationClusters = locationClusters
                 state.isLoadingData = false
                 return .none
+
+            case let .quickReplyTapped(reply):
+                state.inputText = reply
+                return .send(.sendMessageTapped)
 
             case .sendMessageTapped:
                 let text = state.inputText.trimmingCharacters(in: .whitespaces)
@@ -96,6 +121,7 @@ struct SmartPostFeature {
                 state.messages.append(ChatMessage(role: .user, text: text))
                 state.inputText = ""
                 state.isAIThinking = true
+                state.quickReplies = []
 
                 if state.generatedTemplate != nil {
                     state.generatedTemplate = nil
@@ -116,6 +142,7 @@ struct SmartPostFeature {
 
             case let .templateIntentReceived(intent):
                 state.isAIThinking = false
+                state.quickReplies = intent.quickReplies
                 state.messages.append(ChatMessage(role: .assistant, text: intent.reply))
 
                 if intent.isComplete && !intent.slots.isEmpty {
@@ -146,7 +173,8 @@ struct SmartPostFeature {
                 state.isFillingSlots = true
                 let slots = template.slots
                 return .run { send in
-                    let filledSlots = try await SlotFiller.fill(slots: slots, using: persistence)
+                    let options = SlotFiller.Options(fallbackToAny: true)
+                    let filledSlots = try await SlotFiller.fill(slots: slots, using: persistence, options: options)
                     await send(.slotsFilled(filledSlots))
                 }
 
@@ -160,6 +188,7 @@ struct SmartPostFeature {
 
             case .startOverTapped:
                 state.generatedTemplate = nil
+                state.quickReplies = []
                 state.messages.append(
                     ChatMessage(role: .assistant, text: "Fresh start! What kind of post do you want to create?")
                 )
@@ -167,6 +196,7 @@ struct SmartPostFeature {
 
             case .resetChatTapped:
                 state.generatedTemplate = nil
+                state.quickReplies = []
                 state.messages = [
                     ChatMessage(
                         role: .assistant,

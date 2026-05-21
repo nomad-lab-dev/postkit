@@ -30,7 +30,7 @@ struct PostAssemblyView: View {
     private var pillarPicker: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.md) {
-                Text("Choose a pillar")
+                Text("Choose a topic")
                     .font(Typography.headline)
 
                 if store.isLoading {
@@ -40,7 +40,7 @@ struct PostAssemblyView: View {
                 } else if store.pillars.isEmpty {
                     EmptyStateView(
                         icon: "📌",
-                        title: "No pillars",
+                        title: "No topics",
                         message: "Run a scan from the Dashboard first."
                     )
                 } else {
@@ -89,7 +89,7 @@ struct PostAssemblyView: View {
                 EmptyStateView(
                     icon: "📷",
                     title: "No photos",
-                    message: "This pillar has no classified photos yet."
+                    message: "This topic has no classified photos yet."
                 )
                 .screenPadding()
                 Spacer()

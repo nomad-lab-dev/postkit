@@ -16,7 +16,7 @@ struct PillarsBentoSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            Text("Your pillars").eyebrow()
+            Text("Your topics").eyebrow()
 
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(pillars) { pillar in

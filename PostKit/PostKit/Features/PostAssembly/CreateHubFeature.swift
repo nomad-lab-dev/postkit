@@ -55,6 +55,7 @@ struct CreateHubFeature {
         enum Alert: Equatable {}
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.notification) var notification
 
@@ -65,10 +66,13 @@ struct CreateHubFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
-                return .run { send in
-                    let templates = try await persistence.fetchTemplates()
-                    let pillars = try await persistence.fetchPillars()
-                    let posts = try await persistence.fetchPosts(nil)
+                return .run { [gallery] send in
+                    async let templatesTask = gallery.templates()
+                    async let pillarsTask = gallery.pillars()
+                    async let postsTask = gallery.posts(nil)
+                    let templates = (try? await templatesTask) ?? []
+                    let pillars = try await pillarsTask
+                    let posts = (try? await postsTask) ?? []
                     await send(.dataLoaded(templates: templates, pillars: pillars, posts: posts))
                 }
 
@@ -90,8 +94,9 @@ struct CreateHubFeature {
             case let .deleteTemplateTapped(template):
                 let id = template.id
                 state.templates.removeAll { $0.id == id }
-                return .run { [notification] send in
+                return .run { [notification, gallery] send in
                     try await persistence.deleteTemplate(id)
+                    await gallery.invalidateTemplates()
                     let notifIDs = Weekday.allCases.map { "template-\(id)-\($0.rawValue)" }
                     await notification.removePending(notifIDs)
                     await send(.templateDeleted)
@@ -117,14 +122,17 @@ struct CreateHubFeature {
                 editorState.availablePillars = state.pillars
                 editorState.caption = post.caption
                 editorState.hashtags = post.hashtags
+                editorState.schedule = post.schedule
+                editorState.existingPostID = post.id
                 state.editor = editorState
                 return .none
 
             case let .deletePostTapped(postToDelete):
                 let id = postToDelete.id
                 state.posts.removeAll { $0.id == id }
-                return .run { send in
+                return .run { [gallery] send in
                     try await persistence.deletePost(id)
+                    await gallery.invalidatePosts()
                     await send(.postDeleted)
                 }
 

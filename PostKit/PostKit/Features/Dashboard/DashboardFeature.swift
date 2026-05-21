@@ -5,6 +5,8 @@ import ComposableArchitecture
 import os
 import UIKit
 
+private let log = Logger(subsystem: "PostKit", category: "Dashboard")
+
 enum DashboardStatus: Equatable, Sendable {
     case scanning(progress: Double, processed: Int, total: Int)
     case reviewNeeded(count: Int)
@@ -34,6 +36,7 @@ struct DashboardFeature {
         @Presents var detail: PillarDetailFeature.State?
         @Presents var classificationQueue: ClassificationQueueFeature.State?
         @Presents var scheduledEditor: PostEditorFeature.State?
+        @Presents var topicEditor: TopicEditorFeature.State?
 
         var remainingToScan: Int {
             max(totalLibraryCount - classifiedAssetCount, 0)
@@ -51,6 +54,10 @@ struct DashboardFeature {
             if newPhotoCount > 0 { return .newItems(count: newPhotoCount) }
             return .idle(lastScanAt: lastScanCompletedAt)
         }
+
+        var pillarsByActivity: IdentifiedArrayOf<PillarSnapshot> {
+            IdentifiedArrayOf(uniqueElements: pillars.sorted { $0.photoCount > $1.photoCount })
+        }
     }
 
     enum Action {
@@ -66,7 +73,8 @@ struct DashboardFeature {
         case composePostTapped
         case newTemplateTapped
         case pullToRefresh
-        case batchProcessed(count: Int, perPillar: [String: Int], pendingCount: Int)
+        case scanPhotoProcessed
+        case batchProcessed(perPillar: [String: Int], pendingCount: Int)
         case scanFinished
         case scanCompleteToastDismissed
         case pillarsLoaded([PillarSnapshot])
@@ -76,11 +84,13 @@ struct DashboardFeature {
         case detail(PresentationAction<PillarDetailFeature.Action>)
         case classificationQueue(PresentationAction<ClassificationQueueFeature.Action>)
         case scheduledEditor(PresentationAction<PostEditorFeature.Action>)
+        case topicEditor(PresentationAction<TopicEditorFeature.Action>)
     }
 
     @Dependency(\.photoLibrary) var photoLibrary
     @Dependency(\.imageClassifier) var imageClassifier
     @Dependency(\.persistence) var persistence
+    @Dependency(\.gallery) var gallery
     @Dependency(\.geocoder) var geocoder
     @Dependency(\.userDefaults) var userDefaults
     @Dependency(\.date.now) var now
@@ -91,33 +101,67 @@ struct DashboardFeature {
         Reduce { state, action in
             switch action {
             case .onAppear:
-                state.isInitialLoading = true
-                return .run { [userDefaults, persistence, photoLibrary, now] send in
-                    let pillars = try await persistence.fetchPillars()
-                    let counts = try await persistence.countPhotosPerPillar()
+                let pillarCount = state.pillars.count
+                let isFirstLoad = state.pillars.isEmpty && state.isInitialLoading
+                if isFirstLoad {
+                    state.isInitialLoading = true
+                }
+                log.info("⏳ onAppear — firstLoad=\(isFirstLoad), pillars=\(pillarCount)")
+                return .run { [userDefaults, gallery, photoLibrary, now] send in
+                    log.info("⏳ gallery.pillars start")
+                    async let pillarsTask = gallery.pillars()
+                    log.info("⏳ gallery.photos(nil) start")
+                    async let allPhotosTask = gallery.photos(nil)
+                    log.info("⏳ countAllPhotos start")
+                    async let libraryCountTask = photoLibrary.countAllPhotos()
+
+                    let pillars = try await pillarsTask
+                    log.info("✅ gallery.pillars done — \(pillars.count) pillars")
+                    let allPhotos = (try? await allPhotosTask) ?? []
+                    log.info("✅ gallery.photos done — \(allPhotos.count) photos")
+                    let libraryCount = await libraryCountTask
+                    log.info("✅ countAllPhotos done — \(libraryCount) in library")
+
+                    let classifiedPhotos = allPhotos.filter { $0.status == .classified }
+                    let pendingCount = allPhotos.filter { $0.status == .pending }.count
+                    let classifiedCount = allPhotos.count
+
+                    var counts: [UUID: Int] = [:]
+                    for photo in classifiedPhotos {
+                        for pid in photo.pillarIDs {
+                            counts[pid, default: 0] += 1
+                        }
+                    }
+
                     var enriched = pillars
                     for i in enriched.indices {
-                        enriched[i].photoCount = counts[enriched[i].id] ?? 0
-                        let photos = (try? await persistence.fetchPhotosForPillar(enriched[i].id)) ?? []
-                        enriched[i].topPhotoAssetIDs = Array(photos.prefix(4).map(\.assetLocalIdentifier))
+                        let pid = enriched[i].id
+                        enriched[i].photoCount = counts[pid] ?? 0
+                        let matching = classifiedPhotos
+                            .filter { $0.pillarID == pid || $0.pillarIDs.contains(pid) }
+                        enriched[i].topPhotoAssetIDs = Array(matching.prefix(4).map(\.assetLocalIdentifier))
                     }
+
                     let totalSorted = counts.values.reduce(0, +)
                     let scanDone = userDefaults.boolForKey("fullScanComplete")
-                    let pendingCount = (try? await persistence.fetchPhotos(.pending).count) ?? 0
-                    let libraryCount = await photoLibrary.countAllPhotos()
-                    let classifiedCount = (try? await persistence.fetchClassifiedAssetIDs().count) ?? 0
+                    log.info("📤 sending dashboardLoaded — sorted=\(totalSorted), scanDone=\(scanDone)")
                     await send(.dashboardLoaded(pillars: enriched, totalSorted: totalSorted, scanDone: scanDone, pendingCount: pendingCount, libraryCount: libraryCount, classifiedCount: classifiedCount))
 
                     let today = Weekday.current(from: now)
-                    let templates = (try? await persistence.fetchTemplates()) ?? []
+                    let templates = (try? await gallery.templates()) ?? []
                     let scheduled = templates.filter { !$0.schedule.isEmpty && $0.schedule.weekdays.contains(today) }
+                    log.info("📤 sending scheduledTemplatesLoaded — \(scheduled.count) templates")
                     await send(.scheduledTemplatesLoaded(scheduled))
-                } catch: { error, _ in
-                    Logger(subsystem: "PostKit", category: "Dashboard")
-                        .error("Dashboard load failed: \(error)")
+                } catch: { error, send in
+                    log.error("❌ Dashboard load FAILED: \(error)")
+                    await send(.dashboardLoaded(
+                        pillars: [], totalSorted: 0, scanDone: false,
+                        pendingCount: 0, libraryCount: 0, classifiedCount: 0
+                    ))
                 }
 
             case let .dashboardLoaded(pillars, totalSorted, scanDone, pendingCount, libraryCount, classifiedCount):
+                log.info("✅ dashboardLoaded received — pillars=\(pillars.count), sorted=\(totalSorted), pending=\(pendingCount)")
                 state.isInitialLoading = false
                 state.pillars = IdentifiedArrayOf(uniqueElements: pillars)
                 state.totalPhotosSorted = totalSorted
@@ -130,7 +174,10 @@ struct DashboardFeature {
                 }
                 let userCancelled = userDefaults.boolForKey("fullScanCancelled")
                 if !pillars.isEmpty && !state.isScanning && !scanDone && !userCancelled {
-                    return .send(.startFullScanRequested)
+                    return .run { send in
+                        try await Task.sleep(for: .seconds(5))
+                        await send(.startFullScanRequested)
+                    }
                 }
                 return .none
 
@@ -149,7 +196,8 @@ struct DashboardFeature {
                 }
 
             case .pullToRefresh:
-                return .run { send in
+                return .run { [gallery] send in
+                    await gallery.invalidateAll()
                     await send(.onAppear)
                 }
 
@@ -164,7 +212,9 @@ struct DashboardFeature {
                 let pillarNameToID: [String: UUID] = Dictionary(
                     uniqueKeysWithValues: state.pillars.map { ($0.name, $0.id) }
                 )
-                let pillarNames = state.pillars.map(\.name)
+                let pillarDefs = state.pillars.map {
+                    PillarDefinition(name: $0.name, about: $0.about, referenceTags: $0.referenceTags)
+                }
                 let fetchAllPhotos = photoLibrary.fetchAllPhotos
                 let fetchImage = photoLibrary.image
                 let classify = imageClassifier.classify
@@ -172,84 +222,137 @@ struct DashboardFeature {
                 let batchSave = persistence.batchSavePhotos
                 let fetchClassifiedIDs = persistence.fetchClassifiedAssetIDs
                 let reverseGeocode = geocoder.reverseGeocode
-                return .run { [userDefaults] send in
+                let invalidatePhotos = gallery.invalidatePhotos
+                return .run(priority: .utility) { [userDefaults] send in
                     userDefaults.setBool(false, "fullScanCancelled")
                     let alreadyClassified = (try? await fetchClassifiedIDs()) ?? []
 
                     for await batch in fetchAllPhotos(30) {
                         try Task.checkCancellation()
-                        var batchCount = 0
                         var perPillar: [String: Int] = [:]
                         var pendingInBatch = 0
                         var photosToSave: [ClassifiedPhotoSnapshot] = []
+                        var batchProcessedCount = 0
 
-                        for asset in batch {
-                            try Task.checkCancellation()
+                        let maxConcurrent = 2
+                        try await withThrowingTaskGroup(
+                            of: (snapshot: ClassifiedPhotoSnapshot, results: [ClassificationResult])?.self
+                        ) { group in
+                            var inFlight = 0
 
-                            if alreadyClassified.contains(asset.localIdentifier) {
-                                batchCount += 1
-                                continue
-                            }
+                            for asset in batch {
+                                try Task.checkCancellation()
 
-                            do {
-                                let img = try await fetchImage(
-                                    asset.localIdentifier,
-                                    Layout.ImageSize.classification
-                                )
-                                let results = try await classify(img, pillarNames)
-                                let cadrage = (try? await detectCadrage(img)) ?? .wide
-                                let matchedIDs = results.compactMap { pillarNameToID[$0.pillarName] }
-                                let bestResult = results.max(by: { $0.confidence < $1.confidence })
-                                let bestConfidence = bestResult?.confidence ?? 0
-                                let allTags = results.flatMap(\.suggestedTags)
-                                let hasMatch = !matchedIDs.isEmpty && bestConfidence >= 0.55
-
-                                let locationString: String?
-                                if let loc = asset.location {
-                                    locationString = await reverseGeocode(loc)
-                                } else {
-                                    locationString = nil
+                                if alreadyClassified.contains(asset.localIdentifier) {
+                                    batchProcessedCount += 1
+                                    continue
                                 }
 
-                                photosToSave.append(ClassifiedPhotoSnapshot(
-                                    assetLocalIdentifier: asset.localIdentifier,
-                                    pillarID: matchedIDs.first,
-                                    pillarIDs: matchedIDs,
-                                    confidence: bestConfidence,
-                                    classifiedByAI: true,
-                                    tags: Array(Set(allTags).prefix(5)),
-                                    location: locationString,
-                                    capturedAt: asset.creationDate,
-                                    status: hasMatch ? .classified : .pending,
-                                    cadrage: cadrage
-                                ))
-
-                                if hasMatch {
-                                    for result in results where result.confidence >= 0.55 {
-                                        perPillar[result.pillarName, default: 0] += 1
+                                if inFlight >= maxConcurrent {
+                                    if let result = try await group.next() {
+                                        batchProcessedCount += 1
+                                        if let (snapshot, results) = result {
+                                            photosToSave.append(snapshot)
+                                            Self.accumulateCounts(
+                                                snapshot: snapshot, results: results,
+                                                into: &perPillar, pending: &pendingInBatch
+                                            )
+                                        }
                                     }
-                                } else {
-                                    pendingInBatch += 1
+                                    inFlight -= 1
                                 }
-                                batchCount += 1
-                            } catch is CancellationError {
-                                throw CancellationError()
-                            } catch {
-                                batchCount += 1
+
+                                group.addTask {
+                                    let img: UIImage
+                                    do {
+                                        img = try await fetchImage(
+                                            asset.localIdentifier,
+                                            Layout.ImageSize.classification
+                                        )
+                                    } catch is CancellationError {
+                                        throw CancellationError()
+                                    } catch {
+                                        return nil
+                                    }
+
+                                    async let classifyTask = classify(img, pillarDefs)
+                                    async let cadrageTask: Cadrage = (try? await detectCadrage(img)) ?? .wide
+
+                                    let results: [ClassificationResult]
+                                    let cadrage: Cadrage
+                                    do {
+                                        results = try await classifyTask
+                                        cadrage = await cadrageTask
+                                    } catch is CancellationError {
+                                        throw CancellationError()
+                                    } catch {
+                                        return nil
+                                    }
+
+                                    let matchedIDs = results.compactMap { pillarNameToID[$0.pillarName] }
+                                    let bestConfidence = results.max(by: { $0.confidence < $1.confidence })?.confidence ?? 0
+                                    let allTags = results.flatMap(\.suggestedTags)
+                                    let hasMatch = !matchedIDs.isEmpty && bestConfidence >= 0.55
+
+                                    let locationString: String?
+                                    if let loc = asset.location {
+                                        locationString = await reverseGeocode(loc)
+                                    } else {
+                                        locationString = nil
+                                    }
+
+                                    return (
+                                        snapshot: ClassifiedPhotoSnapshot(
+                                            assetLocalIdentifier: asset.localIdentifier,
+                                            pillarID: matchedIDs.first,
+                                            pillarIDs: matchedIDs,
+                                            confidence: bestConfidence,
+                                            classifiedByAI: true,
+                                            tags: Array(Set(allTags).prefix(5)),
+                                            location: locationString,
+                                            capturedAt: asset.creationDate,
+                                            status: hasMatch ? .classified : .pending,
+                                            cadrage: cadrage
+                                        ),
+                                        results: results
+                                    )
+                                }
+                                inFlight += 1
                             }
 
-                            await Task.yield()
+                            for try await result in group {
+                                batchProcessedCount += 1
+                                if let (snapshot, results) = result {
+                                    photosToSave.append(snapshot)
+                                    Self.accumulateCounts(
+                                        snapshot: snapshot, results: results,
+                                        into: &perPillar, pending: &pendingInBatch
+                                    )
+                                }
+                            }
+                        }
+
+                        for _ in 0..<batchProcessedCount {
+                            await send(.scanPhotoProcessed)
                         }
 
                         do {
                             try await batchSave(photosToSave)
+                            await invalidatePhotos()
                         } catch {
                             Logger(subsystem: "PostKit", category: "Dashboard")
                                 .error("Batch save failed (\(photosToSave.count) photos): \(error)")
                         }
-                        await send(.batchProcessed(count: batchCount, perPillar: perPillar, pendingCount: pendingInBatch))
+                        await send(.batchProcessed(perPillar: perPillar, pendingCount: pendingInBatch))
+                        await Task.yield()
                     }
                     await send(.scanFinished)
+                } catch: { error, send in
+                    if !(error is CancellationError) {
+                        Logger(subsystem: "PostKit", category: "Dashboard")
+                            .error("Full scan failed: \(error)")
+                        await send(.scanFinished)
+                    }
                 }
                 .cancellable(id: CancelID.fullScan)
 
@@ -262,14 +365,17 @@ struct DashboardFeature {
                     }
                 )
 
-            case let .batchProcessed(count, perPillar, pendingCount):
-                state.totalPhotosSorted += count
-                state.classifiedAssetCount += count
-                state.pendingReviewCount += pendingCount
+            case .scanPhotoProcessed:
+                state.totalPhotosSorted += 1
+                state.classifiedAssetCount += 1
                 if state.totalPhotosToScan > 0 {
                     let scannedSoFar = state.totalPhotosToScan - state.remainingToScan
                     state.scanProgress = min(Double(scannedSoFar) / Double(state.totalPhotosToScan), 1.0)
                 }
+                return .none
+
+            case let .batchProcessed(perPillar, pendingCount):
+                state.pendingReviewCount += pendingCount
                 for (pillarName, photoCount) in perPillar {
                     if let index = state.pillars.firstIndex(where: { $0.name == pillarName }) {
                         state.pillars[index].photoCount += photoCount
@@ -283,9 +389,10 @@ struct DashboardFeature {
                 state.scanProgress = 1
                 state.showScanCompleteToast = true
                 state.lastScanCompletedAt = now
-                return .run { [userDefaults] send in
+                return .run { [userDefaults, gallery] send in
                     userDefaults.setBool(true, "fullScanComplete")
-                    try await Task.sleep(for: .seconds(2.5))
+                    await gallery.invalidateAll()
+                    try? await Task.sleep(for: .seconds(2.5))
                     await send(.scanCompleteToastDismissed)
                 }
 
@@ -301,8 +408,27 @@ struct DashboardFeature {
                 state.classificationQueue = ClassificationQueueFeature.State()
                 return .none
 
-            case .addPillarTapped, .browsePhotosTapped:
+            case .addPillarTapped:
+                state.topicEditor = TopicEditorFeature.State()
                 return .none
+
+            case .browsePhotosTapped:
+                return .none
+
+            case .topicEditor(.presented(.delegate(.didSave))):
+                return .run { [gallery] send in
+                    await gallery.invalidatePillars()
+                    await gallery.invalidatePhotos()
+                    await send(.onAppear)
+                }
+
+            case let .topicEditor(.presented(.delegate(.didDelete(id)))):
+                state.pillars.remove(id: id)
+                return .run { [gallery] send in
+                    await gallery.invalidatePillars()
+                    await gallery.invalidatePhotos()
+                    await send(.onAppear)
+                }
 
             case let .scheduledTemplatesLoaded(templates):
                 state.scheduledTemplates = templates
@@ -332,7 +458,22 @@ struct DashboardFeature {
                     await send(.onAppear)
                 }
 
-            case .detail, .classificationQueue, .scheduledEditor:
+            case .detail(.presented(.delegate(.pillarUpdated))):
+                return .run { [gallery] send in
+                    await gallery.invalidatePillars()
+                    await gallery.invalidatePhotos()
+                    await send(.onAppear)
+                }
+
+            case let .detail(.presented(.delegate(.pillarDeleted(id)))):
+                state.pillars.remove(id: id)
+                return .run { [gallery] send in
+                    await gallery.invalidatePillars()
+                    await gallery.invalidatePhotos()
+                    await send(.onAppear)
+                }
+
+            case .detail, .classificationQueue, .scheduledEditor, .topicEditor:
                 return .none
             }
         }
@@ -344,6 +485,24 @@ struct DashboardFeature {
         }
         .ifLet(\.$scheduledEditor, action: \.scheduledEditor) {
             PostEditorFeature()
+        }
+        .ifLet(\.$topicEditor, action: \.topicEditor) {
+            TopicEditorFeature()
+        }
+    }
+
+    private static func accumulateCounts(
+        snapshot: ClassifiedPhotoSnapshot,
+        results: [ClassificationResult],
+        into perPillar: inout [String: Int],
+        pending: inout Int
+    ) {
+        if snapshot.status == .classified {
+            for result in results where result.confidence >= 0.55 {
+                perPillar[result.pillarName, default: 0] += 1
+            }
+        } else {
+            pending += 1
         }
     }
 }

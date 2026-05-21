@@ -46,6 +46,7 @@ struct SlotMachineFeature {
         }
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.continuousClock) var clock
 
@@ -55,19 +56,18 @@ struct SlotMachineFeature {
             case .onAppear:
                 state.phase = .loading
                 let slots = state.template.slots
-                return .run { send in
+                return .run { [gallery] send in
+                    let classifiedPhotos = (try? await gallery.photos(.classified)) ?? []
                     var pool: [UUID: [String]] = [:]
                     for slot in slots {
                         let allPhotos: [ClassifiedPhotoSnapshot]
                         if slot.pillarIDs.isEmpty {
-                            allPhotos = try await persistence.fetchPhotos(.classified)
+                            allPhotos = classifiedPhotos
                         } else {
-                            var photos: [ClassifiedPhotoSnapshot] = []
-                            for pillarID in slot.pillarIDs {
-                                let pillarPhotos = try await persistence.fetchPhotosForPillar(pillarID)
-                                photos.append(contentsOf: pillarPhotos)
+                            let pillarSet = Set(slot.pillarIDs)
+                            allPhotos = classifiedPhotos.filter { photo in
+                                photo.pillarIDs.contains(where: { pillarSet.contains($0) })
                             }
-                            allPhotos = photos
                         }
                         pool[slot.id] = allPhotos.map(\.assetLocalIdentifier)
                     }
@@ -101,19 +101,18 @@ struct SlotMachineFeature {
             case .remixTapped:
                 state.phase = .loading
                 let slots = state.template.slots
-                return .run { send in
+                return .run { [gallery] send in
+                    let classifiedPhotos = (try? await gallery.photos(.classified)) ?? []
                     var pool: [UUID: [String]] = [:]
                     for slot in slots {
                         let allPhotos: [ClassifiedPhotoSnapshot]
                         if slot.pillarIDs.isEmpty {
-                            allPhotos = try await persistence.fetchPhotos(.classified)
+                            allPhotos = classifiedPhotos
                         } else {
-                            var photos: [ClassifiedPhotoSnapshot] = []
-                            for pillarID in slot.pillarIDs {
-                                let pillarPhotos = try await persistence.fetchPhotosForPillar(pillarID)
-                                photos.append(contentsOf: pillarPhotos)
+                            let pillarSet = Set(slot.pillarIDs)
+                            allPhotos = classifiedPhotos.filter { photo in
+                                photo.pillarIDs.contains(where: { pillarSet.contains($0) })
                             }
-                            allPhotos = photos
                         }
                         pool[slot.id] = allPhotos.map(\.assetLocalIdentifier)
                     }
@@ -127,16 +126,16 @@ struct SlotMachineFeature {
                 let currentIDs = slot.photoIDs
                 let otherUsedIDs = Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
                 let pillarIDs = slot.slotData.pillarIDs
-                return .run { send in
+                return .run { [gallery] send in
+                    let classifiedPhotos = (try? await gallery.photos(.classified)) ?? []
                     let allPhotos: [ClassifiedPhotoSnapshot]
                     if pillarIDs.isEmpty {
-                        allPhotos = try await persistence.fetchPhotos(.classified)
+                        allPhotos = classifiedPhotos
                     } else {
-                        var photos: [ClassifiedPhotoSnapshot] = []
-                        for pillarID in pillarIDs {
-                            photos.append(contentsOf: try await persistence.fetchPhotosForPillar(pillarID))
+                        let pillarSet = Set(pillarIDs)
+                        allPhotos = classifiedPhotos.filter { photo in
+                            photo.pillarIDs.contains(where: { pillarSet.contains($0) })
                         }
-                        allPhotos = photos
                     }
                     let available = allPhotos.filter {
                         !otherUsedIDs.contains($0.assetLocalIdentifier) &&

@@ -5,6 +5,7 @@ import SwiftUI
 struct PillarDetailView: View {
     @Bindable var store: StoreOf<PillarDetailFeature>
 
+
     private let columns = Array(
         repeating: GridItem(.flexible(), spacing: Layout.Grid.photoGrid),
         count: 3
@@ -45,7 +46,26 @@ struct PillarDetailView: View {
         }
         .background(Palette.bg)
         .navigationTitle("\(store.pillar.emoji) \(store.pillar.name)")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    store.send(.editTapped)
+                } label: {
+                    Image(systemName: "pencil.circle")
+                }
+            }
+        }
+        .sheet(item: $store.scope(state: \.topicEditor, action: \.topicEditor)) { editorStore in
+            NavigationStack {
+                TopicEditorView(store: editorStore)
+            }
+        }
         .task { await store.send(.onAppear).finish() }
+        .navigationDestination(
+            item: $store.scope(state: \.photoDetail, action: \.photoDetail)
+        ) { detailStore in
+            PhotoDetailView(store: detailStore)
+        }
     }
 }
 

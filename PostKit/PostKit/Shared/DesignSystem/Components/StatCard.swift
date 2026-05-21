@@ -23,7 +23,7 @@ struct StatCard: View {
 #Preview("Stat Cards") {
     HStack(spacing: 12) {
         StatCard(value: 155, label: "Photos sorted", delta: "+12 today")
-        StatCard(value: 6, label: "Active pillars", delta: "3 ready", tint: Palette.purple)
+        StatCard(value: 6, label: "Active topics", delta: "3 ready", tint: Palette.purple)
     }
     .padding()
     .background(Palette.bg)

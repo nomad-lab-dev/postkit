@@ -13,16 +13,16 @@ struct QuickActionsSection: View {
 
             HStack(spacing: Spacing.sm) {
                 ActionTile(
-                    icon: "square.and.pencil",
-                    title: "Compose",
-                    subtitle: "Build a post",
+                    icon: "sparkles",
+                    title: "Smart Post",
+                    subtitle: "AI builds your post",
                     tint: Palette.accent,
                     action: onCompose
                 )
                 ActionTile(
-                    icon: "square.grid.2x2",
-                    title: "New format",
-                    subtitle: "Design a template",
+                    icon: "rectangle.stack",
+                    title: "From template",
+                    subtitle: "Pick a saved format",
                     tint: Palette.purple,
                     action: onNewTemplate
                 )

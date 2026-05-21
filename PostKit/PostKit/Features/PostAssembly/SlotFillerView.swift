@@ -15,6 +15,16 @@ struct SlotFillerView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            if !store.slotAbout.isEmpty {
+                Text(store.slotAbout)
+                    .font(Typography.footnote)
+                    .foregroundStyle(Palette.text2)
+                    .lineLimit(2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Layout.Padding.screen.leading)
+                    .padding(.top, Spacing.xs)
+            }
+
             filterBar
                 .padding(.bottom, Spacing.sm)
 
@@ -29,7 +39,7 @@ struct SlotFillerView: View {
                     title: "No photos found",
                     message: store.constrainedPillarIDs.isEmpty
                         ? "Run a scan from the Dashboard to classify your photos."
-                        : "No photos match this slot's pillar requirements."
+                        : "No photos match this slot's topic requirements."
                 )
                 .screenPadding()
                 Spacer()
@@ -132,7 +142,52 @@ struct SlotFillerView: View {
                     .padding(.horizontal, Layout.Padding.screen.leading)
                 }
             }
+
+            dateFilterRow
         }
+    }
+
+    private var hasActiveDates: Bool {
+        store.activeStartDate != nil || store.activeEndDate != nil
+    }
+
+    private var dateFilterRow: some View {
+        HStack(spacing: Spacing.sm) {
+            Image(systemName: "calendar")
+                .foregroundStyle(hasActiveDates ? Palette.accent : Palette.text3)
+
+            DatePicker(
+                "From",
+                selection: Binding(
+                    get: { store.activeStartDate ?? Calendar.current.date(byAdding: .month, value: -3, to: .now)! },
+                    set: { store.send(.startDateChanged($0)) }
+                ),
+                displayedComponents: .date
+            )
+            .labelsHidden()
+
+            Image(systemName: "arrow.right")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.text3)
+
+            DatePicker(
+                "To",
+                selection: Binding(
+                    get: { store.activeEndDate ?? .now },
+                    set: { store.send(.endDateChanged($0)) }
+                ),
+                displayedComponents: .date
+            )
+            .labelsHidden()
+
+            if hasActiveDates {
+                Button { store.send(.clearDatesTapped) } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(Palette.text3)
+                }
+            }
+        }
+        .padding(.horizontal, Layout.Padding.screen.leading)
     }
 
     private var confirmBar: some View {

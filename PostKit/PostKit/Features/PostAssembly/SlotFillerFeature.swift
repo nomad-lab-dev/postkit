@@ -1,5 +1,5 @@
 // MARK: - PostKit
-// SlotFillerFeature.swift — Slot filler reducer: photo filtering by pillar, cadrage, and location
+// SlotFillerFeature.swift — Slot filler reducer: photo filtering by pillar, cadrage, location, and date
 
 import ComposableArchitecture
 import Foundation
@@ -10,14 +10,19 @@ struct SlotFillerFeature {
     struct State: Equatable {
         let slotID: UUID
         let slotName: String
+        let slotAbout: String
         let constrainedPillarIDs: [UUID]
         let constrainedCadrages: [Cadrage]
         let constrainedLocations: [String]
+        let constrainedStartDate: Date?
+        let constrainedEndDate: Date?
         var photos: [ClassifiedPhotoSnapshot] = []
         var pillars: [PillarSnapshot] = []
         var activePillarIDs: Set<UUID> = []
         var activeCadrages: Set<Cadrage> = []
         var activeLocations: Set<String> = []
+        var activeStartDate: Date?
+        var activeEndDate: Date?
         var selectedPhotoIDs: Set<String> = []
         var isLoading: Bool = false
 
@@ -50,7 +55,18 @@ struct SlotFillerFeature {
                     matchesLocation = false
                 }
 
-                return matchesPillar && matchesCadrage && matchesLocation
+                let matchesDate: Bool
+                if activeStartDate == nil && activeEndDate == nil {
+                    matchesDate = true
+                } else if let captured = photo.capturedAt {
+                    let afterStart = activeStartDate.map { captured >= $0 } ?? true
+                    let beforeEnd = activeEndDate.map { captured <= $0 } ?? true
+                    matchesDate = afterStart && beforeEnd
+                } else {
+                    matchesDate = false
+                }
+
+                return matchesPillar && matchesCadrage && matchesLocation && matchesDate
             }
         }
 
@@ -70,23 +86,37 @@ struct SlotFillerFeature {
             return constrained + others
         }
 
+        var hasActiveConstraints: Bool {
+            !constrainedPillarIDs.isEmpty || !constrainedCadrages.isEmpty
+                || !constrainedLocations.isEmpty || constrainedStartDate != nil
+                || constrainedEndDate != nil || !slotAbout.isEmpty
+        }
+
         init(
             slotID: UUID,
             slotName: String,
+            slotAbout: String = "",
             constrainedPillarIDs: [UUID] = [],
             constrainedCadrages: [Cadrage] = [],
             constrainedLocations: [String] = [],
+            constrainedStartDate: Date? = nil,
+            constrainedEndDate: Date? = nil,
             preselectedPhotoIDs: Set<String> = []
         ) {
             self.slotID = slotID
             self.slotName = slotName
+            self.slotAbout = slotAbout
             self.constrainedPillarIDs = constrainedPillarIDs
             self.constrainedCadrages = constrainedCadrages
             self.constrainedLocations = constrainedLocations
+            self.constrainedStartDate = constrainedStartDate
+            self.constrainedEndDate = constrainedEndDate
             self.selectedPhotoIDs = preselectedPhotoIDs
             self.activePillarIDs = Set(constrainedPillarIDs)
             self.activeCadrages = Set(constrainedCadrages)
             self.activeLocations = Set(constrainedLocations)
+            self.activeStartDate = constrainedStartDate
+            self.activeEndDate = constrainedEndDate
         }
     }
 
@@ -96,16 +126,19 @@ struct SlotFillerFeature {
         case pillarFilterToggled(UUID)
         case cadrageFilterToggled(Cadrage)
         case locationFilterToggled(String)
+        case startDateChanged(Date?)
+        case endDateChanged(Date?)
+        case clearDatesTapped
         case photoToggled(String)
         case confirmTapped
         case delegate(Delegate)
 
         enum Delegate: Equatable {
-            case didConfirm(slotID: UUID, photoIDs: Set<String>, locationLabel: String?)
+            case didConfirm(slotID: UUID, photoIDs: Set<String>, locationLabel: String?, updatedSlotData: TemplateSlotData)
         }
     }
 
-    @Dependency(\.persistence) var persistence
+    @Dependency(\.gallery) var gallery
     @Dependency(\.dismiss) var dismiss
 
     var body: some ReducerOf<Self> {
@@ -114,9 +147,11 @@ struct SlotFillerFeature {
             case .onAppear:
                 guard state.photos.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { send in
-                    let pillars = try await persistence.fetchPillars()
-                    let photos = try await persistence.fetchPhotos(nil)
+                return .run { [gallery] send in
+                    async let pillarsTask = gallery.pillars()
+                    async let photosTask = gallery.photos(nil)
+                    let pillars = try await pillarsTask
+                    let photos = (try? await photosTask) ?? []
                     await send(.dataLoaded(pillars: pillars, photos: photos))
                 }
 
@@ -150,6 +185,19 @@ struct SlotFillerFeature {
                 }
                 return .none
 
+            case let .startDateChanged(date):
+                state.activeStartDate = date
+                return .none
+
+            case let .endDateChanged(date):
+                state.activeEndDate = date
+                return .none
+
+            case .clearDatesTapped:
+                state.activeStartDate = nil
+                state.activeEndDate = nil
+                return .none
+
             case let .photoToggled(assetID):
                 if state.selectedPhotoIDs.contains(assetID) {
                     state.selectedPhotoIDs.remove(assetID)
@@ -163,8 +211,25 @@ struct SlotFillerFeature {
                 let photoIDs = state.selectedPhotoIDs
                 let locationLabel = state.photos
                     .first { state.selectedPhotoIDs.contains($0.assetLocalIdentifier) }?.location
+
+                let updatedSlot = TemplateSlotData(
+                    id: state.slotID,
+                    name: state.slotName,
+                    cadrages: Array(state.activeCadrages),
+                    pillarIDs: Array(state.activePillarIDs),
+                    locations: Array(state.activeLocations),
+                    about: state.slotAbout,
+                    startDate: state.activeStartDate,
+                    endDate: state.activeEndDate
+                )
+
                 return .run { send in
-                    await send(.delegate(.didConfirm(slotID: slotID, photoIDs: photoIDs, locationLabel: locationLabel)))
+                    await send(.delegate(.didConfirm(
+                        slotID: slotID,
+                        photoIDs: photoIDs,
+                        locationLabel: locationLabel,
+                        updatedSlotData: updatedSlot
+                    )))
                     await dismiss()
                 }
 

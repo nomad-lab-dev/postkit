@@ -53,12 +53,20 @@ extension PhotoLibraryClient: DependencyKey {
             return assets
         },
         fetchAllPhotos: { batchSize in
-            AsyncStream { continuation in
+            let (stream, continuation) = AsyncStream<[PhotoAsset]>.makeStream(
+                bufferingPolicy: .bufferingNewest(3)
+            )
+            // Detached to avoid inheriting actor context — PHFetchResult enumeration is synchronous
+            let task = Task.detached(priority: .utility) {
                 let options = PHFetchOptions()
                 options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
                 let result = PHAsset.fetchAssets(with: .image, options: options)
                 var batch: [PhotoAsset] = []
-                result.enumerateObjects { asset, _, _ in
+                result.enumerateObjects { asset, _, stop in
+                    if Task.isCancelled {
+                        stop.pointee = true
+                        return
+                    }
                     batch.append(PhotoAsset(
                         localIdentifier: asset.localIdentifier,
                         creationDate: asset.creationDate,
@@ -69,11 +77,13 @@ extension PhotoLibraryClient: DependencyKey {
                         batch = []
                     }
                 }
-                if !batch.isEmpty {
+                if !batch.isEmpty && !Task.isCancelled {
                     continuation.yield(batch)
                 }
                 continuation.finish()
             }
+            continuation.onTermination = { _ in task.cancel() }
+            return stream
         },
         countAllPhotos: {
             PHAsset.fetchAssets(with: .image, options: nil).count
@@ -88,8 +98,8 @@ extension PhotoLibraryClient: DependencyKey {
             guard let asset else {
                 throw PhotoLibraryError.assetNotFound
             }
+            let isThumb = max(size.width, size.height) <= 300
             return try await withCheckedThrowingContinuation { continuation in
-                let isThumb = max(size.width, size.height) <= 300
                 let options = PHImageRequestOptions()
                 options.deliveryMode = isThumb ? .fastFormat : .highQualityFormat
                 options.resizeMode = isThumb ? .fast : .exact
@@ -103,7 +113,7 @@ extension PhotoLibraryClient: DependencyKey {
                     options: options
                 ) { image, info in
                     let isDegraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
-                    guard !isDegraded else { return }
+                    if isDegraded && !isThumb { return }
                     let alreadyResumed = resumed.withLock { val in
                         let was = val; val = true; return was
                     }

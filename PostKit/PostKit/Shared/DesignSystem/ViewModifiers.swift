@@ -20,6 +20,21 @@ extension View {
     func screenPadding() -> some View { padding(Layout.Padding.screen) }
     func cardPadding() -> some View { padding(Layout.Padding.card) }
     func shimmer() -> some View { modifier(ShimmerModifier()) }
+
+    /// Staggered fade-up entrance for vertically stacked sections.
+    /// `index` controls the delay (0 = first, 1 = next, …). Respects Reduce Motion.
+    func revealStep(_ index: Int, appeared: Bool, reduceMotion: Bool) -> some View {
+        self
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared || reduceMotion ? 0 : 12)
+            .animation(
+                reduceMotion
+                    ? .easeOut(duration: 0.2)
+                    : .spring(response: 0.55, dampingFraction: 0.86)
+                        .delay(Double(index) * 0.06),
+                value: appeared
+            )
+    }
 }
 
 // MARK: - Shimmer

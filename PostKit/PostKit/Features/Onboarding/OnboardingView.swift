@@ -1,5 +1,5 @@
 // MARK: - PostKit
-// OnboardingView.swift — Onboarding UI: welcome, pillar setup, scanning progress, and completion steps
+// OnboardingView.swift — Onboarding UI: welcome, AI topic setup, scanning progress, completion
 
 import ComposableArchitecture
 import SwiftUI
@@ -20,13 +20,8 @@ struct OnboardingView: View {
                     switch store.step {
                     case .welcome:
                         WelcomeStep(onGetStarted: { store.send(.getStartedTapped) })
-                    case .pillarSetup:
-                        PillarSetupStep(
-                            pillars: store.availablePillars,
-                            selectedCount: store.selectedPillarCount,
-                            onToggle: { store.send(.pillarToggled($0)) },
-                            onScan: { store.send(.startScanTapped) }
-                        )
+                    case .topicSetup:
+                        TopicSetupStep(store: store)
                     case .scanning:
                         ScanningStep(
                             progress: store.scanProgress,
@@ -35,7 +30,7 @@ struct OnboardingView: View {
                         )
                     case .scanComplete:
                         ScanCompleteStep(
-                            pillars: store.availablePillars.filter(\.isSelected),
+                            topics: Array(store.topics),
                             totalMatched: store.totalMatchedPhotos,
                             onStart: { store.send(.startPostKitTapped) }
                         )
@@ -76,7 +71,7 @@ private struct PhotoAccessStep: View {
                     .font(Typography.title)
                     .multilineTextAlignment(.center)
 
-                Text("PostKit needs to browse your entire photo library to classify and organize your content by pillar. Without full access, we can't scan your photos.")
+                Text("PostKit needs to browse your entire photo library to classify and organize your content. Without full access, we can't scan your photos.")
                     .font(Typography.body)
                     .foregroundStyle(Palette.text3)
                     .multilineTextAlignment(.center)
@@ -155,85 +150,219 @@ private struct WelcomeStep: View {
     }
 }
 
-// MARK: - Pillar Setup
+// MARK: - Topic Setup
 
-private struct PillarSetupStep: View {
-    let pillars: IdentifiedArrayOf<PillarOption>
-    let selectedCount: Int
-    let onToggle: (PillarOption.ID) -> Void
-    let onScan: () -> Void
+private struct TopicSetupStep: View {
+    @Bindable var store: StoreOf<OnboardingFeature>
+
+    @FocusState private var inputFocused: Bool
+    @FocusState private var editingFocusedID: OnboardingTopic.ID?
+    @State private var glowAngle: Double = 0
+    @State private var glowOpacity: Double = 0
 
     var body: some View {
-        VStack(spacing: Spacing.lg) {
-            VStack(spacing: Spacing.sm) {
-                Text("Choose Your Pillars")
-                    .font(Typography.title)
+        VStack(spacing: 0) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("What do you post about?")
+                            .font(Typography.title2)
+                            .fontWeight(.bold)
 
-                Text("Select the content categories that match your brand.")
-                    .font(Typography.subheadline)
-                    .foregroundStyle(Palette.text3)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, Spacing.lg)
-            }
-            .padding(.top, Spacing.lg)
-
-            LazyVGrid(
-                columns: [GridItem(.flexible()), GridItem(.flexible())],
-                spacing: Spacing.md
-            ) {
-                ForEach(pillars) { pillar in
-                    PillarSetupCard(pillar: pillar) {
-                        onToggle(pillar.id)
+                        Text("Add the topics you create content around. Tap a topic to rename it.")
+                            .font(Typography.subheadline)
+                            .foregroundStyle(Palette.text3)
                     }
+                    .padding(.top, Spacing.lg)
+
+                    HStack(spacing: Spacing.sm) {
+                        TextField("e.g. cars, travel, food...", text: $store.topicInput)
+                            .font(Typography.body)
+                            .textFieldStyle(.plain)
+                            .padding(Spacing.sm)
+                            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.input))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.input)
+                                    .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+                            )
+                            .focused($inputFocused)
+                            .onSubmit {
+                                store.send(.addTopicTapped)
+                            }
+
+                        Button {
+                            Haptics.tap()
+                            store.send(.addTopicTapped)
+                        } label: {
+                            Image(systemName: "plus")
+                                .fontWeight(.semibold)
+                                .frame(width: 44, height: 44)
+                                .background(Palette.accent, in: RoundedRectangle(cornerRadius: Radius.input))
+                                .foregroundStyle(Palette.onAccent)
+                        }
+                        .disabled(store.topicInput.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
+
+                    if !store.topics.isEmpty {
+                        VStack(spacing: Spacing.sm) {
+                            ForEach(store.topics) { topic in
+                                OnboardingTopicCard(
+                                    topic: topic,
+                                    isEditing: store.editingTopicID == topic.id,
+                                    editingFocusedID: $editingFocusedID,
+                                    onTap: { store.send(.topicTapped(topic.id)) },
+                                    onNameChanged: { store.send(.topicNameEdited(topic.id, $0)) },
+                                    onEditDone: { store.send(.topicEditDone) },
+                                    onRemove: { store.send(.removeTopicTapped(topic.id)) }
+                                )
+                                .transition(.asymmetric(
+                                    insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
+                            }
+                        }
+                        .animation(.spring(response: 0.35, dampingFraction: 0.8), value: store.topics.count)
+                    }
+
+                    VStack(spacing: Spacing.sm) {
+                        Button {
+                            Haptics.tap()
+                            let hasText = !store.topicInput.trimmingCharacters(in: .whitespaces).isEmpty
+                            if hasText {
+                                store.send(.addTopicTapped)
+                            } else {
+                                inputFocused = true
+                            }
+                        } label: {
+                            Label("Add another topic", systemImage: "plus")
+                                .font(Typography.body)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Palette.onAccent)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.sm)
+                                .background(Palette.accent, in: RoundedRectangle(cornerRadius: Radius.button))
+                        }
+                        .buttonStyle(.plain)
+
+                        Button {
+                            Haptics.heavyTap()
+                            inputFocused = false
+                            store.send(.startScanTapped)
+                        } label: {
+                            Text(store.topics.isEmpty
+                                 ? "Scan My Library"
+                                 : "Continue with \(store.topics.count) topic\(store.topics.count == 1 ? "" : "s")")
+                                .font(Typography.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(store.topics.isEmpty ? Palette.text4 : Palette.text2)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.sm)
+                                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.button))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: Radius.button)
+                                        .strokeBorder(
+                                            store.topics.isEmpty ? Palette.border.opacity(0.5) : Palette.border,
+                                            lineWidth: Layout.Border.thin
+                                        )
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: Radius.button)
+                                        .strokeBorder(
+                                            AngularGradient(
+                                                colors: [
+                                                    Palette.accent.opacity(0),
+                                                    Palette.accent,
+                                                    Palette.accent.opacity(0),
+                                                ],
+                                                center: .center,
+                                                angle: .degrees(glowAngle)
+                                            ),
+                                            lineWidth: 2
+                                        )
+                                        .opacity(glowOpacity)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(store.topics.isEmpty)
+                        .onChange(of: store.topics.count) { oldCount, newCount in
+                            guard newCount > oldCount else { return }
+                            glowOpacity = 1
+                            withAnimation(.linear(duration: 1.2)) {
+                                glowAngle += 360
+                            }
+                            withAnimation(.easeOut(duration: 0.5).delay(1.0)) {
+                                glowOpacity = 0
+                            }
+                        }
+                    }
+                    .padding(.top, Spacing.lg)
                 }
+                .padding(.horizontal, Spacing.lg)
+                .padding(.bottom, Spacing.xxl)
             }
-            .padding(.horizontal, Spacing.lg)
-
-            Spacer()
-
-            VStack(spacing: Spacing.sm) {
-                if selectedCount > 0 {
-                    Text("\(selectedCount) pillar\(selectedCount == 1 ? "" : "s") selected")
-                        .font(Typography.footnote)
-                        .foregroundStyle(Palette.text3)
-                }
-
-                Button("Scan My Library") { Haptics.heavyTap(); onScan() }
-                    .buttonStyle(PrimaryButton())
-                    .disabled(selectedCount == 0)
-            }
-            .padding(.horizontal, Spacing.xl)
-            .padding(.bottom, Spacing.xxl)
+        }
+        .onAppear { inputFocused = true }
+        .onChange(of: store.editingTopicID) { _, newID in
+            editingFocusedID = newID
         }
     }
 }
 
-private struct PillarSetupCard: View {
-    let pillar: PillarOption
+private struct OnboardingTopicCard: View {
+    let topic: OnboardingTopic
+    let isEditing: Bool
+    var editingFocusedID: FocusState<OnboardingTopic.ID?>.Binding
     let onTap: () -> Void
+    let onNameChanged: (String) -> Void
+    let onEditDone: () -> Void
+    let onRemove: () -> Void
 
     var body: some View {
-        Button { Haptics.selection(); onTap() } label: {
-            VStack(spacing: Spacing.sm) {
-                Text(pillar.emoji).font(.system(size: 36))
-                Text(pillar.name)
+        HStack(spacing: Spacing.md) {
+            Text(topic.emoji)
+                .font(.system(size: 28))
+                .frame(width: 36)
+
+            if isEditing {
+                TextField("Topic name", text: Binding(
+                    get: { topic.name },
+                    set: { onNameChanged($0) }
+                ))
+                .font(Typography.headline)
+                .foregroundStyle(Palette.text)
+                .focused(editingFocusedID, equals: topic.id)
+                .onSubmit { onEditDone() }
+            } else {
+                Text(topic.name)
                     .font(Typography.headline)
                     .foregroundStyle(Palette.text)
             }
-            .frame(maxWidth: .infinity)
-            .padding(Layout.Padding.card)
-            .background(pillar.isSelected ? Palette.accentTint : Palette.glassStrong)
-            .overlay(
-                RoundedRectangle(cornerRadius: Radius.card)
-                    .stroke(
-                        pillar.isSelected ? Palette.accent : Palette.border,
-                        lineWidth: pillar.isSelected ? 2 : 1
-                    )
-            )
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+
+            Spacer(minLength: 0)
+
+            Button {
+                Haptics.lightTap()
+                onRemove()
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Palette.text4)
+            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
-        .animation(.easeInOut(duration: 0.15), value: pillar.isSelected)
+        .padding(Layout.Padding.card)
+        .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.card)
+                .strokeBorder(
+                    isEditing ? Palette.accent : Palette.accent.opacity(0.3),
+                    lineWidth: isEditing ? Layout.Border.regular : Layout.Border.thin
+                )
+        )
+        .contentShape(Rectangle())
+        .onTapGesture {
+            if !isEditing { onTap() }
+        }
     }
 }
 
@@ -273,7 +402,7 @@ private struct ScanningStep: View {
 // MARK: - Scan Complete
 
 private struct ScanCompleteStep: View {
-    let pillars: [PillarOption]
+    let topics: [OnboardingTopic]
     let totalMatched: Int
     let onStart: () -> Void
 
@@ -293,21 +422,21 @@ private struct ScanCompleteStep: View {
                 Text("Library Scanned!")
                     .font(Typography.title)
 
-                Text("\(totalMatched) photos matched across your pillars")
+                Text("\(totalMatched) photos matched across your topics")
                     .font(Typography.subheadline)
                     .foregroundStyle(Palette.text3)
                     .multilineTextAlignment(.center)
             }
 
             VStack(spacing: Spacing.sm) {
-                ForEach(pillars) { pillar in
+                ForEach(topics) { topic in
                     HStack(spacing: Layout.Stack.comfy) {
-                        Text(pillar.emoji).font(.system(size: 24))
-                        Text(pillar.name).font(Typography.headline)
+                        Text(topic.emoji).font(.system(size: 24))
+                        Text(topic.name).font(Typography.headline)
                         Spacer()
-                        Text("\(pillar.matchedPhotos)")
+                        Text("\(topic.matchedPhotos)")
                             .font(Typography.title3)
-                            .foregroundStyle(pillar.matchedPhotos > 0 ? Palette.accent : Palette.text4)
+                            .foregroundStyle(topic.matchedPhotos > 0 ? Palette.accent : Palette.text4)
                         Text("photos")
                             .font(Typography.caption)
                             .foregroundStyle(Palette.text3)

@@ -71,12 +71,25 @@ final class PostEditorFeatureTests: XCTestCase {
             PostEditorFeature()
         }
 
+        let updatedSlotData = TemplateSlotData(
+            id: UUID(1),
+            name: "Hero",
+            cadrages: [.wide],
+            pillarIDs: [UUID(3)]
+        )
+
         await store.send(.slotFiller(.presented(.delegate(.didConfirm(
             slotID: UUID(1),
             photoIDs: ["a1", "a2"],
-            locationLabel: nil
+            locationLabel: nil,
+            updatedSlotData: updatedSlotData
         ))))) {
-            $0.filledSlots[0].photoIDs = ["a1", "a2"]
+            $0.filledSlots[0] = FilledSlot(
+                slotData: updatedSlotData,
+                photoIDs: ["a1", "a2"],
+                activePillarID: nil,
+                locationLabel: nil
+            )
         }
 
         await store.send(.slotFiller(.dismiss)) {

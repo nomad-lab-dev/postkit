@@ -15,88 +15,116 @@ struct ExploreView: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            pillarFilterBar
-            statusFilterBar
-                .padding(.top, Spacing.xs)
-                .padding(.bottom, Spacing.sm)
-
             if store.isLoading {
+                skeletonFilterBar
+                skeletonStatusBar
+                    .padding(.top, Spacing.xs)
+                    .padding(.bottom, Spacing.sm)
                 exploreSkeleton
-            } else if store.filteredPhotos.isEmpty {
-                Spacer()
-                EmptyStateView(
-                    icon: "📷",
-                    title: "No photos found",
-                    message: emptyMessage
-                )
-                .screenPadding()
-                Spacer()
             } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.sm) {
-                        Text("\(store.filteredCount) photos")
-                            .font(Typography.footnote)
-                            .foregroundStyle(Palette.text3)
-                            .padding(.horizontal, Layout.Padding.screen.leading)
+                pillarFilterBar
+                statusFilterBar
+                    .padding(.top, Spacing.xs)
+                    .padding(.bottom, Spacing.sm)
 
-                        LazyVGrid(columns: columns, spacing: Layout.Grid.photoGrid) {
-                            ForEach(store.filteredPhotos) { photo in
-                                Button {
-                                    Haptics.tap()
-                                    store.send(.photoTapped(photo))
-                                } label: {
-                                    ExploreThumbnailCell(photo: photo)
-                                }
-                                .buttonStyle(.plain)
-                                .contextMenu {
-                                    if let pillarID = photo.pillarID,
-                                       let pillar = store.pillars.first(where: { $0.id == pillarID }) {
-                                        Label("\(pillar.emoji) \(pillar.name)", systemImage: "circle.fill")
-                                            .disabled(true)
+                if store.filteredPhotos.isEmpty {
+                    Spacer()
+                    EmptyStateView(
+                        icon: "📷",
+                        title: "No photos found",
+                        message: emptyMessage
+                    )
+                    .screenPadding()
+                    Spacer()
+                } else {
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: Spacing.sm) {
+                            Text(store.hasMore
+                                ? "\(store.filteredCount) of \(store.totalCount) photos"
+                                : "\(store.filteredCount) photos")
+                                .font(Typography.footnote)
+                                .foregroundStyle(Palette.text3)
+                                .padding(.horizontal, Layout.Padding.screen.leading)
+
+                            LazyVGrid(columns: columns, spacing: Layout.Grid.photoGrid) {
+                                ForEach(store.filteredPhotos) { photo in
+                                    Button {
+                                        Haptics.tap()
+                                        store.send(.photoTapped(photo))
+                                    } label: {
+                                        ExploreThumbnailCell(photo: photo)
                                     }
-                                    if let cadrage = photo.cadrage, cadrage != .any {
-                                        Label(cadrage.rawValue.capitalized, systemImage: "camera.viewfinder")
-                                            .disabled(true)
-                                    }
-                                    if let location = photo.location {
-                                        Label(location, systemImage: "mappin")
-                                            .disabled(true)
-                                    }
-                                    if let date = photo.capturedAt {
-                                        Label(date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
-                                            .disabled(true)
-                                    }
-                                    Divider()
-                                    if photo.status == .pending {
+                                    .buttonStyle(.plain)
+                                    .contextMenu {
+                                        if let pillarID = photo.pillarID,
+                                           let pillar = store.pillars.first(where: { $0.id == pillarID }) {
+                                            Label("\(pillar.emoji) \(pillar.name)", systemImage: "circle.fill")
+                                                .disabled(true)
+                                        }
+                                        if let cadrage = photo.cadrage, cadrage != .any {
+                                            Label(cadrage.rawValue.capitalized, systemImage: "camera.viewfinder")
+                                                .disabled(true)
+                                        }
+                                        if let location = photo.location {
+                                            Label(location, systemImage: "mappin")
+                                                .disabled(true)
+                                        }
+                                        if let date = photo.capturedAt {
+                                            Label(date.formatted(date: .abbreviated, time: .omitted), systemImage: "calendar")
+                                                .disabled(true)
+                                        }
+                                        Divider()
+                                        if photo.status == .pending {
+                                            Button {
+                                                store.send(.photoTapped(photo))
+                                            } label: {
+                                                Label("Classify", systemImage: "tag")
+                                            }
+                                        }
                                         Button {
-                                            store.send(.photoTapped(photo))
+                                            store.send(.copyPhotoTapped(photo.assetLocalIdentifier))
                                         } label: {
-                                            Label("Classify", systemImage: "tag")
+                                            Label("Copy Photo", systemImage: "doc.on.doc")
+                                        }
+                                    } preview: {
+                                        ExploreThumbnailCell(photo: photo)
+                                            .frame(width: 280, height: 280)
+                                    }
+                                    .onAppear {
+                                        if photo == store.filteredPhotos.last {
+                                            store.send(.loadMore)
                                         }
                                     }
-                                    Button {
-                                        store.send(.copyPhotoTapped(photo.assetLocalIdentifier))
-                                    } label: {
-                                        Label("Copy Photo", systemImage: "doc.on.doc")
-                                    }
-                                } preview: {
-                                    ExploreThumbnailCell(photo: photo)
-                                        .frame(width: 280, height: 280)
                                 }
                             }
+                            .padding(.horizontal, Layout.Padding.screen.leading)
+
+                            if store.isLoadingMore {
+                                HStack {
+                                    Spacer()
+                                    ProgressView()
+                                        .tint(Palette.text3)
+                                    Spacer()
+                                }
+                                .padding(.vertical, Spacing.md)
+                            }
                         }
-                        .padding(.horizontal, Layout.Padding.screen.leading)
                     }
                 }
             }
         }
         .background(Palette.bg)
         .navigationTitle(AppStrings.Explore.title)
-        .task { await store.send(.onAppear).finish() }
+        .onAppear { store.send(.onAppear) }
         .navigationDestination(
             item: $store.scope(state: \.card, action: \.card)
         ) { cardStore in
             ClassificationCardView(store: cardStore)
+        }
+        .navigationDestination(
+            item: $store.scope(state: \.photoDetail, action: \.photoDetail)
+        ) { detailStore in
+            PhotoDetailView(store: detailStore)
         }
     }
 
@@ -147,20 +175,44 @@ struct ExploreView: View {
     private var exploreSkeleton: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.sm) {
-                SkeletonRect(width: 60, height: 12)
+                SkeletonRect(width: 70, height: 14)
                     .padding(.horizontal, Layout.Padding.screen.leading)
 
                 LazyVGrid(
-                    columns: Array(repeating: GridItem(.flexible(), spacing: Layout.Grid.photoGrid), count: 3),
+                    columns: columns,
                     spacing: Layout.Grid.photoGrid
                 ) {
-                    ForEach(0..<12, id: \.self) { _ in
+                    ForEach(0..<15, id: \.self) { _ in
                         SkeletonRect(radius: Radius.tile)
                             .aspectRatio(1, contentMode: .fit)
                     }
                 }
                 .padding(.horizontal, Layout.Padding.screen.leading)
             }
+        }
+    }
+
+    private static let skeletonChipWidths: [CGFloat] = [40, 90, 80, 100, 85]
+
+    private var skeletonFilterBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                ForEach(Array(Self.skeletonChipWidths.enumerated()), id: \.offset) { _, width in
+                    SkeletonRect(width: width, height: 30, radius: 999)
+                }
+            }
+            .padding(.horizontal, Layout.Padding.screen.leading)
+        }
+    }
+
+    private var skeletonStatusBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                ForEach(0..<4, id: \.self) { _ in
+                    SkeletonRect(width: 70, height: 26, radius: 999)
+                }
+            }
+            .padding(.horizontal, Layout.Padding.screen.leading)
         }
     }
 

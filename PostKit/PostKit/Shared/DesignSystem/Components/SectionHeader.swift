@@ -20,7 +20,7 @@ struct SectionHeader: View {
 
 #Preview("Section Headers") {
     VStack(spacing: 20) {
-        SectionHeader(title: "Your Pillars", actionTitle: "See all", onAction: {})
+        SectionHeader(title: "Your Topics", actionTitle: "See all", onAction: {})
         SectionHeader(title: "Ready to post", actionTitle: "Filter", onAction: {})
         SectionHeader(title: "Recently classified")
     }

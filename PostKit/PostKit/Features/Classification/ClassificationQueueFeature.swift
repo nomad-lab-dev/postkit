@@ -24,18 +24,23 @@ struct ClassificationQueueFeature {
         case card(PresentationAction<ClassificationCardFeature.Action>)
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.photoLibrary) var photoLibrary
     @Dependency(\.imageClassifier) var imageClassifier
+
+    private enum CancelID: Hashable { case cadrageBackfill }
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
                 state.isLoading = true
-                return .run { send in
-                    let photos = try await persistence.fetchPhotos(.pending)
-                    let pillars = try await persistence.fetchPillars()
+                return .run { [gallery] send in
+                    async let photosTask = gallery.photos(.pending)
+                    async let pillarsTask = gallery.pillars()
+                    let photos = (try? await photosTask) ?? []
+                    let pillars = try await pillarsTask
                     await send(.dataLoaded(photos: photos, pillars: pillars))
                 }
 
@@ -49,12 +54,13 @@ struct ClassificationQueueFeature {
                 let detectCadrage = imageClassifier.detectCadrage
                 return .run { send in
                     for assetID in missing {
+                        try Task.checkCancellation()
                         guard let img = try? await fetchImage(assetID, Layout.ImageSize.classification) else { continue }
                         let cadrage = (try? await detectCadrage(img)) ?? .wide
                         await send(.cadrageBackfilled(assetID: assetID, cadrage: cadrage))
-                        await Task.yield()
                     }
                 }
+                .cancellable(id: CancelID.cadrageBackfill)
 
             case let .cadrageBackfilled(assetID, cadrage):
                 if let idx = state.pendingPhotos.firstIndex(where: { $0.assetLocalIdentifier == assetID }) {
@@ -78,11 +84,14 @@ struct ClassificationQueueFeature {
             case .acceptAllTapped:
                 let photos = state.pendingPhotos
                 state.pendingPhotos = []
-                return .run { send in
-                    for var photo in photos {
-                        photo.status = .classified
-                        try await persistence.savePhoto(photo)
+                return .run { [gallery] send in
+                    let updated = photos.map { photo -> ClassifiedPhotoSnapshot in
+                        var p = photo
+                        p.status = .classified
+                        return p
                     }
+                    try await persistence.batchSavePhotos(updated)
+                    await gallery.invalidatePhotos()
                     await send(.acceptAllCompleted)
                 }
 
@@ -92,9 +101,10 @@ struct ClassificationQueueFeature {
             case .card(.presented(.delegate(.didComplete))),
                  .card(.dismiss):
                 state.card = nil
-                return .run { send in
-                    let photos = try await persistence.fetchPhotos(.pending)
-                    let pillars = try await persistence.fetchPillars()
+                return .run { [gallery] send in
+                    await gallery.invalidatePhotos()
+                    let photos = (try? await gallery.photos(.pending)) ?? []
+                    let pillars = try await gallery.pillars()
                     await send(.dataLoaded(photos: photos, pillars: pillars))
                 }
 

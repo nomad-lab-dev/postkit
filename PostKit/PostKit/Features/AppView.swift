@@ -6,8 +6,25 @@ import SwiftUI
 
 struct AppView: View {
     @Bindable var store: StoreOf<AppFeature>
+    @State private var splashFinished = false
 
     var body: some View {
+        ZStack {
+            if splashFinished {
+                mainContent.transition(.opacity)
+            } else {
+                SplashView {
+                    withAnimation(.easeInOut(duration: 0.4)) {
+                        splashFinished = true
+                    }
+                }
+                .transition(.opacity)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
         TabView(selection: $store.selectedTab) {
             NavigationStack {
                 DashboardView(store: store.scope(state: \.dashboard, action: \.dashboard))
@@ -34,8 +51,7 @@ struct AppView: View {
             .tag(AppTab.create)
 
             NavigationStack {
-                Text(AppStrings.Settings.title)
-                    .font(.largeTitle)
+                SettingsView(store: store.scope(state: \.settings, action: \.settings))
             }
             .tabItem { Label(AppStrings.Tab.settings, systemImage: "gearshape") }
             .tag(AppTab.settings)

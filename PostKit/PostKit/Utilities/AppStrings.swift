@@ -13,7 +13,7 @@ enum AppStrings {
         static let welcomeTitle = String(localized: "Welcome to PostKit")
         static let welcomeSubtitle = String(localized: "Turn your photo library into a content engine.")
         static let scanTitle = String(localized: "Quick Scan")
-        static let pillarsTitle = String(localized: "Your Pillars")
+        static let topicsTitle = String(localized: "Your Topics")
     }
 
     enum Dashboard {

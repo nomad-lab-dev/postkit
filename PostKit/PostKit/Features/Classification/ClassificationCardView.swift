@@ -139,7 +139,7 @@ struct ClassificationCardView: View {
         VStack(spacing: Spacing.md) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 if store.selectedPillars.isEmpty {
-                    Text("Select a pillar")
+                    Text("Select a topic")
                         .font(Typography.title3)
                         .fontWeight(.bold)
                         .foregroundStyle(.white.opacity(0.7))

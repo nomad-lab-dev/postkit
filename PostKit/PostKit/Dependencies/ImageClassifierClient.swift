@@ -18,9 +18,15 @@ enum ClassificationSource: Sendable, Equatable {
     case coreML, gemini
 }
 
+struct PillarDefinition: Equatable, Sendable {
+    let name: String
+    let about: String
+    let referenceTags: [String]
+}
+
 @DependencyClient
 struct ImageClassifierClient: Sendable {
-    var classify: @Sendable (_ image: UIImage, _ pillarNames: [String]) async throws -> [ClassificationResult]
+    var classify: @Sendable (_ image: UIImage, _ pillars: [PillarDefinition]) async throws -> [ClassificationResult]
     var detectCadrage: @Sendable (_ image: UIImage) async throws -> Cadrage
 }
 
@@ -30,8 +36,9 @@ extension ImageClassifierClient: DependencyKey {
     private static let geminiFloor: Float = 0.30
 
     static let liveValue = ImageClassifierClient(
-        classify: { image, pillarNames in
-            let visionResults = (try? await VisionClassifier.classifyAll(image, pillarNames: Set(pillarNames))) ?? []
+        classify: { image, pillars in
+            let pillarNames = pillars.map(\.name)
+            let visionResults = (try? await VisionClassifier.classifyAll(image, pillars: pillars)) ?? []
 
             let confidentResults = visionResults.filter { $0.confidence >= highConfidence }
             if !confidentResults.isEmpty {
@@ -43,7 +50,7 @@ extension ImageClassifierClient: DependencyKey {
                let apiKey = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,
                !apiKey.isEmpty,
                let geminiResults = try? await GeminiClassifier.classifyAll(
-                   image, pillarNames: pillarNames, apiKey: apiKey
+                   image, pillars: pillars, apiKey: apiKey
                ) {
                 let valid = geminiResults.filter { $0.confidence >= minConfidence }
                 if !valid.isEmpty { return valid }
@@ -58,9 +65,10 @@ extension ImageClassifierClient: DependencyKey {
     )
 
     static let previewValue = ImageClassifierClient(
-        classify: { _, pillarNames in
-            let count = Int.random(in: 1...min(2, pillarNames.count))
-            return pillarNames.shuffled().prefix(count).map {
+        classify: { _, pillars in
+            let names = pillars.map(\.name)
+            let count = Int.random(in: 1...min(2, names.count))
+            return names.shuffled().prefix(count).map {
                 ClassificationResult(
                     pillarName: $0,
                     confidence: .random(in: 0.65...0.95),
@@ -85,71 +93,94 @@ extension DependencyValues {
 // MARK: - Vision (Core ML on-device)
 
 private enum VisionClassifier {
-    static func classifyAll(_ image: UIImage, pillarNames: Set<String>) async throws -> [ClassificationResult] {
-        guard let cgImage = image.cgImage else { return [] }
-
+    static func classifyAll(_ image: UIImage, pillars: [PillarDefinition]) async throws -> [ClassificationResult] {
         return try await withCheckedThrowingContinuation { continuation in
+            let resumed = OSAllocatedUnfairLock(initialState: false)
+            func resumeOnce(with result: Result<[ClassificationResult], Error>) {
+                let alreadyResumed = resumed.withLock { val in
+                    let was = val; val = true; return was
+                }
+                guard !alreadyResumed else { return }
+                continuation.resume(with: result)
+            }
+
             let request = VNClassifyImageRequest { request, error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    resumeOnce(with: .failure(error))
                     return
                 }
                 let observations = (request.results as? [VNClassificationObservation]) ?? []
-                continuation.resume(returning: mapToAllPillars(observations, validPillars: pillarNames))
+                resumeOnce(with: .success(mapToAllPillars(observations, pillars: pillars)))
             }
 
-            do {
-                try VNImageRequestHandler(cgImage: cgImage).perform([request])
-            } catch {
-                continuation.resume(throwing: error)
+            autoreleasepool {
+                guard let cgImage = image.cgImage else {
+                    resumeOnce(with: .success([]))
+                    return
+                }
+                do {
+                    try VNImageRequestHandler(cgImage: cgImage).perform([request])
+                } catch {
+                    resumeOnce(with: .failure(error))
+                }
             }
         }
     }
 
-    private static let pillarKeywords: [(pillar: String, terms: [String])] = [
-        ("Automotive", [
-            "car", "vehicle", "auto", "truck", "motor", "road", "wheel",
-            "race", "driv", "sedan", "suv", "coupe", "garage", "highway",
-        ]),
-        ("Travel", [
-            "beach", "mountain", "ocean", "landscape", "sunset", "sunrise",
-            "bridge", "city", "airplane", "boat", "train", "outdoor",
-            "nature", "forest", "lake", "river", "tower", "monument",
-            "temple", "palace", "island", "coast", "waterfall", "desert",
-        ]),
-        ("Food", [
-            "food", "fruit", "vegetable", "cook", "meal", "dessert",
-            "drink", "coffee", "wine", "beer", "restaurant", "kitchen",
-            "bread", "cake", "pizza", "sushi", "pasta", "salad", "brunch",
-        ]),
-        ("Business", [
-            "laptop", "computer", "office", "keyboard", "desk", "document",
-            "book", "screen", "monitor", "workspace", "presentation",
-        ]),
-        ("Fitness", [
-            "exercise", "gym", "running", "swim", "yoga", "sport",
-            "bicycle", "tennis", "basket", "soccer", "football", "hik",
-            "climb", "fitness", "athlet", "cycl", "marathon", "surf",
-        ]),
-        ("Behind the Scenes", [
-            "camera", "studio", "microphone", "film", "video", "production",
-            "cinema", "record", "lighting", "tripod",
-        ]),
+    private static let fallbackKeywords: [String: [String]] = [
+        "automotive": ["car", "vehicle", "auto", "truck", "motor", "road", "wheel", "race", "driv", "sedan", "suv", "coupe", "garage", "highway"],
+        "travel": ["beach", "mountain", "ocean", "landscape", "sunset", "sunrise", "bridge", "city", "airplane", "boat", "train", "outdoor", "nature", "forest", "lake", "river", "tower", "monument", "temple", "palace", "island", "coast", "waterfall", "desert"],
+        "food": ["food", "fruit", "vegetable", "cook", "meal", "dessert", "drink", "coffee", "wine", "beer", "restaurant", "kitchen", "bread", "cake", "pizza", "sushi", "pasta", "salad", "brunch"],
+        "business": ["laptop", "computer", "office", "keyboard", "desk", "document", "book", "screen", "monitor", "workspace", "presentation"],
+        "fitness": ["exercise", "gym", "running", "swim", "yoga", "sport", "bicycle", "tennis", "basket", "soccer", "football", "hik", "climb", "fitness", "athlet", "cycl", "marathon", "surf"],
+        "behind the scenes": ["camera", "studio", "microphone", "film", "video", "production", "cinema", "record", "lighting", "tripod"],
     ]
+
+    private static func keywords(for pillar: PillarDefinition) -> [String] {
+        var terms: [String] = []
+
+        // Reference tags from example photos (highest signal)
+        for tag in pillar.referenceTags {
+            terms.append(contentsOf: tag.lowercased().split(separator: " ").map(String.init))
+        }
+
+        // Description keywords
+        if !pillar.about.isEmpty {
+            let words = pillar.about.lowercased()
+                .components(separatedBy: .alphanumerics.inverted)
+                .filter { $0.count > 3 }
+            terms.append(contentsOf: words)
+        }
+
+        // Fallback to hardcoded keywords for known categories
+        let nameLower = pillar.name.lowercased()
+        for (category, categoryTerms) in fallbackKeywords {
+            if nameLower.contains(category) || category.contains(nameLower) {
+                terms.append(contentsOf: categoryTerms)
+            }
+        }
+
+        // Always include the name itself
+        terms.append(contentsOf: nameLower.split(separator: " ").map(String.init))
+
+        return Array(Set(terms))
+    }
 
     private static func mapToAllPillars(
         _ observations: [VNClassificationObservation],
-        validPillars: Set<String>
+        pillars: [PillarDefinition]
     ) -> [ClassificationResult] {
         var scores: [String: Float] = [:]
         var tags: [String: [String]] = [:]
 
+        let pillarTerms = pillars.map { (pillar: $0, terms: keywords(for: $0)) }
+
         for obs in observations where obs.confidence > 0.01 {
             let id = obs.identifier.lowercased()
-            for (pillar, terms) in pillarKeywords where validPillars.contains(pillar) {
+            for (pillar, terms) in pillarTerms {
                 if terms.contains(where: { id.contains($0) }) {
-                    scores[pillar, default: 0] += obs.confidence
-                    tags[pillar, default: []].append(obs.identifier)
+                    scores[pillar.name, default: 0] += obs.confidence
+                    tags[pillar.name, default: []].append(obs.identifier)
                 }
             }
         }
@@ -175,7 +206,7 @@ private enum GeminiClassifier {
     private static func model(apiKey: String) -> GenerativeModel {
         cache.withLock { cached in
             if let cached, cached.key == apiKey { return cached.model }
-            let model = GenerativeModel(name: "gemini-2.0-flash", apiKey: apiKey)
+            let model = GenerativeModel(name: "gemini-2.5-flash", apiKey: apiKey)
             cached = (model, apiKey)
             return model
         }
@@ -183,18 +214,24 @@ private enum GeminiClassifier {
 
     static func classifyAll(
         _ image: UIImage,
-        pillarNames: [String],
+        pillars: [PillarDefinition],
         apiKey: String
     ) async throws -> [ClassificationResult] {
         let model = model(apiKey: apiKey)
 
-        let pillarList = pillarNames.joined(separator: ", ")
-        let prompt = """
-        Classify this photo into ALL matching content pillars from this list:
-        \(pillarList).
+        let pillarDescriptions = pillars.map { pillar in
+            var desc = "- \(pillar.name)"
+            if !pillar.about.isEmpty { desc += ": \(pillar.about)" }
+            if !pillar.referenceTags.isEmpty { desc += " (visual style: \(pillar.referenceTags.prefix(8).joined(separator: ", ")))" }
+            return desc
+        }.joined(separator: "\n")
 
-        A photo can match multiple pillars. Only include pillars that genuinely fit.
-        If the photo does not match any pillar, return an empty array.
+        let prompt = """
+        Classify this photo into ALL matching content topics:
+        \(pillarDescriptions)
+
+        A photo can match multiple topics. Only include topics that genuinely fit.
+        If the photo does not match any topic, return an empty array.
 
         Reply ONLY with a JSON array (no markdown, no explanation):
         [{"pillarName": "...", "confidence": 0.XX, "tags": ["tag1", "tag2"]}]
@@ -203,7 +240,10 @@ private enum GeminiClassifier {
         let response: GenerateContentResponse
         do {
             response = try await model.generateContent(prompt, image)
+        } catch is CancellationError {
+            throw CancellationError()
         } catch {
+            try Task.checkCancellation()
             try await Task.sleep(for: .milliseconds(500))
             response = try await model.generateContent(prompt, image)
         }
@@ -212,7 +252,7 @@ private enum GeminiClassifier {
             throw ClassificationError.noResponse
         }
 
-        return try parseAll(text, validPillars: Set(pillarNames))
+        return try parseAll(text, validPillars: Set(pillars.map(\.name)))
     }
 
     private static func parseAll(_ text: String, validPillars: Set<String>) throws -> [ClassificationResult] {
@@ -259,22 +299,35 @@ private enum CadrageDetector {
     static func detect(_ image: UIImage) async throws -> Cadrage {
         if isScreenshot(image) { return .screenshot }
 
-        guard let cgImage = image.cgImage else { return .wide }
-
         return try await withCheckedThrowingContinuation { continuation in
+            let resumed = OSAllocatedUnfairLock(initialState: false)
+            func resumeOnce(with result: Result<Cadrage, Error>) {
+                let alreadyResumed = resumed.withLock { val in
+                    let was = val; val = true; return was
+                }
+                guard !alreadyResumed else { return }
+                continuation.resume(with: result)
+            }
+
             let request = VNClassifyImageRequest { request, error in
                 if let error {
-                    continuation.resume(throwing: error)
+                    resumeOnce(with: .failure(error))
                     return
                 }
                 let observations = (request.results as? [VNClassificationObservation]) ?? []
-                continuation.resume(returning: mapToCadrage(observations, image: image))
+                resumeOnce(with: .success(mapToCadrage(observations, image: image)))
             }
 
-            do {
-                try VNImageRequestHandler(cgImage: cgImage).perform([request])
-            } catch {
-                continuation.resume(throwing: error)
+            autoreleasepool {
+                guard let cgImage = image.cgImage else {
+                    resumeOnce(with: .success(.wide))
+                    return
+                }
+                do {
+                    try VNImageRequestHandler(cgImage: cgImage).perform([request])
+                } catch {
+                    resumeOnce(with: .failure(error))
+                }
             }
         }
     }

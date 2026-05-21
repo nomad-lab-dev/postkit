@@ -31,6 +31,7 @@ struct TemplateListFeature {
         enum Alert: Equatable {}
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
 
     var body: some ReducerOf<Self> {
@@ -38,8 +39,8 @@ struct TemplateListFeature {
             switch action {
             case .onAppear:
                 state.isLoading = true
-                return .run { send in
-                    let templates = try await persistence.fetchTemplates()
+                return .run { [gallery] send in
+                    let templates = try await gallery.templates()
                     await send(.templatesLoaded(templates))
                 }
 
@@ -63,10 +64,11 @@ struct TemplateListFeature {
             case let .deleteTemplate(indices):
                 let idsToDelete = indices.map { state.templates[$0].id }
                 state.templates.remove(atOffsets: indices)
-                return .run { send in
+                return .run { [gallery] send in
                     for id in idsToDelete {
                         try await persistence.deleteTemplate(id)
                     }
+                    await gallery.invalidateTemplates()
                     await send(.deleted)
                 }
 
@@ -74,8 +76,9 @@ struct TemplateListFeature {
                 return .none
 
             case .builder(.presented(.delegate(.didSave))):
-                return .run { send in
-                    let templates = try await persistence.fetchTemplates()
+                return .run { [gallery] send in
+                    await gallery.invalidateTemplates()
+                    let templates = try await gallery.templates()
                     await send(.templatesLoaded(templates))
                 }
 
