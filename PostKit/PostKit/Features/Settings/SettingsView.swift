@@ -10,6 +10,7 @@ struct SettingsView: View {
     var body: some View {
         List {
             topicsSection
+            privacySection
             notificationsSection
             aboutSection
         }
@@ -65,6 +66,42 @@ struct SettingsView: View {
             }
         } header: {
             Text("My topics")
+        }
+    }
+
+    private var privacySection: some View {
+        Section {
+            HStack {
+                Label("Cloud AI Enhancement", systemImage: "cloud.bolt")
+                    .foregroundStyle(Palette.text)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { store.cloudAIEnabled },
+                    set: { _ in store.send(.cloudAIToggled) }
+                ))
+                .labelsHidden()
+                .tint(Palette.accent)
+            }
+            .listRowBackground(Palette.surface)
+
+            if store.cloudAIEnabled {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Label("Photos may be sent to Google Gemini for better classification when on-device AI isn't confident enough.", systemImage: "info.circle")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                    Text("Photos are processed but never stored by Google.")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                }
+                .listRowBackground(Palette.surface)
+            } else {
+                Label("All classification stays on your device. No photos are sent to the cloud.", systemImage: "lock.shield")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
+                    .listRowBackground(Palette.surface)
+            }
+        } header: {
+            Text("Privacy")
         }
     }
 

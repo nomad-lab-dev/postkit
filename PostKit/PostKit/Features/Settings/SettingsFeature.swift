@@ -10,6 +10,7 @@ struct SettingsFeature {
         var pillars: [PillarSnapshot] = []
         var isLoading: Bool = false
         var notificationsEnabled: Bool = false
+        var cloudAIEnabled: Bool = false
         @Presents var topicEditor: TopicEditorFeature.State?
     }
 
@@ -19,18 +20,21 @@ struct SettingsFeature {
         case notificationStatusLoaded(Bool)
         case topicTapped(PillarSnapshot)
         case notificationToggled
+        case cloudAIToggled
         case topicEditor(PresentationAction<TopicEditorFeature.Action>)
     }
 
     @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.notification) var notification
+    @Dependency(\.userDefaults) var userDefaults
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
                 state.isLoading = true
+                state.cloudAIEnabled = userDefaults.boolForKey("cloudAIEnabled")
                 return .run { [gallery] send in
                     let pillars = try await gallery.pillars()
                     await send(.pillarsLoaded(pillars))
@@ -58,6 +62,12 @@ struct SettingsFeature {
                         await send(.notificationStatusLoaded(granted))
                     }
                 }
+                return .none
+
+            case .cloudAIToggled:
+                state.cloudAIEnabled.toggle()
+                let enabled = state.cloudAIEnabled
+                userDefaults.setBool(enabled, "cloudAIEnabled")
                 return .none
 
             case .topicEditor(.presented(.delegate(.didSave))):

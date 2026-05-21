@@ -217,10 +217,14 @@ struct SmartPostView: View {
                 .font(Typography.body)
                 .focused($isInputFocused)
                 .submitLabel(.send)
-                .onSubmit { store.send(.sendMessageTapped) }
+                .onSubmit {
+                    isInputFocused = false
+                    store.send(.sendMessageTapped)
+                }
 
             Button {
                 Haptics.tap()
+                isInputFocused = false
                 store.send(.sendMessageTapped)
             } label: {
                 Image(systemName: "arrow.up.circle.fill")

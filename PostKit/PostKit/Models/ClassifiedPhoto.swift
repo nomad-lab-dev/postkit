@@ -17,6 +17,8 @@ final class ClassifiedPhoto {
     var classifiedByAI: Bool
     var tagsData: Data?
     var location: String?
+    var latitude: Double?
+    var longitude: Double?
     var capturedAt: Date?
     var statusRaw: String
     var cadrageRaw: String? = nil
@@ -65,6 +67,8 @@ final class ClassifiedPhoto {
         classifiedByAI: Bool = true,
         tags: [String] = [],
         location: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
         capturedAt: Date? = nil,
         status: PhotoStatus = .pending,
         cadrage: Cadrage? = nil
@@ -77,6 +81,8 @@ final class ClassifiedPhoto {
         self.classifiedByAI = classifiedByAI
         self.tagsData = try? JSONEncoder().encode(tags)
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.capturedAt = capturedAt
         self.statusRaw = status.rawValue
         self.cadrageRaw = cadrage?.rawValue

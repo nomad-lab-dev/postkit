@@ -27,8 +27,13 @@ struct DashboardView: View {
                                 now: Date(),
                                 onTap: { store.send(.scheduledTemplateTapped($0)) }
                             )
-                        } else {
-                            TemplateNudgeCard { store.send(.composePostTapped) }
+                        }
+
+                        if !store.isScanning && store.classifiedAssetCount > 0 {
+                            SortProgressIndicator(
+                                sortedUpToDate: store.sortedUpToDate,
+                                remaining: store.remainingToScan
+                            )
                         }
 
                         if store.pillars.isEmpty {
@@ -75,9 +80,6 @@ struct DashboardView: View {
             }
         }
         .onAppear { store.send(.onAppear) }
-        .navigationDestination(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
-            PillarDetailView(store: detailStore)
-        }
         .sheet(item: $store.scope(state: \.classificationQueue, action: \.classificationQueue)) { queueStore in
             NavigationStack {
                 ClassificationQueueView(store: queueStore)
@@ -187,6 +189,50 @@ private struct ScanStatusTag: View {
         .padding(.horizontal, Spacing.sm)
         .padding(.vertical, Spacing.xxs + 2)
         .background(color.opacity(0.12), in: Capsule())
+    }
+}
+
+// MARK: - Sort Progress Indicator
+
+private struct SortProgressIndicator: View {
+    let sortedUpToDate: Date?
+    let remaining: Int
+
+    var body: some View {
+        if remaining == 0 {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Palette.green)
+                Text("Entire gallery sorted")
+                    .font(Typography.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(Palette.text)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Layout.Padding.card)
+            .cardStyle()
+        } else {
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                if let date = sortedUpToDate {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: "calendar.badge.checkmark")
+                            .font(.system(size: 15))
+                            .foregroundStyle(Palette.accent)
+                        Text("Gallery sorted up to \(date.formatted(.dateTime.day().month(.wide).year()))")
+                            .font(Typography.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Palette.text)
+                    }
+                }
+                Text("\(remaining) photo\(remaining == 1 ? "" : "s") left to sort")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Layout.Padding.card)
+            .cardStyle()
+        }
     }
 }
 

@@ -68,6 +68,7 @@ extension DashboardStatus {
         switch self {
         case .idle:         return Palette.green
         case .newItems:     return Palette.yellow
+        case .paused:       return Palette.yellow
         case .reviewNeeded: return Palette.purple
         case .scanning:     return Palette.accent
         }

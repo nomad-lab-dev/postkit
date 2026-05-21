@@ -70,6 +70,8 @@ struct ClassifiedPhotoSnapshot: Equatable, Identifiable, Sendable {
     var classifiedByAI: Bool
     var tags: [String]
     var location: String?
+    var latitude: Double?
+    var longitude: Double?
     var capturedAt: Date?
     var status: ClassifiedPhoto.PhotoStatus
     var cadrage: Cadrage?
@@ -83,6 +85,8 @@ struct ClassifiedPhotoSnapshot: Equatable, Identifiable, Sendable {
         classifiedByAI: Bool = true,
         tags: [String] = [],
         location: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil,
         capturedAt: Date? = nil,
         status: ClassifiedPhoto.PhotoStatus = .pending,
         cadrage: Cadrage? = nil
@@ -95,6 +99,8 @@ struct ClassifiedPhotoSnapshot: Equatable, Identifiable, Sendable {
         self.classifiedByAI = classifiedByAI
         self.tags = tags
         self.location = location
+        self.latitude = latitude
+        self.longitude = longitude
         self.capturedAt = capturedAt
         self.status = status
         self.cadrage = cadrage
@@ -109,6 +115,8 @@ struct ClassifiedPhotoSnapshot: Equatable, Identifiable, Sendable {
         self.classifiedByAI = photo.classifiedByAI
         self.tags = photo.tags
         self.location = photo.location
+        self.latitude = photo.latitude
+        self.longitude = photo.longitude
         self.capturedAt = photo.capturedAt
         self.status = photo.status
         self.cadrage = photo.cadrage

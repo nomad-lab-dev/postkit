@@ -28,6 +28,8 @@ struct PersistenceClient: Sendable {
     var fetchTemplates: @Sendable () async throws -> [TemplateSnapshot]
     var deleteTemplate: @Sendable (_ id: UUID) async throws -> Void
     var updateTemplateLastPostedAt: @Sendable (_ templateID: UUID, _ date: Date) async throws -> Void
+    var batchUpdateLocations: @Sendable (_ updates: [String: String]) async throws -> Void = { _ in }
+    var deletePhotosByAssetIDs: @Sendable (_ assetIDs: Set<String>) async throws -> Void = { _ in }
 }
 
 extension PersistenceClient: DependencyKey {
@@ -117,6 +119,8 @@ extension PersistenceClient: DependencyKey {
                         existing.classifiedByAI = snapshot.classifiedByAI
                         existing.tags = snapshot.tags
                         existing.location = snapshot.location
+                        existing.latitude = snapshot.latitude
+                        existing.longitude = snapshot.longitude
                         existing.capturedAt = snapshot.capturedAt
                         existing.status = snapshot.status
                         existing.cadrage = snapshot.cadrage
@@ -129,6 +133,8 @@ extension PersistenceClient: DependencyKey {
                             classifiedByAI: snapshot.classifiedByAI,
                             tags: snapshot.tags,
                             location: snapshot.location,
+                            latitude: snapshot.latitude,
+                            longitude: snapshot.longitude,
                             capturedAt: snapshot.capturedAt,
                             status: snapshot.status,
                             cadrage: snapshot.cadrage
@@ -246,6 +252,8 @@ extension PersistenceClient: DependencyKey {
                         existing.classifiedByAI = snapshot.classifiedByAI
                         existing.tags = snapshot.tags
                         existing.location = snapshot.location
+                        existing.latitude = snapshot.latitude
+                        existing.longitude = snapshot.longitude
                         existing.capturedAt = snapshot.capturedAt
                         existing.status = snapshot.status
                         existing.cadrage = snapshot.cadrage
@@ -258,6 +266,8 @@ extension PersistenceClient: DependencyKey {
                             classifiedByAI: snapshot.classifiedByAI,
                             tags: snapshot.tags,
                             location: snapshot.location,
+                            latitude: snapshot.latitude,
+                            longitude: snapshot.longitude,
                             capturedAt: snapshot.capturedAt,
                             status: snapshot.status,
                             cadrage: snapshot.cadrage
@@ -403,6 +413,42 @@ extension PersistenceClient: DependencyKey {
                         template.lastPostedAt = date
                         try context.save()
                     }
+                }
+            },
+
+            // MARK: - Location resolution (background)
+
+            batchUpdateLocations: { updates in
+                guard !updates.isEmpty else { return }
+                let context = ModelContext(container)
+                for (assetID, locationString) in updates {
+                    var descriptor = FetchDescriptor<ClassifiedPhoto>(
+                        predicate: #Predicate { $0.assetLocalIdentifier == assetID }
+                    )
+                    descriptor.fetchLimit = 1
+                    if let photo = try context.fetch(descriptor).first {
+                        photo.location = locationString
+                    }
+                }
+                try context.save()
+            },
+
+            // MARK: - Orphan cleanup (background)
+
+            deletePhotosByAssetIDs: { assetIDs in
+                guard !assetIDs.isEmpty else { return }
+                log.info("🗑️ deletePhotosByAssetIDs — \(assetIDs.count) orphans")
+                let context = ModelContext(container)
+                let descriptor = FetchDescriptor<ClassifiedPhoto>()
+                let photos = try context.fetch(descriptor)
+                var deleted = 0
+                for photo in photos where assetIDs.contains(photo.assetLocalIdentifier) {
+                    context.delete(photo)
+                    deleted += 1
+                }
+                if deleted > 0 {
+                    try context.save()
+                    log.info("✅ deletePhotosByAssetIDs — deleted \(deleted) photos")
                 }
             }
         )

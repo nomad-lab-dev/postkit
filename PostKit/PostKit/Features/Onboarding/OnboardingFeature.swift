@@ -24,8 +24,9 @@ struct OnboardingFeature {
         var topics: IdentifiedArrayOf<OnboardingTopic> = []
         var scanProgress: Double = 0
         var scannedCount: Int = 0
-        var totalToScan: Int = 20
+        var totalToScan: Int = 30
         var photoAccessDenied: Bool = false
+        var cloudAIEnabled: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
         var totalMatchedPhotos: Int {
@@ -53,6 +54,7 @@ struct OnboardingFeature {
         case scanStarted(totalPhotos: Int)
         case scanProgressed([ClassificationResult], assetIdentifier: String)
         case scanFinished
+        case cloudAIToggled
         case startPostKitTapped
         case persistResponse(Result<Void, Error>)
         case alert(PresentationAction<Alert>)
@@ -66,6 +68,7 @@ struct OnboardingFeature {
     @Dependency(\.imageClassifier) var imageClassifier
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.persistence) var persistence
+    @Dependency(\.userDefaults) var userDefaults
     @Dependency(\.openURL) var openURL
     @Dependency(\.uuid) var uuid
 
@@ -166,7 +169,7 @@ struct OnboardingFeature {
                 let enrichTopic = postGenerator.enrichTopic
                 return .merge(
                     .run { send in
-                        let assets = try await fetchRecent(20)
+                        let assets = try await fetchRecent(30)
 
                         if assets.isEmpty {
                             await send(.scanFinished)
@@ -234,14 +237,23 @@ struct OnboardingFeature {
                 state.scanProgress = 1
                 return .none
 
+            case .cloudAIToggled:
+                state.cloudAIEnabled.toggle()
+                userDefaults.setBool(state.cloudAIEnabled, "cloudAIEnabled")
+                return .none
+
             case .startPostKitTapped:
                 let topics = state.topics
-                return .run { send in
+                return .run { [postGenerator] send in
                     for topic in topics {
+                        let keywords = (try? await postGenerator.generatePillarKeywords(
+                            topic.name, topic.about, []
+                        )) ?? []
                         let snapshot = PillarSnapshot(
                             name: topic.name,
                             emoji: topic.emoji,
-                            about: topic.about
+                            about: topic.about,
+                            referenceTags: keywords
                         )
                         try await persistence.savePillar(snapshot)
                     }

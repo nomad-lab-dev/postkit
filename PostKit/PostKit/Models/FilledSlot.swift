@@ -130,6 +130,7 @@ struct PostEditorFeature {
         var filterStartDate: Date? = nil
         var filterEndDate: Date? = nil
         var schedule: TemplateSchedule = TemplateSchedule()
+        var reshufflingSlotID: UUID?
         var existingPostID: UUID?
         @Presents var slotFiller: SlotFillerFeature.State?
 
@@ -269,6 +270,11 @@ struct PostEditorFeature {
                 guard let slot = state.filledSlots.first(where: { $0.id == slotID }) else {
                     return .none
                 }
+                state.reshufflingSlotID = slotID
+                let currentPhotoIDs = slot.photoIDs
+                let currentPillarID = slot.activePillarID
+                let currentLocationLabel = slot.locationLabel
+                let slotData = slot.slotData
                 let excludeIDs = slot.photoIDs.union(
                     Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
                 )
@@ -286,13 +292,24 @@ struct PostEditorFeature {
                         dateRange: (filterStartDate, filterEndDate),
                         fallbackToAny: true
                     )
-                    let filled = try await SlotFiller.fillOne(slot: slot.slotData, using: persistence, options: options)
-                    if !filled.isEmpty {
-                        await send(.reshuffleSlotCompleted(slotID: slotID, photos: filled.photoIDs, pillarID: filled.activePillarID, locationLabel: filled.locationLabel))
-                    }
+                    let filled = try await SlotFiller.fillOne(slot: slotData, using: persistence, options: options)
+                    await send(.reshuffleSlotCompleted(
+                        slotID: slotID,
+                        photos: filled.isEmpty ? currentPhotoIDs : filled.photoIDs,
+                        pillarID: filled.isEmpty ? currentPillarID : filled.activePillarID,
+                        locationLabel: filled.isEmpty ? currentLocationLabel : filled.locationLabel
+                    ))
+                } catch: { _, send in
+                    await send(.reshuffleSlotCompleted(
+                        slotID: slotID,
+                        photos: currentPhotoIDs,
+                        pillarID: currentPillarID,
+                        locationLabel: currentLocationLabel
+                    ))
                 }
 
             case let .reshuffleSlotCompleted(slotID, photos, pillarID, locationLabel):
+                state.reshufflingSlotID = nil
                 if let index = state.filledSlots.firstIndex(where: { $0.id == slotID }) {
                     state.filledSlots[index].photoIDs = photos
                     state.filledSlots[index].activePillarID = pillarID

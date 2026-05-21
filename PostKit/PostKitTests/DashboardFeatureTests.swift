@@ -167,7 +167,7 @@ final class DashboardFeatureTests: XCTestCase {
         state.totalPhotosToScan = 100
         state.pendingReviewCount = 10
         state.newPhotoCount = 5
-        XCTAssertEqual(state.derivedStatus, .scanning(progress: 0.5, processed: 50, total: 100))
+        XCTAssertEqual(state.derivedStatus, .scanning(progress: 0.5, processed: 50, total: 100, startedAt: nil))
     }
 
     func test_derivedStatus_reviewNeeded_beforeNewItems() {
@@ -188,6 +188,20 @@ final class DashboardFeatureTests: XCTestCase {
         let date = Date(timeIntervalSince1970: 1_000_000)
         state.lastScanCompletedAt = date
         XCTAssertEqual(state.derivedStatus, .idle(lastScanAt: date))
+    }
+
+    func test_derivedStatus_paused_whenRemainingAndClassified() {
+        var state = DashboardFeature.State()
+        state.totalLibraryCount = 500
+        state.classifiedAssetCount = 200
+        XCTAssertEqual(state.derivedStatus, .paused(remaining: 300))
+    }
+
+    func test_derivedStatus_paused_notShown_whenNoClassified() {
+        var state = DashboardFeature.State()
+        state.totalLibraryCount = 500
+        state.classifiedAssetCount = 0
+        XCTAssertEqual(state.derivedStatus, .idle(lastScanAt: nil))
     }
 
     // MARK: - statusPrimaryTapped Routing
@@ -234,6 +248,55 @@ final class DashboardFeatureTests: XCTestCase {
         await store.send(.statusPrimaryTapped)
         await store.receive(\.startFullScanRequested) {
             $0.isScanning = true
+        }
+        await store.receive(\.scanFinished) {
+            $0.isScanning = false
+            $0.hasCompletedInitialScan = true
+            $0.scanProgress = 1
+            $0.showScanCompleteToast = true
+            $0.lastScanCompletedAt = self.testDate
+        }
+        await store.receive(\.scanCompleteToastDismissed, timeout: .seconds(5)) {
+            $0.showScanCompleteToast = false
+        }
+    }
+
+    func test_statusPrimaryTapped_whenPaused_emitsStartFullScan() async {
+        var state = DashboardFeature.State()
+        state.isInitialLoading = false
+        state.totalLibraryCount = 500
+        state.classifiedAssetCount = 200
+        state.pillars = IdentifiedArrayOf(uniqueElements: [
+            PillarSnapshot(id: UUID(0), name: "Travel", emoji: "✈️"),
+        ])
+
+        let store = TestStore(initialState: state) {
+            DashboardFeature()
+        } withDependencies: {
+            $0.photoLibrary.fetchAllPhotos = { _ in AsyncStream { $0.finish() } }
+            $0.photoLibrary.image = { _, _ in UIImage() }
+            $0.photoLibrary.fetchAllAssetIDs = { [] }
+            $0.imageClassifier.classifyWithCadrage = { _, _ in
+                ClassificationOutput(results: [], cadrage: .wide)
+            }
+            $0.persistence.fetchClassifiedAssetIDs = { [] }
+            $0.persistence.batchSavePhotos = { _ in }
+            $0.persistence.deletePhotosByAssetIDs = { _ in }
+            $0.geocoder.reverseGeocode = { _ in nil }
+            $0.gallery.invalidatePhotos = { }
+            $0.gallery.invalidateAll = { }
+            $0.userDefaults.setBool = { _, _ in }
+            $0.date = .constant(self.testDate)
+        }
+
+        await store.send(.statusPrimaryTapped)
+        await store.receive(\.startFullScanRequested) {
+            $0.isScanning = true
+            $0.scanProgress = 0
+            $0.totalPhotosToScan = 300
+        }
+        await store.receive(\.pillarsEnriched) {
+            $0.scanStartedAt = self.testDate
         }
         await store.receive(\.scanFinished) {
             $0.isScanning = false

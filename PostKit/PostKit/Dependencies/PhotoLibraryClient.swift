@@ -29,6 +29,7 @@ struct PhotoLibraryClient: Sendable {
     var fetchRecentPhotos: @Sendable (_ limit: Int) async throws -> [PhotoAsset]
     var fetchAllPhotos: @Sendable (_ batchSize: Int) -> AsyncStream<[PhotoAsset]> = { _ in .finished }
     var countAllPhotos: @Sendable () async -> Int = { 0 }
+    var fetchAllAssetIDs: @Sendable () async -> Set<String> = { [] }
     var image: @Sendable (_ identifier: String, _ size: CGSize) async throws -> UIImage
 }
 
@@ -54,7 +55,7 @@ extension PhotoLibraryClient: DependencyKey {
         },
         fetchAllPhotos: { batchSize in
             let (stream, continuation) = AsyncStream<[PhotoAsset]>.makeStream(
-                bufferingPolicy: .bufferingNewest(3)
+                bufferingPolicy: .unbounded
             )
             // Detached to avoid inheriting actor context — PHFetchResult enumeration is synchronous
             let task = Task.detached(priority: .utility) {
@@ -87,6 +88,14 @@ extension PhotoLibraryClient: DependencyKey {
         },
         countAllPhotos: {
             PHAsset.fetchAssets(with: .image, options: nil).count
+        },
+        fetchAllAssetIDs: {
+            let result = PHAsset.fetchAssets(with: .image, options: nil)
+            var ids = Set<String>(minimumCapacity: result.count)
+            result.enumerateObjects { asset, _, _ in
+                ids.insert(asset.localIdentifier)
+            }
+            return ids
         },
         image: { identifier, size in
             let asset: PHAsset? = autoreleasepool {
@@ -135,6 +144,7 @@ extension PhotoLibraryClient: DependencyKey {
         },
         fetchAllPhotos: { _ in .finished },
         countAllPhotos: { 0 },
+        fetchAllAssetIDs: { [] },
         image: { _, _ in UIImage(systemName: "photo") ?? UIImage() }
     )
 }

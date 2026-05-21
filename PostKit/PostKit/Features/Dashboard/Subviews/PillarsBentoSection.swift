@@ -98,11 +98,13 @@ private struct BentoThumbnail: View {
                     withLocalIdentifiers: [assetIdentifier], options: nil
                 )
                 guard let asset = fetchResult.firstObject else { return }
+                let scale = UIScreen.main.scale
+                let side = ceil(100 * scale)
                 let options = PHImageRequestOptions()
-                options.deliveryMode = .fastFormat
+                options.deliveryMode = .opportunistic
                 options.isNetworkAccessAllowed = false
                 PHImageManager.default().requestImage(
-                    for: asset, targetSize: CGSize(width: 120, height: 120),
+                    for: asset, targetSize: CGSize(width: side, height: side),
                     contentMode: .aspectFill, options: options
                 ) { result, _ in
                     guard let result else { return }

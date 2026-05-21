@@ -32,6 +32,8 @@ struct OnboardingView: View {
                         ScanCompleteStep(
                             topics: Array(store.topics),
                             totalMatched: store.totalMatchedPhotos,
+                            cloudAIEnabled: store.cloudAIEnabled,
+                            onCloudAIToggled: { store.send(.cloudAIToggled) },
                             onStart: { store.send(.startPostKitTapped) }
                         )
                     }
@@ -404,6 +406,8 @@ private struct ScanningStep: View {
 private struct ScanCompleteStep: View {
     let topics: [OnboardingTopic]
     let totalMatched: Int
+    let cloudAIEnabled: Bool
+    let onCloudAIToggled: () -> Void
     let onStart: () -> Void
 
     @State private var showCheckmark = false
@@ -448,6 +452,9 @@ private struct ScanCompleteStep: View {
             .cardStyle()
             .padding(.horizontal, Spacing.lg)
 
+            cloudAICard
+                .padding(.horizontal, Spacing.lg)
+
             Spacer()
 
             Button("Start PostKit") { Haptics.success(); onStart() }
@@ -460,5 +467,43 @@ private struct ScanCompleteStep: View {
                 showCheckmark = true
             }
         }
+    }
+
+    private var cloudAICard: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Image(systemName: "cloud.bolt")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Palette.accent)
+                Text("Cloud AI Enhancement")
+                    .font(Typography.headline)
+                    .foregroundStyle(Palette.text)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { cloudAIEnabled },
+                    set: { _ in onCloudAIToggled() }
+                ))
+                .labelsHidden()
+                .tint(Palette.accent)
+            }
+
+            Text(cloudAIEnabled
+                 ? "When on-device classification isn't confident, photos are sent to Google Gemini for better accuracy. Photos are processed but never stored."
+                 : "All photo classification stays on your device. You can enable Cloud AI later in Settings.")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.text3)
+
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: cloudAIEnabled ? "antenna.radiowaves.left.and.right" : "lock.shield")
+                    .font(Typography.caption)
+                    .foregroundStyle(cloudAIEnabled ? Palette.yellow : Palette.green)
+                Text(cloudAIEnabled ? "Better accuracy, requires internet" : "100% private, on-device only")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text2)
+            }
+        }
+        .padding(Layout.Padding.card)
+        .cardStyle()
+        .animation(.easeInOut(duration: 0.2), value: cloudAIEnabled)
     }
 }

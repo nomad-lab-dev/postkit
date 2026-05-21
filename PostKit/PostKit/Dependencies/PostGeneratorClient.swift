@@ -40,6 +40,8 @@ struct PostGeneratorClient: Sendable {
     var enrichTopic: @Sendable (_ input: String) async throws -> TopicSuggestion
 
     var extractImageTags: @Sendable (_ image: UIImage) async throws -> [String]
+
+    var generatePillarKeywords: @Sendable (_ name: String, _ about: String, _ topics: [String]) async throws -> [String]
 }
 
 // MARK: - Live
@@ -242,6 +244,32 @@ extension PostGeneratorClient: DependencyKey {
             let response = try await model.generateContent(prompt, image)
             guard let text = response.text else { return [] }
             return PostGemini.parseStringArray(text) ?? []
+        },
+        generatePillarKeywords: { name, about, topics in
+            let model = try PostGemini.textModel()
+            var context = "Topic name: \"\(name)\""
+            if !about.isEmpty { context += "\nDescription: \"\(about)\"" }
+            if !topics.isEmpty { context += "\nSubtopics: \(topics.joined(separator: ", "))" }
+
+            let prompt = """
+            You help classify photos by matching Apple Vision (VNClassifyImageRequest) \
+            labels to content topics.
+
+            \(context)
+
+            Generate 20-30 lowercase keywords that Apple Vision would likely detect in \
+            photos matching this topic. Focus on:
+            - Concrete objects and scenes (not abstract concepts)
+            - Variations and synonyms (e.g. for "Cars": car, vehicle, sedan, suv, coupe, truck)
+            - Related environments (e.g. for "Cars": road, highway, garage, parking)
+            - Activities and compositions (e.g. for "Cars": driving, racing, dashboard)
+
+            Return ONLY a JSON array of lowercase strings, no markdown:
+            ["keyword1", "keyword2", ...]
+            """
+            let response = try await model.generateContent(prompt)
+            guard let text = response.text else { return [] }
+            return PostGemini.parseStringArray(text) ?? []
         }
     )
 
@@ -309,6 +337,10 @@ extension PostGeneratorClient: DependencyKey {
         extractImageTags: { _ in
             try await Task.sleep(for: .milliseconds(300))
             return ["outdoor", "natural light", "vibrant colors"]
+        },
+        generatePillarKeywords: { name, _, _ in
+            try await Task.sleep(for: .milliseconds(300))
+            return [name.lowercased(), "photo", "content", "visual"]
         }
     )
 }

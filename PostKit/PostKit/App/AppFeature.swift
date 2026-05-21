@@ -59,6 +59,13 @@ struct AppFeature {
                 state.selectedTab = tab
                 return .none
 
+            case let .dashboard(.pillarTapped(pillar)):
+                state.selectedTab = .explore
+                state.explore.selectedFilter = .pillar(pillar.id)
+                state.explore.photos = []
+                state.explore.currentOffset = 0
+                return .none
+
             case .dashboard(.browsePhotosTapped):
                 state.selectedTab = .explore
                 return .none

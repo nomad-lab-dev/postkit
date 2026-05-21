@@ -71,7 +71,11 @@ struct PostEditorView: View {
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(store.filledSlots) { slot in
                     VStack(spacing: Spacing.xxs) {
-                        SlotCardView(slot: slot, pillars: store.availablePillars) {
+                        SlotCardView(
+                            slot: slot,
+                            pillars: store.availablePillars,
+                            isReshuffling: store.reshufflingSlotID == slot.id
+                        ) {
                             store.send(.slotTapped(slot.id))
                         } onClear: {
                             store.send(.clearSlotTapped(slot.id))
@@ -385,11 +389,14 @@ struct PostEditorView: View {
 private struct SlotCardView: View {
     let slot: FilledSlot
     let pillars: [PillarSnapshot]
+    let isReshuffling: Bool
     let onTap: () -> Void
     let onClear: () -> Void
     let onReshuffle: () -> Void
 
     @State private var currentPage: Int = 0
+    @State private var contentScale: CGFloat = 1
+    @State private var showReshuffleLoader: Bool = false
 
     private var matchedPillars: [PillarSnapshot] {
         pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
@@ -408,78 +415,105 @@ private struct SlotCardView: View {
 
     var body: some View {
         ZStack {
-            if slot.isEmpty {
+            if slot.isEmpty && !showReshuffleLoader {
                 emptyContent
             } else {
                 filledContent
-            }
+                    .scaleEffect(contentScale)
 
-            // Overlays for filled slots
-            if !slot.isEmpty {
-                VStack {
-                    // Top row: reshuffle + delete
-                    HStack {
-                        Button {
-                            onReshuffle()
-                        } label: {
-                            Image(systemName: "shuffle")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(width: 30, height: 30)
-                                .background(Palette.accent, in: Circle())
-                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                if !showReshuffleLoader {
+                    VStack {
+                        HStack {
+                            Button {
+                                onReshuffle()
+                            } label: {
+                                Image(systemName: "shuffle")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 30, height: 30)
+                                    .background(Palette.accent, in: Circle())
+                                    .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                            }
+                            .disabled(isReshuffling)
+
+                            Spacer()
+
+                            Button {
+                                Haptics.lightTap()
+                                onClear()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 30, height: 30)
+                                    .background(Color.black.opacity(0.55), in: Circle())
+                                    .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                            }
                         }
 
                         Spacer()
 
-                        Button {
-                            Haptics.lightTap()
-                            onClear()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(.white)
-                                .frame(width: 30, height: 30)
-                                .background(Color.black.opacity(0.55), in: Circle())
-                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                        HStack(spacing: Spacing.xxs) {
+                            if let pillar = activePillar {
+                                Text(pillar.emoji)
+                                    .font(.system(size: 14))
+                                    .frame(width: 26, height: 26)
+                                    .background(.ultraThinMaterial, in: Circle())
+                            }
+
+                            if let cadrage = slot.slotData.cadrages.first {
+                                Text(cadrage.displayName)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(.ultraThinMaterial, in: Capsule())
+                            }
+
+                            Spacer()
                         }
                     }
-
-                    Spacer()
-
-                    // Bottom row: pillar emoji + cadrage tag
-                    HStack(spacing: Spacing.xxs) {
-                        if let pillar = activePillar {
-                            Text(pillar.emoji)
-                                .font(.system(size: 14))
-                                .frame(width: 26, height: 26)
-                                .background(.ultraThinMaterial, in: Circle())
-                        }
-
-                        if let cadrage = slot.slotData.cadrages.first {
-                            Text(cadrage.displayName)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(.ultraThinMaterial, in: Capsule())
-                        }
-
-                        Spacer()
-                    }
+                    .padding(Spacing.xs)
+                    .opacity(contentScale < 0.5 ? 0 : 1)
                 }
-                .padding(Spacing.xs)
+
+                if showReshuffleLoader {
+                    Color.clear
+                        .aspectRatio(1, contentMode: .fit)
+                        .overlay {
+                            ProgressView()
+                                .tint(Palette.accent)
+                        }
+                        .background(Palette.surface)
+                }
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.card)
                 .strokeBorder(
-                    slot.isEmpty ? Palette.border : Color.clear,
+                    slot.isEmpty && !showReshuffleLoader ? Palette.border : Color.clear,
                     lineWidth: Layout.Border.thin
                 )
         )
         .onTapGesture { onTap() }
+        .onChange(of: isReshuffling) { oldValue, newValue in
+            if newValue {
+                withAnimation(.easeIn(duration: 0.2)) {
+                    contentScale = 0.01
+                }
+                Task { @MainActor in
+                    try? await Task.sleep(for: .milliseconds(220))
+                    showReshuffleLoader = true
+                }
+            } else if oldValue {
+                showReshuffleLoader = false
+                contentScale = 0.01
+                withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
+                    contentScale = 1
+                }
+            }
+        }
     }
 
     private var emptyContent: some View {

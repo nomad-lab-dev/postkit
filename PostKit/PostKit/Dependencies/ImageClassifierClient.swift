@@ -24,10 +24,16 @@ struct PillarDefinition: Equatable, Sendable {
     let referenceTags: [String]
 }
 
+struct ClassificationOutput: Equatable, Sendable {
+    let results: [ClassificationResult]
+    let cadrage: Cadrage
+}
+
 @DependencyClient
 struct ImageClassifierClient: Sendable {
     var classify: @Sendable (_ image: UIImage, _ pillars: [PillarDefinition]) async throws -> [ClassificationResult]
     var detectCadrage: @Sendable (_ image: UIImage) async throws -> Cadrage
+    var classifyWithCadrage: @Sendable (_ image: UIImage, _ pillars: [PillarDefinition]) async throws -> ClassificationOutput
 }
 
 extension ImageClassifierClient: DependencyKey {
@@ -35,32 +41,50 @@ extension ImageClassifierClient: DependencyKey {
     private static let minConfidence: Float = 0.55
     private static let geminiFloor: Float = 0.30
 
+    private static func classifyWithVisionAndGemini(
+        image: UIImage,
+        pillars: [PillarDefinition],
+        observations: [VNClassificationObservation]
+    ) async -> [ClassificationResult] {
+        let visionResults = VisionClassifier.mapToAllPillars(observations, pillars: pillars)
+
+        let confidentResults = visionResults.filter { $0.confidence >= highConfidence }
+        if !confidentResults.isEmpty {
+            return confidentResults
+        }
+
+        let cloudAIEnabled = UserDefaults.standard.bool(forKey: "cloudAIEnabled")
+        let bestVision = visionResults.max(by: { $0.confidence < $1.confidence })
+        if cloudAIEnabled,
+           let bestVision, bestVision.confidence >= geminiFloor,
+           let apiKey = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,
+           !apiKey.isEmpty,
+           let geminiResults = try? await GeminiClassifier.classifyAll(
+               image, pillars: pillars, apiKey: apiKey
+           ) {
+            let valid = geminiResults.filter { $0.confidence >= minConfidence }
+            if !valid.isEmpty { return valid }
+        }
+
+        let viable = visionResults.filter { $0.confidence >= minConfidence }
+        return viable
+    }
+
     static let liveValue = ImageClassifierClient(
         classify: { image, pillars in
-            let pillarNames = pillars.map(\.name)
-            let visionResults = (try? await VisionClassifier.classifyAll(image, pillars: pillars)) ?? []
-
-            let confidentResults = visionResults.filter { $0.confidence >= highConfidence }
-            if !confidentResults.isEmpty {
-                return confidentResults
-            }
-
-            let bestVision = visionResults.max(by: { $0.confidence < $1.confidence })
-            if let bestVision, bestVision.confidence >= geminiFloor,
-               let apiKey = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,
-               !apiKey.isEmpty,
-               let geminiResults = try? await GeminiClassifier.classifyAll(
-                   image, pillars: pillars, apiKey: apiKey
-               ) {
-                let valid = geminiResults.filter { $0.confidence >= minConfidence }
-                if !valid.isEmpty { return valid }
-            }
-
-            let viable = visionResults.filter { $0.confidence >= minConfidence }
-            return viable
+            let observations = (try? await VisionClassifier.runClassification(image)) ?? []
+            return await classifyWithVisionAndGemini(image: image, pillars: pillars, observations: observations)
         },
         detectCadrage: { image in
             try await CadrageDetector.detect(image)
+        },
+        classifyWithCadrage: { image, pillars in
+            let observations = try await VisionClassifier.runClassification(image)
+            let results = await classifyWithVisionAndGemini(image: image, pillars: pillars, observations: observations)
+            let cadrage = CadrageDetector.isScreenshot(image)
+                ? .screenshot
+                : CadrageDetector.mapToCadrage(observations, image: image)
+            return ClassificationOutput(results: results, cadrage: cadrage)
         }
     )
 
@@ -79,6 +103,22 @@ extension ImageClassifierClient: DependencyKey {
         },
         detectCadrage: { _ in
             Cadrage.detectableCases.randomElement() ?? .wide
+        },
+        classifyWithCadrage: { _, pillars in
+            let names = pillars.map(\.name)
+            let count = Int.random(in: 1...min(2, names.count))
+            let results = names.shuffled().prefix(count).map {
+                ClassificationResult(
+                    pillarName: $0,
+                    confidence: .random(in: 0.65...0.95),
+                    suggestedTags: [],
+                    source: .coreML
+                )
+            }
+            return ClassificationOutput(
+                results: results,
+                cadrage: Cadrage.detectableCases.randomElement() ?? .wide
+            )
         }
     )
 }
@@ -93,10 +133,10 @@ extension DependencyValues {
 // MARK: - Vision (Core ML on-device)
 
 private enum VisionClassifier {
-    static func classifyAll(_ image: UIImage, pillars: [PillarDefinition]) async throws -> [ClassificationResult] {
+    static func runClassification(_ image: UIImage) async throws -> [VNClassificationObservation] {
         return try await withCheckedThrowingContinuation { continuation in
             let resumed = OSAllocatedUnfairLock(initialState: false)
-            func resumeOnce(with result: Result<[ClassificationResult], Error>) {
+            func resumeOnce(with result: Result<[VNClassificationObservation], Error>) {
                 let alreadyResumed = resumed.withLock { val in
                     let was = val; val = true; return was
                 }
@@ -110,7 +150,7 @@ private enum VisionClassifier {
                     return
                 }
                 let observations = (request.results as? [VNClassificationObservation]) ?? []
-                resumeOnce(with: .success(mapToAllPillars(observations, pillars: pillars)))
+                resumeOnce(with: .success(observations))
             }
 
             autoreleasepool {
@@ -166,7 +206,7 @@ private enum VisionClassifier {
         return Array(Set(terms))
     }
 
-    private static func mapToAllPillars(
+    static func mapToAllPillars(
         _ observations: [VNClassificationObservation],
         pillars: [PillarDefinition]
     ) -> [ClassificationResult] {
@@ -332,7 +372,7 @@ private enum CadrageDetector {
         }
     }
 
-    private static func isScreenshot(_ image: UIImage) -> Bool {
+    static func isScreenshot(_ image: UIImage) -> Bool {
         let w = image.size.width * image.scale
         let h = image.size.height * image.scale
         let ratio = max(w, h) / max(min(w, h), 1)
@@ -352,7 +392,7 @@ private enum CadrageDetector {
         (.pov, ["hand", "holding", "desk", "table", "keyboard", "screen", "laptop", "book"], 0.6),
     ]
 
-    private static func mapToCadrage(_ observations: [VNClassificationObservation], image: UIImage) -> Cadrage {
+    static func mapToCadrage(_ observations: [VNClassificationObservation], image: UIImage) -> Cadrage {
         var scores: [Cadrage: Float] = [:]
 
         for obs in observations where obs.confidence > 0.02 {
