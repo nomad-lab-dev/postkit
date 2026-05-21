@@ -176,9 +176,9 @@ struct ClassificationCardFeature {
         let id = photo.assetLocalIdentifier
         let fetchImage = photoLibrary.image
         return .run { send in
-            let scale = await UIScreen.main.scale
-            let screenWidth = await UIScreen.main.bounds.width
-            let size = screenWidth * scale
+            let size = await MainActor.run {
+                UIScreen.main.bounds.width * UIScreen.main.scale
+            }
             let image = try await fetchImage(id, CGSize(width: size, height: size))
             await send(.imageLoaded(image))
         }

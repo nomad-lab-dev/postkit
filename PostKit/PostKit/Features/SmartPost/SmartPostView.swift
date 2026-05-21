@@ -139,6 +139,10 @@ struct SmartPostView: View {
 
             Divider()
 
+            if !store.quickReplies.isEmpty {
+                quickRepliesBar
+            }
+
             chatInputBar
         }
         .background(Palette.bg)
@@ -161,7 +165,37 @@ struct SmartPostView: View {
                 PostEditorView(store: editorStore)
             }
         }
-        .task { await store.send(.onAppear).finish() }
+        .onAppear { store.send(.onAppear) }
+    }
+
+    // MARK: - Quick Replies
+
+    private var quickRepliesBar: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: Spacing.xs) {
+                ForEach(store.quickReplies, id: \.self) { reply in
+                    Button {
+                        Haptics.lightTap()
+                        store.send(.quickReplyTapped(reply))
+                    } label: {
+                        Text(reply)
+                            .font(Typography.subheadline)
+                            .foregroundStyle(Palette.accent)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Palette.accentTint, in: Capsule())
+                            .overlay(
+                                Capsule()
+                                    .strokeBorder(Palette.accent.opacity(0.3), lineWidth: Layout.Border.thin)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, Spacing.md)
+        }
+        .padding(.vertical, Spacing.xs)
+        .background(Palette.surface)
     }
 
     // MARK: - Chat Input Bar

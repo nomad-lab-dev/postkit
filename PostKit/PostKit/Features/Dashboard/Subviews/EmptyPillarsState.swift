@@ -12,15 +12,15 @@ struct EmptyPillarsState: View {
                 .font(.system(size: 36, weight: .light))
                 .foregroundStyle(Palette.text3)
 
-            Text("Set up your first pillar")
+            Text("Set up your first topic")
                 .font(Typography.headline)
 
-            Text("Pillars are the categories you want to post about.\nAutomotive, food, work, travel — your call.")
+            Text("Topics are the categories you want to post about.\nAutomotive, food, work, travel — your call.")
                 .font(Typography.footnote)
                 .foregroundStyle(Palette.text3)
                 .multilineTextAlignment(.center)
 
-            Button("Create a pillar", action: onAddPillar)
+            Button("Create a topic", action: onAddPillar)
                 .buttonStyle(.borderedProminent)
                 .tint(Palette.accent)
                 .padding(.top, Spacing.xs)

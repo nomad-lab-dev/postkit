@@ -26,14 +26,12 @@ struct DashboardStatusBanner: View {
             }
 
             if let sub = subhead {
-                Text(sub)
-                    .font(Typography.footnote)
-                    .foregroundStyle(Palette.text3)
+                sub
             }
 
             if case let .scanning(progress, _, _) = status {
-                ProgressBar(value: progress, tint: Palette.accent)
-                    .frame(height: 4)
+                ProgressBar(value: progress, gradient: true, glow: true)
+                    .frame(height: 5)
                     .padding(.top, Spacing.xs)
             }
         }
@@ -60,21 +58,37 @@ struct DashboardStatusBanner: View {
         }
     }
 
-    private var subhead: String? {
+    @ViewBuilder
+    private var subhead: (some View)? {
         switch status {
         case .idle:
-            return "Your library is fully classified"
+            staticSubhead("Your library is fully classified")
         case .newItems:
-            return "Ready to classify"
+            staticSubhead("Ready to classify")
         case .reviewNeeded:
-            return "AI wasn't confident — tap to validate"
+            staticSubhead("AI wasn't confident — tap to validate")
         case .scanning(_, let processed, let total) where total > 0:
             let remaining = max(total - processed, 0)
-            let pct = Int((Double(processed) / Double(total)) * 100)
-            return "\(processed) scanned · \(remaining) remaining (\(pct)%)"
+            HStack(spacing: 0) {
+                Text("\(processed)")
+                    .contentTransition(.numericText(countsDown: false))
+                Text(" scanned · ")
+                Text("\(remaining)")
+                    .contentTransition(.numericText(countsDown: true))
+                Text(" remaining")
+            }
+            .font(Typography.footnote)
+            .foregroundStyle(Palette.text3)
+            .animation(.easeInOut(duration: 0.3), value: processed)
         case .scanning:
-            return "Starting..."
+            staticSubhead("Starting...")
         }
+    }
+
+    private func staticSubhead(_ text: String) -> some View {
+        Text(text)
+            .font(Typography.footnote)
+            .foregroundStyle(Palette.text3)
     }
 
     private var primaryActionLabel: String? {

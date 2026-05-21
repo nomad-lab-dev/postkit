@@ -1,16 +1,16 @@
 // MARK: - PostKit
-// OnboardingFeature.swift — Onboarding reducer: welcome, pillar setup, quick scan, completion
+// OnboardingFeature.swift — Onboarding reducer: welcome, AI topic setup, quick scan, completion
 
 import ComposableArchitecture
 import Foundation
 @preconcurrency import Photos
 import UIKit
 
-struct PillarOption: Equatable, Identifiable, Sendable {
+struct OnboardingTopic: Equatable, Identifiable, Sendable {
     let id: UUID
     var name: String
     var emoji: String
-    var isSelected: Bool
+    var about: String
     var matchedPhotos: Int = 0
 }
 
@@ -19,32 +19,36 @@ struct OnboardingFeature {
     @ObservableState
     struct State: Equatable {
         var step: Step = .welcome
-        var availablePillars: IdentifiedArrayOf<PillarOption> = []
+        var topicInput: String = ""
+        var editingTopicID: OnboardingTopic.ID?
+        var topics: IdentifiedArrayOf<OnboardingTopic> = []
         var scanProgress: Double = 0
         var scannedCount: Int = 0
         var totalToScan: Int = 20
         var photoAccessDenied: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
-        var selectedPillarCount: Int {
-            availablePillars.filter(\.isSelected).count
-        }
-
         var totalMatchedPhotos: Int {
-            availablePillars.filter(\.isSelected).reduce(0) { $0 + $1.matchedPhotos }
+            topics.reduce(0) { $0 + $1.matchedPhotos }
         }
 
         enum Step: Equatable {
-            case welcome, pillarSetup, scanning, scanComplete
+            case welcome, topicSetup, scanning, scanComplete
         }
     }
 
-    enum Action {
+    enum Action: BindableAction {
+        case binding(BindingAction<State>)
         case getStartedTapped
         case openSettingsTapped
         case sceneDidBecomeActive
         case authorizationResponse(PHAuthorizationStatus)
-        case pillarToggled(PillarOption.ID)
+        case addTopicTapped
+        case topicTapped(OnboardingTopic.ID)
+        case topicNameEdited(OnboardingTopic.ID, String)
+        case topicEditDone
+        case removeTopicTapped(OnboardingTopic.ID)
+        case emojiResolved(OnboardingTopic.ID, String)
         case startScanTapped
         case scanStarted(totalPhotos: Int)
         case scanProgressed([ClassificationResult], assetIdentifier: String)
@@ -60,22 +64,16 @@ struct OnboardingFeature {
 
     @Dependency(\.photoLibrary) var photoLibrary
     @Dependency(\.imageClassifier) var imageClassifier
+    @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.persistence) var persistence
     @Dependency(\.openURL) var openURL
     @Dependency(\.uuid) var uuid
 
-    private enum CancelID: Hashable, Sendable { case quickScan }
-
-    static let defaultPillars: [(name: String, emoji: String)] = [
-        ("Automotive", "🚗"),
-        ("Travel", "✈️"),
-        ("Food", "🍽️"),
-        ("Business", "💼"),
-        ("Fitness", "💪"),
-        ("Behind the Scenes", "🎬"),
-    ]
+    private enum CancelID: Hashable, Sendable { case quickScan, emojiResolution }
 
     var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Reduce { state, action in
             switch action {
             case .getStartedTapped:
@@ -99,17 +97,7 @@ struct OnboardingFeature {
                 switch status {
                 case .authorized:
                     state.photoAccessDenied = false
-                    state.step = .pillarSetup
-                    state.availablePillars = IdentifiedArrayOf(
-                        uniqueElements: Self.defaultPillars.map {
-                            PillarOption(
-                                id: uuid(),
-                                name: $0.name,
-                                emoji: $0.emoji,
-                                isSelected: false
-                            )
-                        }
-                    )
+                    state.step = .topicSetup
                     return .none
 
                 case .limited, .denied, .restricted:
@@ -123,46 +111,109 @@ struct OnboardingFeature {
                     return .none
                 }
 
-            case let .pillarToggled(id):
-                state.availablePillars[id: id]?.isSelected.toggle()
+            case .addTopicTapped:
+                let input = state.topicInput.trimmingCharacters(in: .whitespaces)
+                guard !input.isEmpty else { return .none }
+                state.editingTopicID = nil
+                let topic = OnboardingTopic(
+                    id: uuid(),
+                    name: input.capitalized,
+                    emoji: "📌",
+                    about: ""
+                )
+                state.topics.append(topic)
+                state.topicInput = ""
+                return .none
+
+            case let .topicTapped(id):
+                state.editingTopicID = id
+                return .none
+
+            case let .topicNameEdited(id, name):
+                state.topics[id: id]?.name = name
+                return .none
+
+            case .topicEditDone:
+                if let id = state.editingTopicID,
+                   let topic = state.topics[id: id],
+                   topic.name.trimmingCharacters(in: .whitespaces).isEmpty {
+                    state.topics.remove(id: id)
+                }
+                state.editingTopicID = nil
+                return .none
+
+            case let .removeTopicTapped(id):
+                if state.editingTopicID == id { state.editingTopicID = nil }
+                state.topics.remove(id: id)
+                return .none
+
+            case let .emojiResolved(id, emoji):
+                state.topics[id: id]?.emoji = emoji
                 return .none
 
             case .startScanTapped:
+                state.editingTopicID = nil
                 state.step = .scanning
                 state.scannedCount = 0
                 state.scanProgress = 0
-                let pillarNames = state.availablePillars.map(\.name)
+                let pillarDefs = state.topics.map {
+                    PillarDefinition(name: $0.name, about: $0.about, referenceTags: [])
+                }
+                let topicsToResolve = state.topics.elements
                 let fetchRecent = photoLibrary.fetchRecentPhotos
                 let fetchImage = photoLibrary.image
                 let classify = imageClassifier.classify
-                return .run { send in
-                    let assets = try await fetchRecent(20)
+                let enrichTopic = postGenerator.enrichTopic
+                return .merge(
+                    .run { send in
+                        let assets = try await fetchRecent(20)
 
-                    if assets.isEmpty {
-                        await send(.scanFinished)
-                        return
-                    }
-
-                    await send(.scanStarted(totalPhotos: assets.count))
-
-                    for asset in assets {
-                        try Task.checkCancellation()
-                        do {
-                            let image = try await fetchImage(
-                                asset.localIdentifier,
-                                Layout.ImageSize.classification
-                            )
-                            let results = try await classify(image, pillarNames)
-                            await send(.scanProgressed(results, assetIdentifier: asset.localIdentifier))
-                        } catch is CancellationError {
+                        if assets.isEmpty {
+                            await send(.scanFinished)
                             return
-                        } catch {
-                            await send(.scanProgressed([], assetIdentifier: asset.localIdentifier))
+                        }
+
+                        await send(.scanStarted(totalPhotos: assets.count))
+
+                        for asset in assets {
+                            try Task.checkCancellation()
+                            do {
+                                let image = try await fetchImage(
+                                    asset.localIdentifier,
+                                    Layout.ImageSize.classification
+                                )
+                                let results = try await classify(image, pillarDefs)
+                                await send(.scanProgressed(results, assetIdentifier: asset.localIdentifier))
+                            } catch is CancellationError {
+                                return
+                            } catch {
+                                await send(.scanProgressed([], assetIdentifier: asset.localIdentifier))
+                            }
+                        }
+                        await send(.scanFinished)
+                    } catch: { _, send in
+                        await send(.scanFinished)
+                    }
+                    .cancellable(id: CancelID.quickScan),
+                    .run { send in
+                        await withTaskGroup(of: (OnboardingTopic.ID, String)?.self) { group in
+                            for topic in topicsToResolve {
+                                group.addTask {
+                                    guard let suggestion = try? await enrichTopic(topic.name) else {
+                                        return nil
+                                    }
+                                    return (topic.id, suggestion.emoji)
+                                }
+                            }
+                            for await result in group {
+                                if let (id, emoji) = result {
+                                    await send(.emojiResolved(id, emoji))
+                                }
+                            }
                         }
                     }
-                    await send(.scanFinished)
-                }
-                .cancellable(id: CancelID.quickScan)
+                    .cancellable(id: CancelID.emojiResolution)
+                )
 
             case let .scanStarted(totalPhotos):
                 state.totalToScan = max(totalPhotos, 1)
@@ -172,10 +223,8 @@ struct OnboardingFeature {
                 state.scannedCount += 1
                 state.scanProgress = Double(state.scannedCount) / Double(state.totalToScan)
                 for result in results {
-                    if let index = state.availablePillars.firstIndex(
-                        where: { $0.name == result.pillarName && $0.isSelected }
-                    ) {
-                        state.availablePillars[index].matchedPhotos += 1
+                    if let index = state.topics.firstIndex(where: { $0.name == result.pillarName }) {
+                        state.topics[index].matchedPhotos += 1
                     }
                 }
                 return .none
@@ -186,12 +235,13 @@ struct OnboardingFeature {
                 return .none
 
             case .startPostKitTapped:
-                let selected = state.availablePillars.filter(\.isSelected)
+                let topics = state.topics
                 return .run { send in
-                    for pillar in selected {
+                    for topic in topics {
                         let snapshot = PillarSnapshot(
-                            name: pillar.name,
-                            emoji: pillar.emoji
+                            name: topic.name,
+                            emoji: topic.emoji,
+                            about: topic.about
                         )
                         try await persistence.savePillar(snapshot)
                     }
@@ -210,7 +260,7 @@ struct OnboardingFeature {
             case .alert(.presented(.openSettingsTapped)):
                 return openSettings()
 
-            case .alert:
+            case .alert, .binding:
                 return .none
             }
         }
@@ -246,6 +296,6 @@ extension AlertState where Action == OnboardingFeature.Action.Alert {
             TextState("OK")
         }
     } message: {
-        TextState("Could not save your pillars. Please try again.")
+        TextState("Could not save your topics. Please try again.")
     }
 }

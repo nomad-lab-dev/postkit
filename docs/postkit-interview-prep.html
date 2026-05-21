@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — Interview Prep</title>
+<style>
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, 'SF Pro Display', 'Helvetica Neue', sans-serif; background: #0a0a0a; color: #e8e8e8; }
+
+  .slide {
+    width: 100vw; min-height: 100vh; padding: 60px 80px;
+    display: flex; flex-direction: column; justify-content: center;
+    page-break-after: always; position: relative; overflow: hidden;
+  }
+  .slide::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+    background: linear-gradient(90deg, #007AFF, #AF52DE);
+  }
+
+  h1 { font-size: 48px; font-weight: 700; margin-bottom: 12px; background: linear-gradient(135deg, #007AFF, #AF52DE); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  h2 { font-size: 36px; font-weight: 600; margin-bottom: 32px; color: #fff; }
+  h3 { font-size: 22px; font-weight: 600; color: #AF52DE; margin: 24px 0 12px; }
+  p, li { font-size: 18px; line-height: 1.6; color: #c8c8c8; }
+  ul { padding-left: 24px; }
+  li { margin-bottom: 8px; }
+  li strong { color: #fff; }
+
+  .subtitle { font-size: 22px; color: #888; margin-bottom: 40px; }
+  .tag { display: inline-block; background: #1a1a2e; border: 1px solid #333; border-radius: 8px; padding: 4px 12px; font-size: 14px; color: #AF52DE; margin: 2px 4px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; margin-top: 16px; }
+  .card { background: #141428; border: 1px solid #222; border-radius: 16px; padding: 28px; }
+  .card h3 { margin-top: 0; }
+  .good { border-left: 3px solid #30D158; }
+  .warn { border-left: 3px solid #FF9F0A; }
+  .bad { border-left: 3px solid #FF453A; }
+  .neutral { border-left: 3px solid #007AFF; }
+
+  code { background: #1a1a2e; padding: 2px 8px; border-radius: 4px; font-size: 15px; color: #AF52DE; font-family: 'SF Mono', Menlo, monospace; }
+  pre { background: #111122; border-radius: 12px; padding: 20px; margin: 16px 0; overflow-x: auto; font-size: 14px; line-height: 1.5; color: #c8c8c8; font-family: 'SF Mono', Menlo, monospace; }
+  .keyword { color: #FF7AB2; }
+  .type { color: #6BDFFF; }
+  .string { color: #FF8170; }
+  .comment { color: #6C7986; }
+
+  .slide-num { position: absolute; bottom: 24px; right: 40px; font-size: 14px; color: #444; }
+  .section-label { position: absolute; top: 24px; right: 40px; font-size: 13px; color: #555; text-transform: uppercase; letter-spacing: 2px; }
+
+  table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+  th { text-align: left; padding: 12px 16px; background: #1a1a2e; color: #AF52DE; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+  td { padding: 12px 16px; border-bottom: 1px solid #222; font-size: 16px; }
+  tr:hover td { background: #141428; }
+
+  .big-number { font-size: 64px; font-weight: 700; color: #007AFF; }
+  .metric-row { display: flex; gap: 48px; margin: 24px 0; }
+  .metric { text-align: center; }
+  .metric-label { font-size: 14px; color: #888; margin-top: 4px; }
+  .answer { background: #0d1f0d; border: 1px solid #1a3a1a; border-radius: 12px; padding: 20px; margin: 12px 0; }
+  .answer::before { content: '💡'; margin-right: 8px; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide">
+  <h1>PostKit</h1>
+  <p class="subtitle">Interview Prep — Architecture, Decisions & Trade-offs</p>
+  <div style="margin-top: 32px;">
+    <span class="tag">SwiftUI</span>
+    <span class="tag">TCA</span>
+    <span class="tag">SwiftData</span>
+    <span class="tag">Core ML + Vision</span>
+    <span class="tag">Gemini Flash</span>
+    <span class="tag">PhotoKit</span>
+    <span class="tag">iOS 18+</span>
+  </div>
+  <p style="margin-top: 48px; color: #666;">Nicolas Lucchetta · Mai 2026</p>
+  <div class="slide-num">1</div>
+</div>
+
+<!-- SLIDE 2: What is PostKit -->
+<div class="slide">
+  <div class="section-label">Overview</div>
+  <h2>PostKit en 30 secondes</h2>
+  <p style="font-size: 22px; color: #fff; margin-bottom: 32px;">
+    Un assistant de création de posts Instagram qui <strong>scanne la photothèque</strong>,
+    <strong>classe les photos par thématiques</strong> (pillars), et <strong>génère des posts</strong>
+    à partir de templates configurables.
+  </p>
+  <div class="grid">
+    <div class="card neutral">
+      <h3>Le pipeline</h3>
+      <ul>
+        <li>Onboarding → Quick Scan (20 photos, ~5s)</li>
+        <li>Full Scan → 20k+ photos, batches de 30</li>
+        <li>Core ML on-device → Gemini Flash fallback</li>
+        <li>Classification → Pillars → Templates → Posts</li>
+      </ul>
+    </div>
+    <div class="card neutral">
+      <h3>Les screens</h3>
+      <ul>
+        <li><strong>Dashboard</strong> — pillars, scan status, scheduled posts</li>
+        <li><strong>Explore</strong> — toutes les photos, filtres multi-critères</li>
+        <li><strong>Classification</strong> — review des photos pending</li>
+        <li><strong>Post Assembly</strong> — templates, slots, caption AI</li>
+        <li><strong>SmartPost</strong> — prompt → template auto-généré</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">2</div>
+</div>
+
+<!-- SLIDE 3: Architecture -->
+<div class="slide">
+  <div class="section-label">Architecture</div>
+  <h2>Pourquoi TCA ?</h2>
+  <div class="grid">
+    <div>
+      <h3>Le choix</h3>
+      <p>The Composable Architecture (Point-Free) plutôt que vanilla SwiftUI + @Observable.</p>
+      <h3 style="color: #30D158;">Ce que TCA apporte ici</h3>
+      <ul>
+        <li><strong>State déterministe</strong> — le scan de 20k photos manipule ~15 variables d'état simultanément (progress, counts, pillar updates). TCA garantit des mutations séquentielles et prédictibles.</li>
+        <li><strong>Annulation structurée</strong> — <code>.cancellable(id:)</code> pour le scan, la génération de caption, le backfill cadrage. Chaque effet long est annulable proprement.</li>
+        <li><strong>Testabilité</strong> — <code>TestStore</code> permet de vérifier chaque action/state transition du scan flow sans lancer l'app.</li>
+        <li><strong>Dependency injection</strong> — <code>@DependencyClient</code> swap PhotoKit, SwiftData, Vision en un seul endroit.</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color: #FF9F0A;">Le trade-off assumé</h3>
+      <ul>
+        <li><strong>Boilerplate</strong> — chaque feature = Reducer + State + Action + View. Plus verbeux que @Observable.</li>
+        <li><strong>Courbe d'apprentissage</strong> — TCA a ses propres patterns (Effect, Presentation, delegate actions) qui ne sont pas standard SwiftUI.</li>
+        <li><strong>Snapshot pattern</strong> — les @Model SwiftData ne sont ni Equatable ni Sendable, donc chaque entité a un struct Snapshot dédié pour vivre dans le TCA State.</li>
+      </ul>
+      <h3>Verdict</h3>
+      <p>Pour un CRUD simple, TCA serait overkill. Ici, le scan orchestration avec 6 tâches parallèles, annulation, progress tracking temps réel, et 4 features présentées modalement justifie le framework.</p>
+    </div>
+  </div>
+  <div class="slide-num">3</div>
+</div>
+
+<!-- SLIDE 4: Concurrency -->
+<div class="slide">
+  <div class="section-label">Concurrency</div>
+  <h2>Structured Concurrency — Le scan engine</h2>
+  <div class="grid">
+    <div>
+      <pre><span class="comment">// 6 photos traitées en parallèle par batch</span>
+<span class="keyword">try await</span> <span class="type">withThrowingTaskGroup</span>(...) { group <span class="keyword">in</span>
+    <span class="keyword">var</span> inFlight = 0
+    <span class="keyword">for</span> asset <span class="keyword">in</span> batch {
+        <span class="keyword">try</span> <span class="type">Task</span>.checkCancellation()
+
+        <span class="keyword">if</span> inFlight >= maxConcurrent {
+            <span class="comment">// drain one before adding</span>
+            <span class="keyword">if let</span> result = <span class="keyword">try await</span> group.next() { ... }
+            inFlight -= 1
+        }
+
+        group.addTask {
+            <span class="comment">// classify + detectCadrage en parallèle</span>
+            <span class="keyword">async let</span> classifyTask = classify(img, pillarDefs)
+            <span class="keyword">async let</span> cadrageTask = detectCadrage(img)
+            ...
+        }
+        inFlight += 1
+    }
+}</pre>
+    </div>
+    <div>
+      <h3>Patterns utilisés</h3>
+      <table>
+        <tr><td><code>TaskGroup</code> + throttle</td><td>Scan: 6 concurrent max</td></tr>
+        <tr><td><code>async let</code></td><td>classify ∥ detectCadrage</td></tr>
+        <tr><td><code>AsyncStream</code> + backpressure</td><td>Photo enumeration (buffer: 3)</td></tr>
+        <tr><td><code>.cancellable(id:)</code></td><td>Scan, emoji resolution, backfill</td></tr>
+        <tr><td><code>OSAllocatedUnfairLock</code></td><td>Double-resume guard (Vision)</td></tr>
+        <tr><td><code>autoreleasepool</code></td><td>Vision/cgImage memory drain</td></tr>
+      </table>
+      <h3>Thread isolation (SwiftData)</h3>
+      <ul>
+        <li><strong>UI reads</strong> → <code>container.mainContext</code> (MainActor)</li>
+        <li><strong>Bulk ops</strong> → <code>ModelContext(container)</code> (background)</li>
+        <li>Jamais de <code>@Model</code> qui traverse une frontière d'isolation</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">4</div>
+</div>
+
+<!-- SLIDE 5: Classification Pipeline -->
+<div class="slide">
+  <div class="section-label">ML Pipeline</div>
+  <h2>Classification hybride — Core ML + Gemini</h2>
+  <div style="display: flex; align-items: center; gap: 16px; margin: 24px 0;">
+    <div class="card neutral" style="flex: 1; text-align: center;">
+      <p style="font-size: 14px; color: #888;">ÉTAPE 1</p>
+      <p style="font-size: 20px; color: #fff;">VNClassifyImageRequest</p>
+      <p>On-device, gratuit, ~50ms</p>
+    </div>
+    <p style="font-size: 24px; color: #444;">→</p>
+    <div class="card neutral" style="flex: 1; text-align: center;">
+      <p style="font-size: 14px; color: #888;">DÉCISION</p>
+      <p style="font-size: 20px; color: #fff;">Confidence ≥ 0.70 ?</p>
+      <p>Oui → résultat final</p>
+    </div>
+    <p style="font-size: 24px; color: #444;">→</p>
+    <div class="card neutral" style="flex: 1; text-align: center;">
+      <p style="font-size: 14px; color: #888;">ÉTAPE 2 (fallback)</p>
+      <p style="font-size: 20px; color: #fff;">Gemini 2.5 Flash</p>
+      <p>Cloud, ~200ms, ≥ 0.30 requis</p>
+    </div>
+  </div>
+  <div class="grid">
+    <div>
+      <h3>Comment ça marche</h3>
+      <ul>
+        <li><strong>Vision</strong> retourne des labels génériques (<code>"car"</code>, <code>"beach"</code>, <code>"food"</code>)</li>
+        <li>On mappe ces labels aux pillars via <strong>keyword matching</strong> : reference tags de l'utilisateur + description du pillar + fallback keywords hardcodés</li>
+        <li>Les scores sont accumulés par pillar — une photo peut matcher plusieurs pillars</li>
+        <li><strong>Gemini</strong> reçoit un prompt structuré avec les descriptions des pillars et retourne du JSON</li>
+      </ul>
+    </div>
+    <div>
+      <h3 style="color: #FF9F0A;">Limites connues</h3>
+      <ul>
+        <li><strong>Seuils empiriques</strong> — 0.55/0.70/0.30 ajustés manuellement, pas de dataset de validation formel</li>
+        <li><strong>Keyword matching fragile</strong> — dépend de la qualité des labels Vision et des termes choisis par l'utilisateur</li>
+        <li><strong>Pas de modèle custom</strong> — un CreateML fine-tuné sur les pillars de l'utilisateur serait plus précis (Phase 2)</li>
+        <li><strong>Gemini coût</strong> — ~$0.01/1000 photos estimé, pas de tracking en prod</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">5</div>
+</div>
+
+<!-- SLIDE 6: Data Layer -->
+<div class="slide">
+  <div class="section-label">Data</div>
+  <h2>SwiftData — Le pattern Snapshot</h2>
+  <div class="grid">
+    <div>
+      <pre><span class="comment">// SwiftData model — lié au ModelContext</span>
+<span class="keyword">@Model class</span> <span class="type">Pillar</span> {
+    <span class="keyword">var</span> name: <span class="type">String</span>
+    <span class="keyword">var</span> emoji: <span class="type">String</span>
+    <span class="keyword">var</span> about: <span class="type">String</span>
+    ...
+}
+
+<span class="comment">// Snapshot — Equatable, Sendable, Identifiable</span>
+<span class="keyword">struct</span> <span class="type">PillarSnapshot</span>: <span class="type">Equatable</span>, <span class="type">Sendable</span>, <span class="type">Identifiable</span> {
+    <span class="keyword">let</span> id: <span class="type">UUID</span>
+    <span class="keyword">var</span> name: <span class="type">String</span>
+    <span class="keyword">var</span> emoji: <span class="type">String</span>
+    ...
+}
+
+<span class="comment">// Conversion</span>
+<span class="keyword">extension</span> <span class="type">PillarSnapshot</span> {
+    <span class="keyword">init</span>(_ model: <span class="type">Pillar</span>) { ... }
+}</pre>
+    </div>
+    <div>
+      <h3>Pourquoi ce pattern ?</h3>
+      <ul>
+        <li><code>@Model</code> n'est <strong>ni Equatable ni Sendable</strong></li>
+        <li>TCA State <strong>exige</strong> Equatable pour le diffing</li>
+        <li>Les Effects async <strong>exigent</strong> Sendable pour traverser les frontières d'isolation</li>
+        <li>Un <code>@Model</code> est lié à son <code>ModelContext</code> — on ne peut pas le passer entre threads</li>
+      </ul>
+      <h3>Entités</h3>
+      <table>
+        <tr><td><code>Pillar</code> / <code>PillarSnapshot</code></td><td>Thématique utilisateur</td></tr>
+        <tr><td><code>ClassifiedPhoto</code> / <code>ClassifiedPhotoSnapshot</code></td><td>Photo classifiée</td></tr>
+        <tr><td><code>PostTemplate</code> / <code>TemplateSnapshot</code></td><td>Template de post</td></tr>
+        <tr><td><code>GeneratedPost</code> / <code>GeneratedPostSnapshot</code></td><td>Post sauvegardé</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="slide-num">6</div>
+</div>
+
+<!-- SLIDE 7: Questions & Answers -->
+<div class="slide">
+  <div class="section-label">Interview Q&A</div>
+  <h2>Questions anticipées — Partie 1</h2>
+
+  <h3>"Pourquoi TCA et pas @Observable ?"</h3>
+  <div class="answer">
+    Le scan orchestre 6 tâches parallèles avec annulation, progress tracking, et 15 variables d'état mutées simultanément.
+    Avec @Observable j'aurais dû gérer moi-même les cancellation tokens, le threading des mutations d'état, et le testing des effects async.
+    TCA me donne ça out of the box. Pour les écrans simples (Settings, PhotoDetail), TCA est effectivement plus verbeux qu'il ne faudrait — c'est le trade-off.
+  </div>
+
+  <h3>"Comment tu gères les erreurs côté utilisateur ?"</h3>
+  <div class="answer">
+    Le scan est conçu pour être résilient : chaque photo qui échoue est skippée individuellement (le catch est par photo, pas par batch).
+    Le scan est idempotent — si l'app crash, il reprend là où il en était grâce au Set&lt;String&gt; des asset IDs déjà classifiés.
+    Côté UI, c'est un point faible actuel : l'utilisateur ne voit pas combien de photos ont échoué silencieusement. C'est dans la roadmap d'ajouter un "scan report" post-scan avec les métriques (classifiées, pending, erreurs).
+  </div>
+
+  <h3>"Les seuils de classification, ils viennent d'où ?"</h3>
+  <div class="answer">
+    Tuning empirique sur ma propre bibliothèque (~20k photos). 0.55 est le minimum pour éviter les faux positifs, 0.70 est le seuil de confiance élevée qui évite l'appel Gemini.
+    0.30 est le plancher Vision pour déclencher Gemini — en dessous, la photo n'a aucun signal pertinent.
+    Pour une v2, je mettrais en place un dataset de validation avec des photos labelisées manuellement pour mesurer precision/recall.
+  </div>
+  <div class="slide-num">7</div>
+</div>
+
+<!-- SLIDE 8: Questions Part 2 -->
+<div class="slide">
+  <div class="section-label">Interview Q&A</div>
+  <h2>Questions anticipées — Partie 2</h2>
+
+  <h3>"Ça scale comment à 100k photos ?"</h3>
+  <div class="answer">
+    Le scan lui-même scale bien grâce au streaming par batches de 30 avec backpressure (buffer de 3 batches max en mémoire).
+    Le point de contention est le dashboard onAppear qui charge tous les ClassifiedPhotoSnapshots en mémoire pour enrichir les pillars.
+    À 100k, il faudrait passer à une requête agrégée SwiftData (GROUP BY pillarID) au lieu du fetch-all + filter in-memory.
+    Explore aurait aussi besoin de pagination (fetchLimit + fetchOffset) — actuellement tout est chargé d'un coup.
+  </div>
+
+  <h3>"Le scan est idempotent ?"</h3>
+  <div class="answer">
+    Oui. Au démarrage du scan, on charge le Set de tous les asset IDs déjà classifiés.
+    Chaque photo déjà traitée est skippée. batchSavePhotos fait un upsert (fetch by assetLocalIdentifier + update or insert).
+    Si l'app crash à mi-scan : fullScanComplete n'est jamais set, donc le scan reprend automatiquement au prochain lancement.
+    Les photos déjà sauvées ne sont pas re-traitées.
+  </div>
+
+  <h3>"Sécurité de la clé Gemini ?"</h3>
+  <div class="answer">
+    La clé est dans Secrets.xcconfig (non commité) et injectée via Info.plist. Elle finit en clair dans le binaire — c'est une limite connue.
+    Pour la prod, la bonne approche est un proxy server-side (Cloud Function) qui valide le receipt StoreKit avant de proxier l'appel Gemini.
+    Ça élimine la clé du device et permet du rate-limiting par utilisateur. Planifié pour Phase 2 avec la monétisation.
+  </div>
+  <div class="slide-num">8</div>
+</div>
+
+<!-- SLIDE 9: Key metrics -->
+<div class="slide">
+  <div class="section-label">Performance</div>
+  <h2>Métriques clés à connaître</h2>
+  <div class="metric-row">
+    <div class="metric"><div class="big-number">20k+</div><div class="metric-label">Photos scannées</div></div>
+    <div class="metric"><div class="big-number">6x</div><div class="metric-label">Concurrence par batch</div></div>
+    <div class="metric"><div class="big-number">~50ms</div><div class="metric-label">Vision par photo</div></div>
+    <div class="metric"><div class="big-number">0</div><div class="metric-label">Main thread hangs</div></div>
+  </div>
+  <div class="grid">
+    <div class="card good">
+      <h3 style="color: #30D158;">Optimisations réalisées</h3>
+      <ul>
+        <li>TaskGroup avec throttle (6 concurrent) au lieu de séquentiel</li>
+        <li>async let pour classify ∥ detectCadrage</li>
+        <li>AsyncStream avec backpressure (.bufferingNewest(3))</li>
+        <li>SwiftData: bulk ops sur background ModelContext</li>
+        <li>Dashboard onAppear: 6 queries parallèles (async let)</li>
+        <li>autoreleasepool pour drainer les objets Vision</li>
+        <li>OSAllocatedUnfairLock contre les double-resume</li>
+        <li>Cancellation propagation à tous les niveaux</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3 style="color: #FF9F0A;">Améliorations prévues</h3>
+      <ul>
+        <li>Pagination Explore (fetchLimit/fetchOffset)</li>
+        <li>Requête agrégée SwiftData pour le dashboard (GROUP BY)</li>
+        <li>PHCachingImageManager pour pré-chauffer les thumbnails</li>
+        <li>Scan report UI (succès/erreurs/skips)</li>
+        <li>Dataset de validation pour les seuils ML</li>
+        <li>Proxy server-side pour Gemini</li>
+        <li>CreateML fine-tuné par pillar (Phase 2)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">9</div>
+</div>
+
+<!-- SLIDE 10: Architecture Diagram -->
+<div class="slide">
+  <div class="section-label">Architecture</div>
+  <h2>Dependency Graph</h2>
+  <pre style="font-size: 16px; line-height: 1.8;">
+┌─────────────────────────────────────────────────────────┐
+│                    <span class="type">SwiftUI Views</span>                        │
+│   AppView · DashboardView · ExploreView · OnboardingView │
+└──────────────────────┬──────────────────────────────────┘
+                       │ observes @ObservableState
+┌──────────────────────▼──────────────────────────────────┐
+│                  <span class="type">TCA Reducers</span>                          │
+│  AppFeature ─┬─ DashboardFeature ─── PillarDetailFeature │
+│              ├─ ExploreFeature ────── PhotoDetailFeature  │
+│              ├─ ClassificationQueueFeature                │
+│              ├─ PostAssemblyFeature                       │
+│              │   └─ PostEditorFeature ── SlotFillerFeature│
+│              └─ SettingsFeature ───── TopicEditorFeature  │
+└──────────────────────┬──────────────────────────────────┘
+                       │ @Dependency
+┌──────────────────────▼──────────────────────────────────┐
+│              <span class="type">@DependencyClient</span> structs                    │
+│  ┌──────────────┐ ┌──────────────┐ ┌──────────────────┐ │
+│  │ Persistence  │ │ PhotoLibrary │ │ ImageClassifier  │ │
+│  │  Client      │ │   Client     │ │    Client        │ │
+│  └──────┬───────┘ └──────┬───────┘ └───┬──────────┬───┘ │
+│         │                │             │          │      │
+│    SwiftData        PhotoKit      Vision/ML   Gemini    │
+│  (mainContext +    (PHAsset +    (VNClassify  (Flash    │
+│   background)     PHImageMgr)    Request)    2.5)      │
+└─────────────────────────────────────────────────────────┘
+  </pre>
+  <div class="slide-num">10</div>
+</div>
+
+<!-- SLIDE 11: What I'd do differently -->
+<div class="slide">
+  <div class="section-label">Retrospective</div>
+  <h2>Ce que je ferais différemment</h2>
+  <div class="grid">
+    <div class="card good">
+      <h3 style="color: #30D158;">Bon appels</h3>
+      <ul>
+        <li><strong>TCA pour le scan engine</strong> — la complexité d'état justifie le framework</li>
+        <li><strong>Snapshot pattern</strong> — propre separation SwiftData ↔ TCA</li>
+        <li><strong>Hybrid classifier</strong> — on-device first, cloud fallback = bon UX + contrôle des coûts</li>
+        <li><strong>Design system dès le début</strong> — tokens cohérents, pas de magic numbers UI</li>
+        <li><strong>Batch processing</strong> — stream + batch save + progress tracking</li>
+      </ul>
+    </div>
+    <div class="card warn">
+      <h3 style="color: #FF9F0A;">Si c'était à refaire</h3>
+      <ul>
+        <li><strong>Tests dès le début</strong> — le TestStore de TCA est un superpouvoir que j'ai sous-utilisé</li>
+        <li><strong>Pagination Explore dès le MVP</strong> — charger toutes les photos d'un coup ne scale pas</li>
+        <li><strong>Agrégation SwiftData</strong> — le dashboard devrait utiliser des queries optimisées, pas du fetch-all + filter</li>
+        <li><strong>CreateML custom</strong> — le keyword matching sur VNClassifyImageRequest est un hack intelligent mais fragile</li>
+        <li><strong>Server-side Gemini dès le jour 1</strong> — la clé dans le bundle est une dette technique</li>
+      </ul>
+    </div>
+  </div>
+  <div class="slide-num">11</div>
+</div>
+
+<!-- SLIDE 12: Closing -->
+<div class="slide" style="text-align: center; justify-content: center; align-items: center;">
+  <h1 style="font-size: 56px;">PostKit</h1>
+  <p class="subtitle" style="margin-top: 16px;">TCA · Structured Concurrency · Core ML + Gemini · SwiftData</p>
+  <div style="margin-top: 48px;">
+    <p style="color: #666;">Nicolas Lucchetta</p>
+    <p style="color: #444; margin-top: 8px;">hello@nomad-lab.io</p>
+  </div>
+  <div class="slide-num">12</div>
+</div>
+
+</body>
+</html>

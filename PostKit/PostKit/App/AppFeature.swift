@@ -63,6 +63,14 @@ struct AppFeature {
                 state.selectedTab = .explore
                 return .none
 
+            case .dashboard(.composePostTapped):
+                state.selectedTab = .smartPost
+                return .none
+
+            case .dashboard(.newTemplateTapped):
+                state.selectedTab = .create
+                return .none
+
             case .smartPost(.delegate(.didSavePost)):
                 return .send(.create(.onAppear))
 

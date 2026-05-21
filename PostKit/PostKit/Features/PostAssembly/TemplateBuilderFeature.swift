@@ -88,6 +88,7 @@ struct TemplateBuilderFeature {
         }
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.dismiss) var dismiss
     @Dependency(\.uuid) var uuid
@@ -104,9 +105,11 @@ struct TemplateBuilderFeature {
             case .onAppear:
                 guard state.availablePillars.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { send in
-                    let pillars = try await persistence.fetchPillars()
-                    let photos = (try? await persistence.fetchPhotos(.classified)) ?? []
+                return .run { [gallery] send in
+                    async let pillarsTask = gallery.pillars()
+                    async let photosTask = gallery.photos(.classified)
+                    let pillars = try await pillarsTask
+                    let photos = (try? await photosTask) ?? []
                     let locations = Array(Set(photos.compactMap(\.location))).sorted()
                     await send(.dataLoaded(pillars: pillars, locations: locations))
                 }
@@ -192,8 +195,9 @@ struct TemplateBuilderFeature {
             case .saveTapped:
                 guard state.canSave else { return .none }
                 let snapshot = state.snapshot
-                return .run { send in
+                return .run { [gallery] send in
                     try await persistence.saveTemplate(snapshot)
+                    await gallery.invalidateTemplates()
                     await send(.saved)
                 }
 

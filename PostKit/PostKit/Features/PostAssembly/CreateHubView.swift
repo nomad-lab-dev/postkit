@@ -102,7 +102,7 @@ struct CreateHubView: View {
                                 .font(Typography.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundStyle(Palette.text)
-                            Text("Define photo slots with cadrage & pillar constraints")
+                            Text("Define photo slots with cadrage & topic constraints")
                                 .font(Typography.caption)
                                 .foregroundStyle(Palette.text3)
                         }
@@ -121,22 +121,26 @@ struct CreateHubView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.sm) {
                         ForEach(store.templates) { template in
-                            TemplateCard(template: template, pillars: store.pillars) {
-                                store.send(.templateSelected(template))
-                            }
-                            .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: Radius.card))
-                            .contextMenu {
-                                Button {
-                                    store.send(.editTemplateTapped(template))
-                                } label: {
-                                    Label("Edit", systemImage: "pencil")
+                            TemplateCard(template: template, pillars: store.pillars)
+                                .onTapGesture {
+                                    Haptics.tap()
+                                    store.send(.templateSelected(template))
                                 }
-                                Button(role: .destructive) {
-                                    store.send(.deleteTemplateTapped(template))
-                                } label: {
-                                    Label("Delete", systemImage: "trash")
+                                .contextMenu {
+                                    Button {
+                                        store.send(.editTemplateTapped(template))
+                                    } label: {
+                                        Label("Edit", systemImage: "pencil")
+                                    }
+                                    Button(role: .destructive) {
+                                        store.send(.deleteTemplateTapped(template))
+                                    } label: {
+                                        Label("Delete", systemImage: "trash")
+                                    }
+                                } preview: {
+                                    TemplateCard(template: template, pillars: store.pillars)
+                                        .padding(Spacing.sm)
                                 }
-                            }
                         }
                     }
                     .padding(.horizontal, Layout.Padding.screen.leading)
@@ -240,35 +244,32 @@ struct CreateHubView: View {
 private struct TemplateCard: View {
     let template: TemplateSnapshot
     let pillars: [PillarSnapshot]
-    let action: () -> Void
 
     var body: some View {
-        Button(action: action) {
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                slotPreview
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            slotPreview
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(template.name)
-                        .font(Typography.subheadline)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(Palette.text)
-                        .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(template.name)
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.text)
+                    .lineLimit(1)
 
-                    Text("\(template.slots.count) slot\(template.slots.count == 1 ? "" : "s")")
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.text3)
-                }
-                .padding(.horizontal, Spacing.xs)
-                .padding(.bottom, Spacing.xs)
+                Text("\(template.slots.count) slot\(template.slots.count == 1 ? "" : "s")")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
             }
-            .frame(width: 120)
-            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
-            .overlay(
-                RoundedRectangle(cornerRadius: Radius.card)
-                    .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
-            )
+            .padding(.horizontal, Spacing.xs)
+            .padding(.bottom, Spacing.xs)
         }
-        .buttonStyle(.plain)
+        .frame(width: 120)
+        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.card)
+                .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+        )
+        .contentShape(.contextMenuPreview, RoundedRectangle(cornerRadius: Radius.card))
     }
 
     private func matchedPillars(for slot: TemplateSlotData) -> [PillarSnapshot] {

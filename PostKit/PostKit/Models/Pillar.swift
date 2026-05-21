@@ -22,6 +22,8 @@ final class Pillar {
     var postsPerWeek: Int
     var colorHex: String
     var createdAt: Date
+    var referencePhotoIDsData: Data?
+    var referenceTagsData: Data?
 
     var topics: [String] {
         get {
@@ -34,15 +36,48 @@ final class Pillar {
         }
     }
 
-    init(name: String, emoji: String) {
+    var referencePhotoIDs: [String] {
+        get {
+            guard let data = referencePhotoIDsData else { return [] }
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("Pillar.referencePhotoIDs decode failed: \(error)"); return [] }
+        }
+        set {
+            referencePhotoIDsData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    var referenceTags: [String] {
+        get {
+            guard let data = referenceTagsData else { return [] }
+            do { return try JSONDecoder().decode([String].self, from: data) }
+            catch { modelLogger.error("Pillar.referenceTags decode failed: \(error)"); return [] }
+        }
+        set {
+            referenceTagsData = try? JSONEncoder().encode(newValue)
+        }
+    }
+
+    init(
+        name: String,
+        emoji: String,
+        about: String = "",
+        tone: PillarTone = .casual,
+        topics: [String] = [],
+        referencePhotoIDs: [String] = [],
+        referenceTags: [String] = [],
+        colorHex: String = "#8b5cf6"
+    ) {
         self.id = UUID()
         self.name = name
         self.emoji = emoji
-        self.about = ""
-        self.tone = .casual
-        self.topicsData = nil
+        self.about = about
+        self.tone = tone
+        self.topicsData = try? JSONEncoder().encode(topics)
+        self.referencePhotoIDsData = try? JSONEncoder().encode(referencePhotoIDs)
+        self.referenceTagsData = try? JSONEncoder().encode(referenceTags)
         self.postsPerWeek = 3
-        self.colorHex = "#8b5cf6"
+        self.colorHex = colorHex
         self.createdAt = .now
     }
 }

@@ -51,6 +51,7 @@ struct PostAssemblyEntryFeature {
         enum Alert: Equatable {}
     }
 
+    @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.photoLibrary) var photoLibrary
@@ -63,8 +64,8 @@ struct PostAssemblyEntryFeature {
             case .onAppear:
                 guard state.pillars.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { send in
-                    let pillars = try await persistence.fetchPillars()
+                return .run { [gallery] send in
+                    let pillars = try await gallery.pillars()
                     await send(.pillarsLoaded(pillars))
                 }
 
@@ -79,8 +80,9 @@ struct PostAssemblyEntryFeature {
                 state.isLoading = true
                 state.step = .pickPhotos
                 let pillarID = pillar.id
-                return .run { send in
-                    let photos = try await persistence.fetchPhotosForPillar(pillarID)
+                return .run { [gallery] send in
+                    let allPhotos = (try? await gallery.photos(.classified)) ?? []
+                    let photos = allPhotos.filter { $0.pillarIDs.contains(pillarID) }
                     await send(.photosLoaded(photos))
                 }
 

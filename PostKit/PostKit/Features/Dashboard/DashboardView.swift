@@ -28,9 +28,7 @@ struct DashboardView: View {
                                 onTap: { store.send(.scheduledTemplateTapped($0)) }
                             )
                         } else {
-                            TemplateNudgeCard {
-                                store.send(.composePostTapped)
-                            }
+                            TemplateNudgeCard { store.send(.composePostTapped) }
                         }
 
                         if store.pillars.isEmpty {
@@ -76,7 +74,7 @@ struct DashboardView: View {
                 )
             }
         }
-        .task { await store.send(.onAppear).finish() }
+        .onAppear { store.send(.onAppear) }
         .navigationDestination(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
             PillarDetailView(store: detailStore)
         }
@@ -88,6 +86,11 @@ struct DashboardView: View {
         .sheet(item: $store.scope(state: \.scheduledEditor, action: \.scheduledEditor)) { editorStore in
             NavigationStack {
                 PostEditorView(store: editorStore)
+            }
+        }
+        .sheet(item: $store.scope(state: \.topicEditor, action: \.topicEditor)) { topicStore in
+            NavigationStack {
+                TopicEditorView(store: topicStore)
             }
         }
         .animation(

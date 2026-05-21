@@ -5,31 +5,15 @@ import ComposableArchitecture
 import SwiftData
 import SwiftUI
 
-enum PostKitSchemaV1: VersionedSchema {
-    static var versionIdentifier: Schema.Version { Schema.Version(1, 0, 0) }
-    static var models: [any PersistentModel.Type] {
-        [Pillar.self, ClassifiedPhoto.self, GeneratedPost.self, PostTemplate.self]
-    }
-}
-
-enum PostKitMigrationPlan: SchemaMigrationPlan {
-    static var schemas: [any VersionedSchema.Type] { [PostKitSchemaV1.self] }
-    static var stages: [MigrationStage] { [] }
-}
-
 @main
 struct PostKitApp: App {
     let store: StoreOf<AppFeature>
 
     init() {
-        let schema = Schema(versionedSchema: PostKitSchemaV1.self)
         let container: ModelContainer
         do {
-            let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
             container = try ModelContainer(
-                for: schema,
-                migrationPlan: PostKitMigrationPlan.self,
-                configurations: [config]
+                for: Pillar.self, ClassifiedPhoto.self, GeneratedPost.self, PostTemplate.self
             )
         } catch {
             print("⚠️ SwiftData migration failed — resetting store: \(error)")
@@ -42,8 +26,9 @@ struct PostKitApp: App {
             UserDefaults.standard.removeObject(forKey: "fullScanComplete")
             UserDefaults.standard.removeObject(forKey: "fullScanCancelled")
             do {
-                let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-                container = try ModelContainer(for: schema, configurations: [config])
+                container = try ModelContainer(
+                    for: Pillar.self, ClassifiedPhoto.self, GeneratedPost.self, PostTemplate.self
+                )
             } catch {
                 fatalError("Could not create ModelContainer after reset: \(error)")
             }
@@ -54,10 +39,12 @@ struct PostKitApp: App {
             initialState.onboarding = OnboardingFeature.State()
         }
 
+        let persistence = PersistenceClient.live(container: container)
         self.store = Store(initialState: initialState) {
             AppFeature()
         } withDependencies: {
-            $0.persistence = .live(container: container)
+            $0.persistence = persistence
+            $0.gallery = .live(persistence: persistence)
         }
     }
 

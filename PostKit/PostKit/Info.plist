@@ -4,7 +4,10 @@
 <dict>
 	<key>GeminiAPIKey</key>
 	<string>$(GEMINI_API_KEY)</string>
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>PostKit needs access to your photo library to classify your content into pillars and help you create posts.</string>
+	<key>UILaunchScreen</key>
+	<dict>
+		<key>UIColorName</key>
+		<string>SplashStart</string>
+	</dict>
 </dict>
 </plist>

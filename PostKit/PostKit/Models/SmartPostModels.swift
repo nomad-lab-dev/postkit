@@ -54,6 +54,7 @@ struct AITemplateIntent: Equatable, Sendable {
     let slots: [AISlotDefinition]
     let reply: String
     let isComplete: Bool
+    let quickReplies: [String]
 }
 
 func resolveTemplateIntent(
@@ -69,7 +70,13 @@ func resolveTemplateIntent(
     let iso = ISO8601DateFormatter()
     var allLocations: [String] = []
     let slots = intent.slots.map { slot in
-        let pillarIDs = slot.pillarNames.compactMap { pillarLookup[$0.lowercased()] }
+        let pillarIDs = slot.pillarNames.compactMap { name -> UUID? in
+                let cleaned = name.unicodeScalars
+                    .drop(while: { !CharacterSet.letters.contains($0) })
+                    .reduce(into: "") { $0.unicodeScalars.append($1) }
+                    .trimmingCharacters(in: .whitespaces)
+                return pillarLookup[cleaned.lowercased()] ?? pillarLookup[name.lowercased()]
+            }
         let cadrages = slot.cadrageNames.compactMap { Cadrage(rawValue: $0.lowercased()) }
         allLocations.append(contentsOf: slot.locations)
 

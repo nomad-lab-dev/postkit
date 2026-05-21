@@ -5,6 +5,12 @@ import ComposableArchitecture
 import GoogleGenerativeAI
 import UIKit
 
+struct TopicSuggestion: Equatable, Sendable {
+    var name: String
+    var emoji: String
+    var about: String
+}
+
 @DependencyClient
 struct PostGeneratorClient: Sendable {
     var generateCaption: @Sendable (
@@ -30,6 +36,10 @@ struct PostGeneratorClient: Sendable {
         _ history: [ChatMessage],
         _ galleryContext: String
     ) async throws -> AITemplateIntent
+
+    var enrichTopic: @Sendable (_ input: String) async throws -> TopicSuggestion
+
+    var extractImageTags: @Sendable (_ image: UIImage) async throws -> [String]
 }
 
 // MARK: - Live
@@ -137,6 +147,12 @@ extension PostGeneratorClient: DependencyKey {
             - Reference the actual data: "I see Bangkok photos from Mar 2024 (23 photos) and Dec 2025 \
             (45 photos) — which trip?"
 
+            QUICK REPLIES:
+            - When isComplete is false (you're asking a question), include 2-4 short quickReplies \
+            the user can tap instead of typing
+            - Each reply should be a concise option (max 6 words) that directly answers your question
+            - When isComplete is true, set quickReplies to []
+
             RULES:
             - Be concise and friendly (1-2 sentences max)
             - cadrageNames from: any, wide, detail, portrait, pov, screenshot
@@ -160,7 +176,8 @@ extension PostGeneratorClient: DependencyKey {
                 }
               ],
               "reply": "string",
-              "isComplete": bool
+              "isComplete": bool,
+              "quickReplies": ["string"]
             }
             """
 
@@ -179,6 +196,52 @@ extension PostGeneratorClient: DependencyKey {
             } catch {
                 throw PostGeneratorError.geminiError(error.localizedDescription)
             }
+        },
+        enrichTopic: { input in
+            let model = try PostGemini.textModel()
+            let prompt = """
+            You help a content creator set up their photo library app.
+            They typed a topic: "\(input)"
+
+            Suggest:
+            - A refined, specific topic name (max 3 words, title case)
+            - One emoji that best represents it
+            - A one-line description of what photos fit this topic (max 100 chars)
+
+            Return ONLY a JSON object, no markdown:
+            {"name": "...", "emoji": "...", "about": "..."}
+            """
+            let response = try await model.generateContent(prompt)
+            guard let text = response.text else {
+                throw PostGeneratorError.noResponse
+            }
+            let cleaned = text
+                .replacingOccurrences(of: "```json", with: "")
+                .replacingOccurrences(of: "```", with: "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            guard let data = cleaned.data(using: .utf8),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+                throw PostGeneratorError.invalidResponse
+            }
+            return TopicSuggestion(
+                name: json["name"] as? String ?? input.capitalized,
+                emoji: json["emoji"] as? String ?? "📌",
+                about: json["about"] as? String ?? ""
+            )
+        },
+        extractImageTags: { image in
+            let model = try PostGemini.textModel()
+            let prompt = """
+            Analyze this photo and return 5-10 visual tags describing its content, \
+            style, and composition. Tags should be specific and useful for photo \
+            classification (e.g. "sports car", "urban night", "close-up food").
+
+            Return ONLY a JSON array of strings, no markdown:
+            ["tag1", "tag2", ...]
+            """
+            let response = try await model.generateContent(prompt, image)
+            guard let text = response.text else { return [] }
+            return PostGemini.parseStringArray(text) ?? []
         }
     )
 
@@ -231,8 +294,21 @@ extension PostGeneratorClient: DependencyKey {
                     )
                 },
                 reply: "Here's a \(count)-slide template for you!",
-                isComplete: true
+                isComplete: true,
+                quickReplies: []
             )
+        },
+        enrichTopic: { input in
+            try await Task.sleep(for: .milliseconds(400))
+            return TopicSuggestion(
+                name: input.capitalized,
+                emoji: "📸",
+                about: "Photos related to \(input.lowercased())"
+            )
+        },
+        extractImageTags: { _ in
+            try await Task.sleep(for: .milliseconds(300))
+            return ["outdoor", "natural light", "vibrant colors"]
         }
     )
 }
@@ -335,11 +411,14 @@ private enum PostGemini {
             )
         }
 
+        let quickReplies = json["quickReplies"] as? [String] ?? []
+
         return AITemplateIntent(
             templateName: templateName,
             slots: slots,
             reply: reply,
-            isComplete: isComplete
+            isComplete: isComplete,
+            quickReplies: isComplete ? [] : quickReplies
         )
     }
 

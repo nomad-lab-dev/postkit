@@ -22,6 +22,7 @@ struct PostEditorView: View {
                 VStack(alignment: .leading, spacing: Spacing.lg) {
                     captionSection
                     hashtagsSection
+                    scheduleSection
                     shareSection
                 }
                 .padding(.horizontal, Layout.Padding.screen.leading)
@@ -250,6 +251,74 @@ struct PostEditorView: View {
         }
     }
 
+    // MARK: - Schedule
+
+    @ViewBuilder
+    private var scheduleSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            Text("Schedule")
+                .font(Typography.subheadline)
+                .fontWeight(.semibold)
+                .foregroundStyle(Palette.text)
+
+            HStack(spacing: 0) {
+                ForEach(Weekday.allCases) { day in
+                    let isSelected = store.schedule.weekdays.contains(day)
+                    Button {
+                        Haptics.lightTap()
+                        store.send(.weekdayToggled(day))
+                    } label: {
+                        Text(day.initial)
+                            .font(Typography.caption)
+                            .fontWeight(isSelected ? .bold : .regular)
+                            .foregroundStyle(isSelected ? Palette.onAccent : Palette.text3)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                isSelected ? Palette.accent : Palette.glassStrong,
+                                in: Circle()
+                            )
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+
+            if !store.schedule.weekdays.isEmpty {
+                let sorted = store.schedule.weekdays.sorted()
+                let names = sorted.map(\.shortName).joined(separator: ", ")
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "bell.badge")
+                        .font(Typography.subheadline)
+                        .foregroundStyle(store.schedule.reminderEnabled ? Palette.accent : Palette.text4)
+
+                    Text("Remind me \(names)")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text2)
+
+                    Spacer()
+
+                    Toggle("", isOn: Binding(
+                        get: { store.schedule.reminderEnabled },
+                        set: { _ in store.send(.reminderToggled) }
+                    ))
+                    .labelsHidden()
+                    .tint(Palette.accent)
+                }
+                .padding(Spacing.sm)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.card)
+                        .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+                )
+            } else {
+                Text("Select days to get reminded to create a similar post")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
+                    .italic()
+            }
+        }
+    }
+
     // MARK: - Share
 
     private var shareSection: some View {
@@ -378,7 +447,7 @@ private struct SlotCardView: View {
 
                     Spacer()
 
-                    // Bottom row: pillar emoji + location + cadrage tag
+                    // Bottom row: pillar emoji + cadrage tag
                     HStack(spacing: Spacing.xxs) {
                         if let pillar = activePillar {
                             Text(pillar.emoji)
@@ -386,22 +455,6 @@ private struct SlotCardView: View {
                                 .frame(width: 26, height: 26)
                                 .background(.ultraThinMaterial, in: Circle())
                         }
-
-                        if let location = slot.locationLabel {
-                            HStack(spacing: 2) {
-                                Image(systemName: "mappin")
-                                    .font(.system(size: 8, weight: .semibold))
-                                Text(location)
-                                    .font(.system(size: 9, weight: .semibold))
-                            }
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 3)
-                            .background(.ultraThinMaterial, in: Capsule())
-                            .lineLimit(1)
-                        }
-
-                        Spacer()
 
                         if let cadrage = slot.slotData.cadrages.first {
                             Text(cadrage.displayName)
@@ -411,6 +464,8 @@ private struct SlotCardView: View {
                                 .padding(.vertical, 3)
                                 .background(.ultraThinMaterial, in: Capsule())
                         }
+
+                        Spacer()
                     }
                 }
                 .padding(Spacing.xs)

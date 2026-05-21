@@ -57,7 +57,7 @@ struct TemplateListView: View {
                     .font(Typography.title3)
                     .foregroundStyle(Palette.text)
 
-                Text("Create a template to structure your posts.\nEach template defines photo slots with cadrage and pillar requirements.")
+                Text("Create a template to structure your posts.\nEach template defines photo slots with cadrage and topic requirements.")
                     .font(Typography.footnote)
                     .foregroundStyle(Palette.text3)
                     .multilineTextAlignment(.center)

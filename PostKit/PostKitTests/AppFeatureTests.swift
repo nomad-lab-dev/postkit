@@ -23,38 +23,26 @@ final class AppFeatureTests: XCTestCase {
 @MainActor
 final class OnboardingFeatureTests: XCTestCase {
 
-    func test_getStarted_whenAuthorized_showsPillarSetup() async {
+    func test_getStarted_whenAuthorized_showsTopicSetup() async {
         let store = TestStore(initialState: OnboardingFeature.State()) {
             OnboardingFeature()
         } withDependencies: {
-            $0.uuid = .incrementing
             $0.photoLibrary.requestAuthorization = { .authorized }
         }
 
         await store.send(.getStartedTapped)
 
         await store.receive(\.authorizationResponse) {
-            $0.step = .pillarSetup
-            $0.availablePillars = IdentifiedArrayOf(
-                uniqueElements: OnboardingFeature.defaultPillars.enumerated().map { index, p in
-                    PillarOption(
-                        id: UUID(index),
-                        name: p.name,
-                        emoji: p.emoji,
-                        isSelected: false
-                    )
-                }
-            )
+            $0.step = .topicSetup
         }
     }
 
-    func test_pillarSetup_scan_andComplete() async {
-        let autoID = UUID(0)
+    func test_topicSetup_scan_andComplete() async {
         var state = OnboardingFeature.State()
-        state.step = .pillarSetup
-        state.availablePillars = [
-            PillarOption(id: autoID, name: "Automotive", emoji: "🚗", isSelected: true),
-            PillarOption(id: UUID(1), name: "Travel", emoji: "✈️", isSelected: false),
+        state.step = .topicSetup
+        state.topics = [
+            OnboardingTopic(id: UUID(0), name: "Automotive", emoji: "🚗", about: "Cars and vehicles"),
+            OnboardingTopic(id: UUID(1), name: "Travel", emoji: "✈️", about: "Travel photography"),
         ]
 
         let store = TestStore(initialState: state) {
@@ -87,13 +75,13 @@ final class OnboardingFeatureTests: XCTestCase {
         await store.receive(\.scanProgressed) {
             $0.scannedCount = 1
             $0.scanProgress = 0.5
-            $0.availablePillars[id: autoID]?.matchedPhotos = 1
+            $0.topics[id: UUID(0)]?.matchedPhotos = 1
         }
 
         await store.receive(\.scanProgressed) {
             $0.scannedCount = 2
             $0.scanProgress = 1.0
-            $0.availablePillars[id: autoID]?.matchedPhotos = 2
+            $0.topics[id: UUID(0)]?.matchedPhotos = 2
         }
 
         await store.receive(\.scanFinished) {
@@ -115,15 +103,14 @@ final class OnboardingFeatureTests: XCTestCase {
         }
     }
 
-    func test_startPostKit_persistsSelectedPillars() async {
+    func test_startPostKit_persistsAllTopics() async {
         let savedNames = LockIsolated<[String]>([])
 
         var state = OnboardingFeature.State()
         state.step = .scanComplete
-        state.availablePillars = [
-            PillarOption(id: UUID(), name: "Travel", emoji: "✈️", isSelected: true, matchedPhotos: 5),
-            PillarOption(id: UUID(), name: "Food", emoji: "🍽️", isSelected: false, matchedPhotos: 0),
-            PillarOption(id: UUID(), name: "Fitness", emoji: "💪", isSelected: true, matchedPhotos: 2),
+        state.topics = [
+            OnboardingTopic(id: UUID(0), name: "Travel", emoji: "✈️", about: "Travel photography", matchedPhotos: 5),
+            OnboardingTopic(id: UUID(1), name: "Fitness", emoji: "💪", about: "Workout content", matchedPhotos: 2),
         ]
 
         let store = TestStore(initialState: state) {
@@ -139,5 +126,34 @@ final class OnboardingFeatureTests: XCTestCase {
         await store.receive(\.persistResponse)
 
         XCTAssertEqual(savedNames.value, ["Travel", "Fitness"])
+    }
+
+    func test_enrichTopic_addsTopicToList() async {
+        let store = TestStore(initialState: OnboardingFeature.State(step: .topicSetup)) {
+            OnboardingFeature()
+        } withDependencies: {
+            $0.uuid = .incrementing
+            $0.postGenerator.enrichTopic = { input in
+                TopicSuggestion(
+                    name: input.capitalized,
+                    emoji: "🚗",
+                    about: "Cars and vehicles"
+                )
+            }
+        }
+
+        store.exhaustivity = .off
+        await store.send(.set(\.topicInput, "cars"))
+        await store.send(.enrichRequested) {
+            $0.isEnriching = true
+        }
+
+        await store.receive(\.enrichmentLoaded) {
+            $0.isEnriching = false
+            $0.topicInput = ""
+            $0.topics = [
+                OnboardingTopic(id: UUID(0), name: "Cars", emoji: "🚗", about: "Cars and vehicles"),
+            ]
+        }
     }
 }
