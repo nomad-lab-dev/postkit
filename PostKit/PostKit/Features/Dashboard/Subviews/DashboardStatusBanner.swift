@@ -5,6 +5,7 @@ import SwiftUI
 
 struct DashboardStatusBanner: View {
     let status: DashboardStatus
+    let sortedUpToDate: Date?
     let onPrimary: () -> Void
 
     var body: some View {
@@ -44,7 +45,6 @@ struct DashboardStatusBanner: View {
         case .idle: Palette.green
         case .newItems: Palette.yellow
         case .paused: Palette.yellow
-        case .reviewNeeded: Palette.purple
         case .scanning: Palette.accent
         }
     }
@@ -54,22 +54,36 @@ struct DashboardStatusBanner: View {
         case .idle: "All caught up"
         case .newItems(let n): "\(n) new photo\(n == 1 ? "" : "s")"
         case .paused(let n): "\(n) photo\(n == 1 ? "" : "s") left to sort"
-        case .reviewNeeded(let n): "\(n) item\(n == 1 ? "" : "s") to review"
         case .scanning: "Scanning your library"
         }
+    }
+
+    private var sortedDateLine: String? {
+        guard let date = sortedUpToDate else { return nil }
+        return "Sorted up to \(date.formatted(.dateTime.month(.wide).year()))"
     }
 
     @ViewBuilder
     private var subhead: some View {
         switch status {
         case .idle:
-            staticSubhead("Your library is fully classified")
+            if let line = sortedDateLine {
+                staticSubhead(line)
+            } else {
+                staticSubhead("Your library is fully classified")
+            }
         case .newItems:
-            staticSubhead("Ready to classify")
+            if let line = sortedDateLine {
+                staticSubhead(line)
+            } else {
+                staticSubhead("Ready to classify")
+            }
         case .paused:
-            staticSubhead("Scan paused — tap to resume")
-        case .reviewNeeded:
-            EmptyView()
+            if let line = sortedDateLine {
+                staticSubhead("\(line) · tap to resume")
+            } else {
+                staticSubhead("Scan paused — tap to resume")
+            }
         case .scanning(_, let processed, let total, let startedAt) where total > 0:
             let remaining = max(total - processed, 0)
             VStack(alignment: .leading, spacing: 2) {
@@ -121,7 +135,6 @@ struct DashboardStatusBanner: View {
         case .idle: nil
         case .newItems: "Scan now"
         case .paused: "Resume"
-        case .reviewNeeded: "Review"
         case .scanning: "Pause"
         }
     }

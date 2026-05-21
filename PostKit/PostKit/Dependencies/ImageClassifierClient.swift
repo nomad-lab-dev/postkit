@@ -79,11 +79,13 @@ extension ImageClassifierClient: DependencyKey {
             try await CadrageDetector.detect(image)
         },
         classifyWithCadrage: { image, pillars in
-            let observations = try await VisionClassifier.runClassification(image)
-            let results = await classifyWithVisionAndGemini(image: image, pillars: pillars, observations: observations)
-            let cadrage = CadrageDetector.isScreenshot(image)
+            let retainedImage = image
+            let observations = try await VisionClassifier.runClassification(retainedImage)
+            let results = await classifyWithVisionAndGemini(image: retainedImage, pillars: pillars, observations: observations)
+            let cadrage = CadrageDetector.isScreenshot(retainedImage)
                 ? .screenshot
-                : CadrageDetector.mapToCadrage(observations, image: image)
+                : CadrageDetector.mapToCadrage(observations, image: retainedImage)
+            let _ = retainedImage
             return ClassificationOutput(results: results, cadrage: cadrage)
         }
     )
@@ -133,7 +135,22 @@ extension DependencyValues {
 // MARK: - Vision (Core ML on-device)
 
 private enum VisionClassifier {
+    static func deepCopyCGImage(_ image: UIImage) -> CGImage? {
+        guard let source = image.cgImage else { return nil }
+        let w = source.width, h = source.height
+        guard let ctx = CGContext(
+            data: nil, width: w, height: h,
+            bitsPerComponent: 8, bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        ) else { return nil }
+        ctx.draw(source, in: CGRect(x: 0, y: 0, width: w, height: h))
+        return ctx.makeImage()
+    }
+
     static func runClassification(_ image: UIImage) async throws -> [VNClassificationObservation] {
+        guard let ownedCG = deepCopyCGImage(image) else { return [] }
+
         return try await withCheckedThrowingContinuation { continuation in
             let resumed = OSAllocatedUnfairLock(initialState: false)
             func resumeOnce(with result: Result<[VNClassificationObservation], Error>) {
@@ -153,16 +170,10 @@ private enum VisionClassifier {
                 resumeOnce(with: .success(observations))
             }
 
-            autoreleasepool {
-                guard let cgImage = image.cgImage else {
-                    resumeOnce(with: .success([]))
-                    return
-                }
-                do {
-                    try VNImageRequestHandler(cgImage: cgImage).perform([request])
-                } catch {
-                    resumeOnce(with: .failure(error))
-                }
+            do {
+                try VNImageRequestHandler(cgImage: ownedCG).perform([request])
+            } catch {
+                resumeOnce(with: .failure(error))
             }
         }
     }
@@ -217,8 +228,14 @@ private enum VisionClassifier {
 
         for obs in observations where obs.confidence > 0.01 {
             let id = obs.identifier.lowercased()
+            let tokens = Set(id.split(separator: "_").map(String.init))
             for (pillar, terms) in pillarTerms {
-                if terms.contains(where: { id.contains($0) }) {
+                let matched = terms.contains { term in
+                    tokens.contains { token in
+                        token == term || (term.count >= 4 && token.hasPrefix(term))
+                    }
+                }
+                if matched {
                     scores[pillar.name, default: 0] += obs.confidence
                     tags[pillar.name, default: []].append(obs.identifier)
                 }
@@ -339,6 +356,8 @@ private enum CadrageDetector {
     static func detect(_ image: UIImage) async throws -> Cadrage {
         if isScreenshot(image) { return .screenshot }
 
+        guard let ownedCG = VisionClassifier.deepCopyCGImage(image) else { return .wide }
+
         return try await withCheckedThrowingContinuation { continuation in
             let resumed = OSAllocatedUnfairLock(initialState: false)
             func resumeOnce(with result: Result<Cadrage, Error>) {
@@ -358,16 +377,10 @@ private enum CadrageDetector {
                 resumeOnce(with: .success(mapToCadrage(observations, image: image)))
             }
 
-            autoreleasepool {
-                guard let cgImage = image.cgImage else {
-                    resumeOnce(with: .success(.wide))
-                    return
-                }
-                do {
-                    try VNImageRequestHandler(cgImage: cgImage).perform([request])
-                } catch {
-                    resumeOnce(with: .failure(error))
-                }
+            do {
+                try VNImageRequestHandler(cgImage: ownedCG).perform([request])
+            } catch {
+                resumeOnce(with: .failure(error))
             }
         }
     }

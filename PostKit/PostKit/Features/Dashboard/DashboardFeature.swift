@@ -11,7 +11,6 @@ private let log = Logger(subsystem: "PostKit", category: "Dashboard")
 enum DashboardStatus: Equatable, Sendable {
     case scanning(progress: Double, processed: Int, total: Int, startedAt: Date?)
     case paused(remaining: Int)
-    case reviewNeeded(count: Int)
     case newItems(count: Int)
     case idle(lastScanAt: Date?)
 }
@@ -54,10 +53,12 @@ struct DashboardFeature {
                     startedAt: scanStartedAt
                 )
             }
-            if pendingReviewCount > 0 { return .reviewNeeded(count: pendingReviewCount) }
             if newPhotoCount > 0 { return .newItems(count: newPhotoCount) }
-            if remainingToScan > 0 && classifiedAssetCount > 0 {
-                return .paused(remaining: remainingToScan)
+            if remainingToScan > 0 {
+                if classifiedAssetCount > 0 {
+                    return .paused(remaining: remainingToScan)
+                }
+                return .newItems(count: remainingToScan)
             }
             return .idle(lastScanAt: lastScanCompletedAt)
         }
@@ -80,7 +81,7 @@ struct DashboardFeature {
         case composePostTapped
         case newTemplateTapped
         case pullToRefresh
-        case batchProcessed(processedCount: Int, perPillar: [String: Int], perPillarAssetIDs: [String: [String]], pendingCount: Int)
+        case batchProcessed(processedCount: Int, perPillar: [String: Int], perPillarAssetIDs: [String: [String]], pendingCount: Int, batchFrontierDate: Date?)
         case pillarsEnriched([PillarSnapshot])
         case scanFinished
         case resolveLocations
@@ -152,7 +153,8 @@ struct DashboardFeature {
 
                     let totalSorted = counts.values.reduce(0, +)
                     let scanDone = userDefaults.boolForKey("fullScanComplete")
-                    let sortedUpToDate = allPhotos.compactMap(\.capturedAt).min()
+                    let frontierEpoch = userDefaults.doubleForKey("scanFrontierDate")
+                    let sortedUpToDate: Date? = frontierEpoch > 0 ? Date(timeIntervalSince1970: frontierEpoch) : nil
                     log.info("📤 sending dashboardLoaded — sorted=\(totalSorted), scanDone=\(scanDone)")
                     await send(.dashboardLoaded(pillars: enriched, totalSorted: totalSorted, scanDone: scanDone, pendingCount: pendingCount, libraryCount: libraryCount, classifiedCount: classifiedCount, sortedUpToDate: sortedUpToDate))
 
@@ -200,8 +202,6 @@ struct DashboardFeature {
                     return .send(.startFullScanRequested)
                 case .scanning:
                     return .send(.cancelScanTapped)
-                case .reviewNeeded:
-                    return .send(.reviewPendingTapped)
                 }
 
             case .pullToRefresh:
@@ -339,6 +339,7 @@ struct DashboardFeature {
 
                                     let lat = asset.location?.coordinate.latitude
                                     let lon = asset.location?.coordinate.longitude
+                                    let _ = img
 
                                     return (
                                         snapshot: ClassifiedPhotoSnapshot(
@@ -379,7 +380,8 @@ struct DashboardFeature {
                             Logger(subsystem: "PostKit", category: "Dashboard")
                                 .error("Batch save failed (\(photosToSave.count) photos): \(error)")
                         }
-                        await send(.batchProcessed(processedCount: photosToSave.count, perPillar: perPillar, perPillarAssetIDs: perPillarAssetIDs, pendingCount: pendingInBatch))
+                        let batchFrontierDate = batch.compactMap(\.creationDate).min()
+                        await send(.batchProcessed(processedCount: photosToSave.count, perPillar: perPillar, perPillarAssetIDs: perPillarAssetIDs, pendingCount: pendingInBatch, batchFrontierDate: batchFrontierDate))
                         await Task.yield()
                     }
                     await send(.scanFinished)
@@ -396,10 +398,13 @@ struct DashboardFeature {
                 state.isScanning = false
                 return .cancel(id: CancelID.fullScan)
 
-            case let .batchProcessed(processedCount, perPillar, perPillarAssetIDs, pendingCount):
+            case let .batchProcessed(processedCount, perPillar, perPillarAssetIDs, pendingCount, batchFrontierDate):
                 state.totalPhotosSorted += processedCount
                 state.classifiedAssetCount += processedCount
                 state.pendingReviewCount += pendingCount
+                if let frontierDate = batchFrontierDate {
+                    state.sortedUpToDate = frontierDate
+                }
                 if state.totalPhotosToScan > 0 {
                     let scannedSoFar = state.totalPhotosToScan - state.remainingToScan
                     state.scanProgress = min(Double(scannedSoFar) / Double(state.totalPhotosToScan), 1.0)
@@ -425,9 +430,13 @@ struct DashboardFeature {
                 state.scanProgress = 1
                 state.showScanCompleteToast = true
                 state.lastScanCompletedAt = now
+                let frontierDate = state.sortedUpToDate
                 return .merge(
                     .run { [userDefaults, gallery] send in
                         userDefaults.setBool(true, "fullScanComplete")
+                        if let frontier = frontierDate {
+                            userDefaults.setDouble(frontier.timeIntervalSince1970, "scanFrontierDate")
+                        }
                         await gallery.invalidateAll()
                         try? await Task.sleep(for: .seconds(2.5))
                         await send(.scanCompleteToastDismissed)

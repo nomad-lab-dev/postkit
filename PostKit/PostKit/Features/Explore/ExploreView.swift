@@ -81,6 +81,37 @@ struct ExploreView: View {
                                                 Label("Classify", systemImage: "tag")
                                             }
                                         }
+                                        let otherPillars = store.pillars.filter { !photo.pillarIDs.contains($0.id) }
+                                        if !otherPillars.isEmpty {
+                                            Menu {
+                                                ForEach(otherPillars) { pillar in
+                                                    Button {
+                                                        store.send(.addPhotoToPillar(photo, pillar.id))
+                                                    } label: {
+                                                        Label("\(pillar.emoji) \(pillar.name)", systemImage: "plus.circle")
+                                                    }
+                                                }
+                                            } label: {
+                                                Label("Add to topic...", systemImage: "plus.circle")
+                                            }
+                                        }
+                                        if photo.pillarID != nil {
+                                            Button {
+                                                store.send(.removePillarFromPhoto(photo))
+                                            } label: {
+                                                if let pillar = store.pillars.first(where: { $0.id == photo.pillarID }) {
+                                                    Label("Remove from \(pillar.name)", systemImage: "xmark.circle")
+                                                } else {
+                                                    Label("Remove from topic", systemImage: "xmark.circle")
+                                                }
+                                            }
+                                        }
+                                        Button(role: .destructive) {
+                                            store.send(.declassifyPhoto(photo))
+                                        } label: {
+                                            Label("Declassify", systemImage: "arrow.uturn.backward")
+                                        }
+                                        Divider()
                                         Button {
                                             store.send(.copyPhotoTapped(photo.assetLocalIdentifier))
                                         } label: {

@@ -315,46 +315,36 @@ private struct PostCard: View {
     let post: GeneratedPostSnapshot
 
     var body: some View {
-        HStack(spacing: Spacing.sm) {
-            postThumbnails
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            photoStrip
 
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                if !post.caption.isEmpty {
-                    Text(post.caption)
-                        .font(Typography.subheadline)
-                        .fontWeight(.medium)
-                        .foregroundStyle(Palette.text)
-                        .lineLimit(2)
-                } else {
-                    Text("Untitled post")
-                        .font(Typography.subheadline)
-                        .foregroundStyle(Palette.text3)
-                        .italic()
-                }
+            if !post.caption.isEmpty {
+                Text(post.caption)
+                    .font(Typography.footnote)
+                    .foregroundStyle(Palette.text2)
+                    .lineLimit(2)
+                    .padding(.horizontal, Spacing.xs)
+            }
 
-                HStack(spacing: Spacing.xs) {
-                    Text("\(post.photoIDs.count) photo\(post.photoIDs.count == 1 ? "" : "s")")
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.text3)
+            HStack(spacing: Spacing.xs) {
+                Text("\(post.photoIDs.count) photo\(post.photoIDs.count == 1 ? "" : "s")")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
 
-                    Text("·")
-                        .foregroundStyle(Palette.text4)
+                Text("·")
+                    .foregroundStyle(Palette.text4)
 
-                    Text(post.createdAt, style: .date)
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.text3)
-                }
+                Text(post.createdAt, style: .date)
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
+
+                Spacer()
 
                 StatusBadge(status: post.status)
             }
-
-            Spacer(minLength: 0)
-
-            Image(systemName: "chevron.right")
-                .font(Typography.caption2)
-                .foregroundStyle(Palette.text4)
+            .padding(.horizontal, Spacing.xs)
         }
-        .padding(Layout.Padding.card)
+        .padding(.vertical, Spacing.xs)
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.card)
@@ -362,22 +352,20 @@ private struct PostCard: View {
         )
     }
 
-    private var postThumbnails: some View {
-        let cols = Array(repeating: GridItem(.flexible(), spacing: 2), count: 2)
-        return LazyVGrid(columns: cols, spacing: 2) {
-            ForEach(post.photoIDs.prefix(4), id: \.self) { assetID in
-                PostMiniThumbnail(assetIdentifier: assetID)
-            }
-            if post.photoIDs.count < 4 {
-                ForEach(0..<(4 - min(post.photoIDs.count, 4)), id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: 3)
-                        .fill(Palette.placeholder)
-                        .aspectRatio(1, contentMode: .fit)
-                }
+    private var photoStrip: some View {
+        let ids = Array(post.photoIDs.prefix(5))
+        let overflow = post.photoIDs.count > 5 ? post.photoIDs.count - 5 : 0
+        return HStack(spacing: 2) {
+            ForEach(Array(ids.enumerated()), id: \.element) { index, assetID in
+                PostStripThumbnail(
+                    assetIdentifier: assetID,
+                    extraCount: index == ids.count - 1 ? overflow : 0
+                )
             }
         }
-        .frame(width: 64, height: 64)
+        .frame(height: 80)
         .clipShape(RoundedRectangle(cornerRadius: Radius.tile))
+        .padding(.horizontal, Spacing.xs)
     }
 }
 
@@ -405,15 +393,16 @@ private struct StatusBadge: View {
     }
 }
 
-// MARK: - Post Mini Thumbnail
+// MARK: - Post Strip Thumbnail
 
-private struct PostMiniThumbnail: View {
+private struct PostStripThumbnail: View {
     let assetIdentifier: String
+    var extraCount: Int = 0
     @State private var image: UIImage?
 
     var body: some View {
         Color.clear
-            .aspectRatio(1, contentMode: .fit)
+            .frame(maxWidth: .infinity)
             .overlay {
                 if let image {
                     Image(uiImage: image)
@@ -424,17 +413,26 @@ private struct PostMiniThumbnail: View {
                 }
             }
             .clipped()
-            .clipShape(RoundedRectangle(cornerRadius: 3))
+            .overlay {
+                if extraCount > 0 {
+                    Color.black.opacity(0.45)
+                    Text("+\(extraCount)")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundStyle(.white)
+                }
+            }
             .task(id: assetIdentifier) {
                 let fetchResult = PHAsset.fetchAssets(
                     withLocalIdentifiers: [assetIdentifier], options: nil
                 )
                 guard let asset = fetchResult.firstObject else { return }
+                let scale = UIScreen.main.scale
+                let side = ceil(80 * scale)
                 let options = PHImageRequestOptions()
-                options.deliveryMode = .fastFormat
+                options.deliveryMode = .opportunistic
                 options.isNetworkAccessAllowed = false
                 PHImageManager.default().requestImage(
-                    for: asset, targetSize: CGSize(width: 100, height: 100),
+                    for: asset, targetSize: CGSize(width: side, height: side),
                     contentMode: .aspectFill, options: options
                 ) { result, _ in
                     guard let result else { return }

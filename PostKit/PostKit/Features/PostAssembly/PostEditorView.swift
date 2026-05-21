@@ -613,6 +613,10 @@ private struct SlotThumbnail: View {
                         .scaledToFill()
                 } else {
                     Palette.placeholder
+                        .overlay {
+                            ProgressView()
+                                .tint(Palette.text3)
+                        }
                 }
             }
             .clipped()

@@ -113,7 +113,12 @@ struct CreateHubFeature {
 
             case let .postTapped(post):
                 let template = state.templates.first { $0.id == post.templateID }
-                    ?? TemplateSnapshot(name: "Post", slots: [TemplateSlotData(name: "Photo")])
+                    ?? TemplateSnapshot(
+                        name: "Post",
+                        slots: (0..<max(post.photoIDs.count, 1)).map { i in
+                            TemplateSlotData(name: "Photo \(i + 1)")
+                        }
+                    )
                 var filledSlots = template.slots.map { FilledSlot(slotData: $0, photoIDs: []) }
                 for (index, photoID) in post.photoIDs.enumerated() where index < filledSlots.count {
                     filledSlots[index].photoIDs.insert(photoID)

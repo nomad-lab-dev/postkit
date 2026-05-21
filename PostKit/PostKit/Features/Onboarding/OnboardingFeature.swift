@@ -24,9 +24,11 @@ struct OnboardingFeature {
         var topics: IdentifiedArrayOf<OnboardingTopic> = []
         var scanProgress: Double = 0
         var scannedCount: Int = 0
-        var totalToScan: Int = 30
+        var totalToScan: Int = 20
         var photoAccessDenied: Bool = false
         var cloudAIEnabled: Bool = false
+        var isSaving: Bool = false
+        var emptyGallery: Bool = false
         @Presents var alert: AlertState<Action.Alert>?
 
         var totalMatchedPhotos: Int {
@@ -61,6 +63,7 @@ struct OnboardingFeature {
 
         enum Alert: Equatable {
             case openSettingsTapped
+            case retrySaveTapped
         }
     }
 
@@ -68,6 +71,7 @@ struct OnboardingFeature {
     @Dependency(\.imageClassifier) var imageClassifier
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.persistence) var persistence
+    @Dependency(\.gallery) var gallery
     @Dependency(\.userDefaults) var userDefaults
     @Dependency(\.openURL) var openURL
     @Dependency(\.uuid) var uuid
@@ -169,28 +173,55 @@ struct OnboardingFeature {
                 let enrichTopic = postGenerator.enrichTopic
                 return .merge(
                     .run { send in
-                        let assets = try await fetchRecent(30)
+                        let assets = try await fetchRecent(20)
 
                         if assets.isEmpty {
+                            await send(.scanStarted(totalPhotos: 0))
                             await send(.scanFinished)
                             return
                         }
 
                         await send(.scanStarted(totalPhotos: assets.count))
 
-                        for asset in assets {
-                            try Task.checkCancellation()
-                            do {
-                                let image = try await fetchImage(
-                                    asset.localIdentifier,
-                                    Layout.ImageSize.classification
-                                )
-                                let results = try await classify(image, pillarDefs)
-                                await send(.scanProgressed(results, assetIdentifier: asset.localIdentifier))
-                            } catch is CancellationError {
-                                return
-                            } catch {
-                                await send(.scanProgressed([], assetIdentifier: asset.localIdentifier))
+                        try await withThrowingTaskGroup(of: ([ClassificationResult], String)?.self) { group in
+                            var inFlight = 0
+                            let maxConcurrent = 4
+
+                            for asset in assets {
+                                try Task.checkCancellation()
+
+                                if inFlight >= maxConcurrent {
+                                    if let result = try await group.next(), let (results, assetID) = result {
+                                        await send(.scanProgressed(results, assetIdentifier: assetID))
+                                    }
+                                    inFlight -= 1
+                                }
+
+                                group.addTask {
+                                    let image: UIImage
+                                    do {
+                                        image = try await fetchImage(
+                                            asset.localIdentifier,
+                                            Layout.ImageSize.classification
+                                        )
+                                    } catch is CancellationError { throw CancellationError() }
+                                    catch { return ([], asset.localIdentifier) }
+
+                                    let results: [ClassificationResult]
+                                    do {
+                                        results = try await classify(image, pillarDefs)
+                                    } catch is CancellationError { throw CancellationError() }
+                                    catch { return ([], asset.localIdentifier) }
+
+                                    return (results, asset.localIdentifier)
+                                }
+                                inFlight += 1
+                            }
+
+                            for try await result in group {
+                                if let (results, assetID) = result {
+                                    await send(.scanProgressed(results, assetIdentifier: assetID))
+                                }
                             }
                         }
                         await send(.scanFinished)
@@ -219,6 +250,7 @@ struct OnboardingFeature {
                 )
 
             case let .scanStarted(totalPhotos):
+                state.emptyGallery = totalPhotos == 0
                 state.totalToScan = max(totalPhotos, 1)
                 return .none
 
@@ -243,20 +275,32 @@ struct OnboardingFeature {
                 return .none
 
             case .startPostKitTapped:
+                guard !state.isSaving else { return .none }
+                state.isSaving = true
                 let topics = state.topics
-                return .run { [postGenerator] send in
+                return .run { [persistence, gallery] send in
+                    let existing = try await persistence.fetchPillars()
+                    let existingByName = Dictionary(
+                        existing.map { ($0.name.lowercased(), $0) },
+                        uniquingKeysWith: { first, _ in first }
+                    )
+
                     for topic in topics {
-                        let keywords = (try? await postGenerator.generatePillarKeywords(
-                            topic.name, topic.about, []
-                        )) ?? []
-                        let snapshot = PillarSnapshot(
-                            name: topic.name,
-                            emoji: topic.emoji,
-                            about: topic.about,
-                            referenceTags: keywords
-                        )
-                        try await persistence.savePillar(snapshot)
+                        if var match = existingByName[topic.name.lowercased()] {
+                            match.emoji = topic.emoji
+                            match.about = topic.about
+                            try await persistence.savePillar(match)
+                        } else {
+                            let snapshot = PillarSnapshot(
+                                name: topic.name,
+                                emoji: topic.emoji,
+                                about: topic.about,
+                                referenceTags: []
+                            )
+                            try await persistence.savePillar(snapshot)
+                        }
                     }
+                    await gallery.invalidateAll()
                     await send(.persistResponse(.success(())))
                 } catch: { error, send in
                     await send(.persistResponse(.failure(error)))
@@ -266,11 +310,15 @@ struct OnboardingFeature {
                 return .none
 
             case .persistResponse(.failure):
+                state.isSaving = false
                 state.alert = .saveFailed
                 return .none
 
             case .alert(.presented(.openSettingsTapped)):
                 return openSettings()
+
+            case .alert(.presented(.retrySaveTapped)):
+                return .send(.startPostKitTapped)
 
             case .alert, .binding:
                 return .none
@@ -304,8 +352,11 @@ extension AlertState where Action == OnboardingFeature.Action.Alert {
     static let saveFailed = AlertState {
         TextState("Save Failed")
     } actions: {
+        ButtonState(action: .retrySaveTapped) {
+            TextState("Try Again")
+        }
         ButtonState(role: .cancel) {
-            TextState("OK")
+            TextState("Cancel")
         }
     } message: {
         TextState("Could not save your topics. Please try again.")

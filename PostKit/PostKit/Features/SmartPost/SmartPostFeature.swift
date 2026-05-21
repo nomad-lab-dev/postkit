@@ -17,7 +17,7 @@ struct SmartPostFeature {
         var messages: [ChatMessage] = [
             ChatMessage(
                 role: .assistant,
-                text: "Hey! Describe the post you want — topic, vibe, number of slides, locations. I'll build a template from your photo library."
+                text: "Hey! Describe the post you want: topic, number of slides, locations... I'll build a template from your photo library."
             )
         ]
         var inputText: String = ""
@@ -200,7 +200,7 @@ struct SmartPostFeature {
                 state.messages = [
                     ChatMessage(
                         role: .assistant,
-                        text: "Chat reset! Describe the post you want — topic, vibe, number of slides, locations."
+                        text: "Chat reset! Describe the post you want: topic, number of slides, locations."
                     )
                 ]
                 state.inputText = ""

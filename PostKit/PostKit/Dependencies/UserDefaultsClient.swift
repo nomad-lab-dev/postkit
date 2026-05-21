@@ -8,17 +8,23 @@ import Foundation
 struct UserDefaultsClient: Sendable {
     var boolForKey: @Sendable (_ key: String) -> Bool = { _ in false }
     var setBool: @Sendable (_ value: Bool, _ forKey: String) -> Void
+    var doubleForKey: @Sendable (_ key: String) -> Double = { _ in 0 }
+    var setDouble: @Sendable (_ value: Double, _ forKey: String) -> Void
 }
 
 extension UserDefaultsClient: DependencyKey {
     static let liveValue = UserDefaultsClient(
         boolForKey: { UserDefaults.standard.bool(forKey: $0) },
-        setBool: { UserDefaults.standard.set($0, forKey: $1) }
+        setBool: { UserDefaults.standard.set($0, forKey: $1) },
+        doubleForKey: { UserDefaults.standard.double(forKey: $0) },
+        setDouble: { UserDefaults.standard.set($0, forKey: $1) }
     )
 
     static let previewValue = UserDefaultsClient(
         boolForKey: { _ in true },
-        setBool: { _, _ in }
+        setBool: { _, _ in },
+        doubleForKey: { _ in 0 },
+        setDouble: { _, _ in }
     )
 }
 

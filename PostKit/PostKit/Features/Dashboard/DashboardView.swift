@@ -17,6 +17,7 @@ struct DashboardView: View {
                     LazyVStack(alignment: .leading, spacing: Spacing.lg) {
                         DashboardStatusBanner(
                             status: store.derivedStatus,
+                            sortedUpToDate: store.sortedUpToDate,
                             onPrimary: { store.send(.statusPrimaryTapped) }
                         )
                         .padding(.top, Spacing.xs)
@@ -26,13 +27,6 @@ struct DashboardView: View {
                                 templates: store.scheduledTemplates,
                                 now: Date(),
                                 onTap: { store.send(.scheduledTemplateTapped($0)) }
-                            )
-                        }
-
-                        if !store.isScanning && store.classifiedAssetCount > 0 {
-                            SortProgressIndicator(
-                                sortedUpToDate: store.sortedUpToDate,
-                                remaining: store.remainingToScan
                             )
                         }
 
@@ -49,6 +43,13 @@ struct DashboardView: View {
                             onCompose: { store.send(.composePostTapped) },
                             onNewTemplate: { store.send(.newTemplateTapped) }
                         )
+
+                        if store.pendingReviewCount > 0 {
+                            PendingReviewCard(
+                                count: store.pendingReviewCount,
+                                onReview: { store.send(.reviewPendingTapped) }
+                            )
+                        }
 
                         Spacer(minLength: Spacing.xxl)
                     }
@@ -135,6 +136,52 @@ struct DashboardView: View {
     }
 }
 
+// MARK: - Pending Review Card
+
+private struct PendingReviewCard: View {
+    let count: Int
+    let onReview: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "eye")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Palette.text3)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("We found \(count) photo\(count == 1 ? "" : "s") we're not sure about")
+                        .font(Typography.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Palette.text)
+
+                    Text("Take a quick look — they might belong to a topic")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            Button {
+                Haptics.tap()
+                onReview()
+            } label: {
+                Text("Take a look")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.button))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(Layout.Padding.card)
+        .cardStyle()
+    }
+}
+
 // MARK: - Scan Status Tag
 
 private struct ScanStatusTag: View {
@@ -189,50 +236,6 @@ private struct ScanStatusTag: View {
         .padding(.horizontal, Spacing.sm)
         .padding(.vertical, Spacing.xxs + 2)
         .background(color.opacity(0.12), in: Capsule())
-    }
-}
-
-// MARK: - Sort Progress Indicator
-
-private struct SortProgressIndicator: View {
-    let sortedUpToDate: Date?
-    let remaining: Int
-
-    var body: some View {
-        if remaining == 0 {
-            HStack(spacing: Spacing.sm) {
-                Image(systemName: "checkmark.circle.fill")
-                    .font(.system(size: 18))
-                    .foregroundStyle(Palette.green)
-                Text("Entire gallery sorted")
-                    .font(Typography.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundStyle(Palette.text)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Layout.Padding.card)
-            .cardStyle()
-        } else {
-            VStack(alignment: .leading, spacing: Spacing.xxs) {
-                if let date = sortedUpToDate {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "calendar.badge.checkmark")
-                            .font(.system(size: 15))
-                            .foregroundStyle(Palette.accent)
-                        Text("Gallery sorted up to \(date.formatted(.dateTime.day().month(.wide).year()))")
-                            .font(Typography.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Palette.text)
-                    }
-                }
-                Text("\(remaining) photo\(remaining == 1 ? "" : "s") left to sort")
-                    .font(Typography.caption)
-                    .foregroundStyle(Palette.text3)
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(Layout.Padding.card)
-            .cardStyle()
-        }
     }
 }
 
