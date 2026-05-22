@@ -62,6 +62,10 @@ struct PostEditorView: View {
                 ShareSheet(items: images)
             }
         }
+        .sheet(item: $store.scope(state: \.paywall, action: \.paywall)) { paywallStore in
+            PaywallView(store: paywallStore)
+                .presentationDetents([.large])
+        }
     }
 
     // MARK: - Slots Grid

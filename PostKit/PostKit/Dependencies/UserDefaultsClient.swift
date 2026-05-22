@@ -10,6 +10,8 @@ struct UserDefaultsClient: Sendable {
     var setBool: @Sendable (_ value: Bool, _ forKey: String) -> Void
     var doubleForKey: @Sendable (_ key: String) -> Double = { _ in 0 }
     var setDouble: @Sendable (_ value: Double, _ forKey: String) -> Void
+    var intForKey: @Sendable (_ key: String) -> Int = { _ in 0 }
+    var setInt: @Sendable (_ value: Int, _ forKey: String) -> Void
 }
 
 extension UserDefaultsClient: DependencyKey {
@@ -17,14 +19,18 @@ extension UserDefaultsClient: DependencyKey {
         boolForKey: { UserDefaults.standard.bool(forKey: $0) },
         setBool: { UserDefaults.standard.set($0, forKey: $1) },
         doubleForKey: { UserDefaults.standard.double(forKey: $0) },
-        setDouble: { UserDefaults.standard.set($0, forKey: $1) }
+        setDouble: { UserDefaults.standard.set($0, forKey: $1) },
+        intForKey: { UserDefaults.standard.integer(forKey: $0) },
+        setInt: { UserDefaults.standard.set($0, forKey: $1) }
     )
 
     static let previewValue = UserDefaultsClient(
         boolForKey: { _ in true },
         setBool: { _, _ in },
         doubleForKey: { _ in 0 },
-        setDouble: { _, _ in }
+        setDouble: { _, _ in },
+        intForKey: { _ in 0 },
+        setInt: { _, _ in }
     )
 }
 
