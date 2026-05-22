@@ -9,6 +9,7 @@ struct SettingsView: View {
 
     var body: some View {
         List {
+            subscriptionSection
             topicsSection
             privacySection
             notificationsSection
@@ -21,6 +22,59 @@ struct SettingsView: View {
             NavigationStack {
                 TopicEditorView(store: editorStore)
             }
+        }
+        .sheet(item: $store.scope(state: \.paywall, action: \.paywall)) { paywallStore in
+            PaywallView(store: paywallStore)
+                .presentationDetents([.large])
+        }
+    }
+
+    private var subscriptionSection: some View {
+        Section {
+            if store.isProUser {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "crown.fill")
+                        .foregroundStyle(Palette.accent)
+                    Text("PostKit Pro")
+                        .font(Typography.body)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Palette.text)
+                    Spacer()
+                    Text("Active")
+                        .font(Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Palette.green)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 2)
+                        .background(Palette.green.opacity(0.15), in: Capsule())
+                }
+                .listRowBackground(Palette.surface)
+            } else {
+                Button {
+                    store.send(.upgradeToProTapped)
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "crown.fill")
+                            .foregroundStyle(Palette.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Upgrade to Pro")
+                                .font(Typography.body)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Palette.text)
+                            Text("Unlimited AI posts, scanning & templates")
+                                .font(Typography.caption)
+                                .foregroundStyle(Palette.text3)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.text3)
+                    }
+                }
+                .listRowBackground(Palette.surface)
+            }
+        } header: {
+            Text("Subscription")
         }
     }
 
