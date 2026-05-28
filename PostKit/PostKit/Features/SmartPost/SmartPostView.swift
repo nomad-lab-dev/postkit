@@ -317,35 +317,19 @@ private struct TemplatePreviewCard: View {
                             .fontWeight(.medium)
                             .foregroundStyle(Palette.text)
 
-                        HStack(spacing: 2) {
+                        HStack(spacing: Spacing.xs) {
                             let matched = matchedPillars(for: slot)
                             if !matched.isEmpty {
                                 ForEach(matched.prefix(3)) { pillar in
                                     Text(pillar.emoji)
-                                        .font(.system(size: 11))
-                                        .frame(width: 14, height: 14)
-                                        .clipped()
+                                        .font(.system(size: 12))
                                 }
-                            }
-
-                            ForEach(slot.cadrages.prefix(2), id: \.self) { cadrage in
-                                Text(cadrage.initial)
-                                    .font(.system(size: 9, weight: .bold, design: .rounded))
-                                    .foregroundStyle(Palette.text2)
-                                    .padding(.horizontal, 5)
-                                    .padding(.vertical, 2)
-                                    .background(Palette.glassStrong, in: Capsule())
-                                    .overlay(Capsule().strokeBorder(Palette.border, lineWidth: 0.5))
                             }
 
                             if !slot.locations.isEmpty {
-                                HStack(spacing: 2) {
-                                    Image(systemName: "mappin")
-                                        .font(.system(size: 9))
-                                    Text(slot.locations.first ?? "")
-                                        .font(Typography.caption2)
-                                }
-                                .foregroundStyle(Palette.text3)
+                                Text("📍 \(slot.locations.first ?? "")")
+                                    .font(Typography.caption2)
+                                    .foregroundStyle(Palette.text3)
                             }
                         }
                     }
