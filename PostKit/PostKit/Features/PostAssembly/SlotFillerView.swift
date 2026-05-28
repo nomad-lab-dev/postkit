@@ -126,24 +126,123 @@ struct SlotFillerView: View {
                 .padding(.horizontal, Layout.Padding.screen.leading)
             }
 
-            if !store.uniqueLocations.isEmpty {
+            locationSection
+            dateFilterRow
+        }
+    }
+
+    // MARK: - Location Section
+
+    private var locationSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            if !store.activeLocations.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: Spacing.xs) {
-                        ForEach(store.uniqueLocations, id: \.self) { location in
-                            FilterChipView(
-                                label: "📍 \(location)",
-                                isSelected: store.activeLocations.contains(location),
-                                isConfigured: store.constrainedLocations.contains(location)
-                            ) {
-                                store.send(.locationFilterToggled(location))
+                        ForEach(store.activeLocations.sorted(), id: \.self) { location in
+                            Button {
+                                Haptics.lightTap()
+                                store.send(.locationRemoved(location))
+                            } label: {
+                                HStack(spacing: 4) {
+                                    Text("📍 \(location)")
+                                        .font(Typography.subheadline)
+                                        .fontWeight(.semibold)
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 9, weight: .bold))
+                                }
+                                .foregroundStyle(Palette.onAccent)
+                                .padding(.horizontal, Spacing.sm)
+                                .padding(.vertical, Spacing.xxs + 2)
+                                .background(Palette.accent, in: Capsule())
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, Layout.Padding.screen.leading)
                 }
             }
 
-            dateFilterRow
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "mappin")
+                        .font(.system(size: 13))
+                        .foregroundStyle(Palette.text3)
+                        .padding(.leading, Spacing.sm)
+
+                    TextField("Add a location…", text: $store.locationQuery)
+                        .font(Typography.body)
+                        .onSubmit { commitLocation() }
+                        .submitLabel(.done)
+
+                    if !store.locationQuery.trimmingCharacters(in: .whitespaces).isEmpty {
+                        Button { commitLocation() } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 20))
+                                .foregroundStyle(Palette.accent)
+                        }
+                        .buttonStyle(.plain)
+                        .padding(.trailing, Spacing.sm)
+                    }
+                }
+                .padding(.vertical, Spacing.xs)
+                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.input))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.input).stroke(Palette.border)
+                )
+                .padding(.horizontal, Layout.Padding.screen.leading)
+
+                if !store.suggestedLocations.isEmpty {
+                    VStack(alignment: .leading, spacing: 0) {
+                        ForEach(Array(store.suggestedLocations.prefix(5).enumerated()), id: \.element) { index, location in
+                            let isFromGallery = store.uniqueLocations.contains(location)
+                            Button {
+                                Haptics.lightTap()
+                                store.send(.locationSelected(location))
+                            } label: {
+                                HStack(spacing: Spacing.xs) {
+                                    Image(systemName: isFromGallery ? "photo.circle.fill" : "mappin.circle.fill")
+                                        .font(.system(size: 14))
+                                        .foregroundStyle(isFromGallery ? Palette.accent : Palette.text3)
+                                    Text(location)
+                                        .font(Typography.subheadline)
+                                        .foregroundStyle(Palette.text)
+                                    Spacer()
+                                    if isFromGallery {
+                                        Text("gallery")
+                                            .font(Typography.caption2)
+                                            .foregroundStyle(Palette.accent)
+                                    }
+                                }
+                                .padding(.horizontal, Spacing.sm)
+                                .padding(.vertical, Spacing.sm)
+                            }
+                            .buttonStyle(.plain)
+
+                            if index < min(5, store.suggestedLocations.count) - 1 {
+                                Divider().padding(.leading, Spacing.xl)
+                            }
+                        }
+                    }
+                    .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.card)
+                            .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+                    )
+                    .padding(.horizontal, Layout.Padding.screen.leading)
+                    .padding(.top, Spacing.xxs)
+                }
+            }
+        }
+    }
+
+    private func commitLocation() {
+        let trimmed = store.locationQuery.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        Haptics.lightTap()
+        if let match = store.suggestedLocations.first {
+            store.send(.locationSelected(match))
+        } else {
+            store.send(.locationSelected(trimmed))
         }
     }
 

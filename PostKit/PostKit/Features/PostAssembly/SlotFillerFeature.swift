@@ -25,6 +25,8 @@ struct SlotFillerFeature {
         var activeEndDate: Date?
         var selectedPhotoIDs: Set<String> = []
         var isLoading: Bool = false
+        var locationQuery: String = ""
+        var mapSearchResults: [String] = []
 
         var filteredPhotos: [ClassifiedPhotoSnapshot] {
             photos.filter { photo in
@@ -87,6 +89,18 @@ struct SlotFillerFeature {
             return constrained + others
         }
 
+        var suggestedLocations: [String] {
+            let q = locationQuery.trimmingCharacters(in: .whitespaces).lowercased()
+            guard !q.isEmpty else { return [] }
+            let fromGallery = uniqueLocations.filter {
+                $0.lowercased().contains(q) && !activeLocations.contains($0)
+            }
+            let fromMap = mapSearchResults.filter {
+                !activeLocations.contains($0) && !fromGallery.contains($0)
+            }
+            return fromGallery + fromMap
+        }
+
         var hasActiveConstraints: Bool {
             !constrainedPillarIDs.isEmpty || !constrainedCadrages.isEmpty
                 || !constrainedLocations.isEmpty || constrainedStartDate != nil
@@ -121,18 +135,21 @@ struct SlotFillerFeature {
         }
     }
 
-    enum Action {
+    enum Action: BindableAction {
         case onAppear
         case dataLoaded(pillars: [PillarSnapshot], photos: [ClassifiedPhotoSnapshot])
         case pillarFilterToggled(UUID)
         case cadrageFilterToggled(Cadrage)
-        case locationFilterToggled(String)
+        case locationSelected(String)
+        case locationRemoved(String)
+        case locationSearchResults([String])
         case startDateChanged(Date?)
         case endDateChanged(Date?)
         case clearDatesTapped
         case photoToggled(String)
         case confirmTapped
         case delegate(Delegate)
+        case binding(BindingAction<State>)
 
         enum Delegate: Equatable {
             case didConfirm(slotID: UUID, photoIDs: Set<String>, locationLabel: String?, updatedSlotData: TemplateSlotData)
@@ -140,9 +157,14 @@ struct SlotFillerFeature {
     }
 
     @Dependency(\.gallery) var gallery
+    @Dependency(\.locationSearch) var locationSearch
     @Dependency(\.dismiss) var dismiss
 
+    private enum CancelID: Hashable { case locationSearch }
+
     var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -178,12 +200,18 @@ struct SlotFillerFeature {
                 }
                 return .none
 
-            case let .locationFilterToggled(location):
-                if state.activeLocations.contains(location) {
-                    state.activeLocations.remove(location)
-                } else {
-                    state.activeLocations.insert(location)
-                }
+            case let .locationSelected(location):
+                state.activeLocations.insert(location)
+                state.locationQuery = ""
+                state.mapSearchResults = []
+                return .cancel(id: CancelID.locationSearch)
+
+            case let .locationRemoved(location):
+                state.activeLocations.remove(location)
+                return .none
+
+            case let .locationSearchResults(results):
+                state.mapSearchResults = results
                 return .none
 
             case let .startDateChanged(date):
@@ -234,7 +262,20 @@ struct SlotFillerFeature {
                     await dismiss()
                 }
 
-            case .delegate:
+            case .binding(\.locationQuery):
+                let query = state.locationQuery.trimmingCharacters(in: .whitespaces)
+                guard query.count >= 2 else {
+                    state.mapSearchResults = []
+                    return .cancel(id: CancelID.locationSearch)
+                }
+                return .run { [locationSearch] send in
+                    try await Task.sleep(for: .milliseconds(300))
+                    let results = await locationSearch.search(query)
+                    await send(.locationSearchResults(results))
+                }
+                .cancellable(id: CancelID.locationSearch, cancelInFlight: true)
+
+            case .delegate, .binding:
                 return .none
             }
         }
