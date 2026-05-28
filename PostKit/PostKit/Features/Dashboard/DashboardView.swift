@@ -142,6 +142,12 @@ private struct PendingReviewCard: View {
     let count: Int
     let onReview: () -> Void
 
+    private var countKey: LocalizedStringKey {
+        count == 1
+            ? "We found 1 photo we're not sure about"
+            : "We found \(count) photos we're not sure about"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: Spacing.sm) {
@@ -150,7 +156,7 @@ private struct PendingReviewCard: View {
                     .foregroundStyle(Palette.text3)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("We found \(count) photo\(count == 1 ? "" : "s") we're not sure about")
+                    Text(countKey)
                         .font(Typography.subheadline)
                         .fontWeight(.medium)
                         .foregroundStyle(Palette.text)
@@ -195,7 +201,7 @@ private struct ScanStatusTag: View {
         if isScanning {
             tagContent(
                 icon: "arrow.triangle.2.circlepath",
-                text: "Scan en cours…",
+                text: "Scanning…",
                 color: Palette.accent,
                 spinning: true
             )
@@ -205,20 +211,20 @@ private struct ScanStatusTag: View {
             Button(action: onTap) {
                 tagContent(
                     icon: "viewfinder",
-                    text: "\(remaining) à scanner",
+                    text: "\(remaining) to scan",
                     color: Palette.accent
                 )
             }
         } else {
             tagContent(
                 icon: "checkmark.circle.fill",
-                text: "Galerie triée",
+                text: "Gallery sorted",
                 color: Palette.green
             )
         }
     }
 
-    private func tagContent(icon: String, text: String, color: Color, spinning: Bool = false) -> some View {
+    private func tagContent(icon: String, text: LocalizedStringKey, color: Color, spinning: Bool = false) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .semibold))

@@ -5,6 +5,15 @@ import ComposableArchitecture
 import Foundation
 import os
 
+private func chatLocale() -> Locale {
+    let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+    return stored.isEmpty ? .autoupdatingCurrent : Locale(identifier: stored)
+}
+
+private func chatMsg(_ key: String.LocalizationValue) -> String {
+    String(localized: key, locale: chatLocale())
+}
+
 private let log = Logger(subsystem: "PostKit", category: "SmartPost")
 
 @Reducer
@@ -18,7 +27,7 @@ struct SmartPostFeature {
         var messages: [ChatMessage] = [
             ChatMessage(
                 role: .assistant,
-                text: "Hey! Describe the post you want: topic, number of slides, locations... I'll build a template from your photo library."
+                text: chatMsg("Hey! Describe the post you want: topic, number of slides, locations… I'll build a template from your photo library.")
             )
         ]
         var inputText: String = ""
@@ -162,16 +171,16 @@ struct SmartPostFeature {
                     state.messages.append(
                         ChatMessage(
                             role: .assistant,
-                            text: "I couldn't generate slots from that. Could you be more specific about what photos you want?"
+                            text: chatMsg("I couldn't generate slots from that. Could you be more specific about what photos you want?")
                         )
                     )
                 }
                 return .none
 
-            case let .aiError(message):
+            case .aiError:
                 state.isAIThinking = false
                 state.messages.append(
-                    ChatMessage(role: .assistant, text: "Something went wrong: \(message). Try again?")
+                    ChatMessage(role: .assistant, text: chatMsg("Something went wrong. Try again?"))
                 )
                 return .none
 
@@ -198,7 +207,7 @@ struct SmartPostFeature {
                 state.generatedTemplate = nil
                 state.quickReplies = []
                 state.messages.append(
-                    ChatMessage(role: .assistant, text: "Fresh start! What kind of post do you want to create?")
+                    ChatMessage(role: .assistant, text: chatMsg("Fresh start! What kind of post do you want to create?"))
                 )
                 return .none
 
@@ -208,7 +217,7 @@ struct SmartPostFeature {
                 state.messages = [
                     ChatMessage(
                         role: .assistant,
-                        text: "Chat reset! Describe the post you want: topic, number of slides, locations."
+                        text: chatMsg("Hey! Describe the post you want: topic, number of slides, locations… I'll build a template from your photo library.")
                     )
                 ]
                 state.inputText = ""
@@ -222,8 +231,8 @@ struct SmartPostFeature {
                     ChatMessage(
                         role: .assistant,
                         text: state.showSaveAsTemplate
-                            ? "Post saved! Want to save this as a reusable template? You can schedule it for specific days."
-                            : "Post saved! Want to create another one?"
+                            ? chatMsg("Post saved! Want to save this as a reusable template? You can schedule it for specific days.")
+                            : chatMsg("Post saved! Want to create another one?")
                     )
                 )
                 return .send(.delegate(.didSavePost))
@@ -236,12 +245,12 @@ struct SmartPostFeature {
                     await send(.templateSaved(template))
                 }
 
-            case let .templateSaved(template):
+            case .templateSaved:
                 state.lastSavedTemplate = nil
                 state.messages.append(
                     ChatMessage(
                         role: .assistant,
-                        text: "Template \"\(template.name)\" saved! Find it in the Create tab to schedule it for specific days."
+                        text: chatMsg("Template saved! Find it in the Create tab to schedule it for specific days.")
                     )
                 )
                 return .none

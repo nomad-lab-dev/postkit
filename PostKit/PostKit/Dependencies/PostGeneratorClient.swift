@@ -118,6 +118,7 @@ extension PostGeneratorClient: DependencyKey {
             You are Smart Post, the AI assistant inside PostKit — an iOS app for content creators \
             who organize their photo library by "pillars" (themes like Food, Travel, Cars, etc.) \
             and create social media posts from those photos.
+            \(PostGemini.languageInstruction())
 
             YOUR ROLE: Help the user build a post template by chatting naturally. You design a \
             set of "slots" — each slot will be auto-filled with a matching photo from their library.
@@ -355,6 +356,18 @@ extension DependencyValues {
 // MARK: - Gemini Helpers
 
 private enum PostGemini {
+
+    static func languageInstruction() -> String {
+        let code = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+        switch code {
+        case "fr":
+            return "\nLANGUAGE: Write all conversational text (\"reply\", \"quickReplies\", slot \"name\" and \"about\" fields) in French. Keep all JSON keys in English."
+        case "es":
+            return "\nLANGUAGE: Write all conversational text (\"reply\", \"quickReplies\", slot \"name\" and \"about\" fields) in Spanish. Keep all JSON keys in English."
+        default:
+            return ""
+        }
+    }
 
     static func apiKey() throws -> String {
         guard let key = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,

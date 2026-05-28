@@ -60,7 +60,11 @@ private struct ShimmerModifier: ViewModifier {
                 }
                 .clipped()
             }
-            .onAppear {
+            .task {
+                // Wait one tick so the tab-switch transition has settled before
+                // starting the repeat animation — otherwise the active transition
+                // transaction swallows the repeatForever and the shimmer freezes.
+                try? await Task.sleep(for: .milliseconds(50))
                 withAnimation(.linear(duration: 1.3).repeatForever(autoreverses: false)) {
                     phase = 2
                 }

@@ -101,7 +101,7 @@ struct DashboardFeature {
     @Dependency(\.userDefaults) var userDefaults
     @Dependency(\.date.now) var now
 
-    private enum CancelID: Int, Sendable { case fullScan }
+    private enum CancelID: Int, Sendable { case fullScan, autoScanTimer }
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
@@ -186,6 +186,7 @@ struct DashboardFeature {
                         try await Task.sleep(for: .seconds(5))
                         await send(.startFullScanRequested)
                     }
+                    .cancellable(id: CancelID.autoScanTimer, cancelInFlight: true)
                 }
                 return .none
 
@@ -220,24 +221,30 @@ struct DashboardFeature {
                 let pillarsNeedingKeywords = state.pillars.filter { $0.referenceTags.isEmpty }
                 if !pillarsNeedingKeywords.isEmpty {
                     let pillars = Array(state.pillars)
-                    return .run { [postGenerator = self.postGenerator, persistence] send in
-                        var enriched = pillars
-                        for i in enriched.indices {
-                            guard enriched[i].referenceTags.isEmpty else { continue }
-                            let keywords = (try? await postGenerator.generatePillarKeywords(
-                                enriched[i].name,
-                                enriched[i].about,
-                                enriched[i].topics
-                            )) ?? []
-                            guard !keywords.isEmpty else { continue }
-                            enriched[i].referenceTags = keywords
-                            try? await persistence.savePillar(enriched[i])
+                    return .merge(
+                        .cancel(id: CancelID.autoScanTimer),
+                        .run { [postGenerator = self.postGenerator, persistence] send in
+                            var enriched = pillars
+                            for i in enriched.indices {
+                                guard enriched[i].referenceTags.isEmpty else { continue }
+                                let keywords = (try? await postGenerator.generatePillarKeywords(
+                                    enriched[i].name,
+                                    enriched[i].about,
+                                    enriched[i].topics
+                                )) ?? []
+                                guard !keywords.isEmpty else { continue }
+                                enriched[i].referenceTags = keywords
+                                try? await persistence.savePillar(enriched[i])
+                            }
+                            await send(.pillarsEnriched(enriched))
                         }
-                        await send(.pillarsEnriched(enriched))
-                    }
+                    )
                 }
 
-                return .send(.pillarsEnriched(Array(state.pillars)))
+                return .merge(
+                    .cancel(id: CancelID.autoScanTimer),
+                    .send(.pillarsEnriched(Array(state.pillars)))
+                )
 
             case let .pillarsEnriched(enrichedPillars):
                 state.pillars = IdentifiedArrayOf(uniqueElements: enrichedPillars)

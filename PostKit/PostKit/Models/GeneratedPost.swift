@@ -4,6 +4,7 @@
 import Foundation
 import os
 import SwiftData
+import SwiftUI
 
 private let modelLogger = Logger(subsystem: "PostKit", category: "Models")
 
@@ -42,6 +43,14 @@ enum SocialPlatform: String, Codable, CaseIterable, Sendable {
 
 enum PostStatus: String, Codable, CaseIterable, Sendable {
     case draft, ready, published
+
+    var displayName: LocalizedStringKey {
+        switch self {
+        case .draft: "Draft"
+        case .ready: "Ready"
+        case .published: "Published"
+        }
+    }
 }
 
 @Model

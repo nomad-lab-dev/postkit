@@ -90,12 +90,19 @@ struct PostKitApp: App {
 
     private static let isTesting = ProcessInfo.processInfo.environment["XCTestBundlePath"] != nil
 
+    @AppStorage("appLanguage") private var appLanguage: String = ""
+
+    private var resolvedLocale: Locale {
+        appLanguage.isEmpty ? .autoupdatingCurrent : Locale(identifier: appLanguage)
+    }
+
     var body: some Scene {
         WindowGroup {
             if Self.isTesting {
                 Color.clear
             } else {
                 AppView(store: store)
+                    .environment(\.locale, resolvedLocale)
             }
         }
     }

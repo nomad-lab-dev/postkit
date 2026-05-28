@@ -383,7 +383,7 @@ private struct StatusBadge: View {
     }
 
     var body: some View {
-        Text(status.rawValue.capitalized)
+        Text(status.displayName)
             .font(Typography.caption2)
             .fontWeight(.medium)
             .foregroundStyle(color)

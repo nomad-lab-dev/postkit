@@ -5,8 +5,8 @@ import SwiftUI
 
 struct ActionTile: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let tint: Color
     let action: () -> Void
 

@@ -6,6 +6,7 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var store: StoreOf<SettingsFeature>
+    @AppStorage("appLanguage") private var appLanguage: String = ""
 
     var body: some View {
         List {
@@ -13,6 +14,7 @@ struct SettingsView: View {
             topicsSection
             privacySection
             notificationsSection
+            languageSection
             aboutSection
         }
         .listStyle(.insetGrouped)
@@ -187,6 +189,25 @@ struct SettingsView: View {
             }
         } header: {
             Text("Notifications")
+        }
+    }
+
+    private var languageSection: some View {
+        Section {
+            Picker(selection: $appLanguage) {
+                Text("System Default").tag("")
+                Text("English").tag("en")
+                Text("Français").tag("fr")
+                Text("Español").tag("es")
+            } label: {
+                Label("Language", systemImage: "globe")
+                    .foregroundStyle(Palette.text)
+            }
+            .pickerStyle(.menu)
+            .tint(Palette.accent)
+            .listRowBackground(Palette.surface)
+        } header: {
+            Text("Language")
         }
     }
 

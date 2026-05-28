@@ -3,11 +3,19 @@
 
 import ComposableArchitecture
 import Foundation
+import SwiftUI
 
 enum PostFilter: String, CaseIterable, Sendable {
     case all, draft, ready, published
 
-    var displayName: String { rawValue.capitalized }
+    var displayName: LocalizedStringKey {
+        switch self {
+        case .all: "All"
+        case .draft: "Draft"
+        case .ready: "Ready"
+        case .published: "Published"
+        }
+    }
 }
 
 @Reducer

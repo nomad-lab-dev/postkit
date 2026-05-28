@@ -4,6 +4,7 @@
 import SwiftUI
 
 struct DashboardStatusBanner: View {
+    @Environment(\.locale) private var locale
     let status: DashboardStatus
     let sortedUpToDate: Date?
     let onPrimary: () -> Void
@@ -49,38 +50,41 @@ struct DashboardStatusBanner: View {
         }
     }
 
-    private var headline: String {
+    private var headline: LocalizedStringKey {
         switch status {
         case .idle: "All caught up"
-        case .newItems(let n): "\(n) new photo\(n == 1 ? "" : "s")"
-        case .paused(let n): "\(n) photo\(n == 1 ? "" : "s") left to sort"
+        case .newItems(let n): n == 1 ? "1 new photo" : "\(n) new photos"
+        case .paused(let n): n == 1 ? "1 photo left to sort" : "\(n) photos left to sort"
         case .scanning: "Scanning your library"
         }
     }
 
-    private var sortedDateLine: String? {
+    private var sortedDateString: String? {
         guard let date = sortedUpToDate else { return nil }
-        return "Sorted up to \(date.formatted(.dateTime.month(.wide).year()))"
+        return date.formatted(.dateTime.month(.wide).year().locale(locale))
     }
 
     @ViewBuilder
     private var subhead: some View {
         switch status {
         case .idle:
-            if let line = sortedDateLine {
-                staticSubhead(line)
+            if let dateStr = sortedDateString {
+                let key: LocalizedStringKey = "Sorted up to \(dateStr)"
+                staticSubhead(key)
             } else {
                 staticSubhead("Your library is fully classified")
             }
         case .newItems:
-            if let line = sortedDateLine {
-                staticSubhead(line)
+            if let dateStr = sortedDateString {
+                let key: LocalizedStringKey = "Sorted up to \(dateStr)"
+                staticSubhead(key)
             } else {
                 staticSubhead("Ready to classify")
             }
         case .paused:
-            if let line = sortedDateLine {
-                staticSubhead("\(line) · tap to resume")
+            if let dateStr = sortedDateString {
+                let key: LocalizedStringKey = "Sorted up to \(dateStr) · tap to resume"
+                staticSubhead(key)
             } else {
                 staticSubhead("Scan paused — tap to resume")
             }
@@ -98,7 +102,7 @@ struct DashboardStatusBanner: View {
                 .foregroundStyle(Palette.text3)
                 .animation(.easeInOut(duration: 0.3), value: processed)
 
-                if let eta = Self.estimateETA(processed: processed, remaining: remaining, startedAt: startedAt) {
+                if let eta = Self.estimateETA(processed: processed, remaining: remaining, startedAt: startedAt, locale: locale) {
                     Text(eta)
                         .font(Typography.caption2)
                         .foregroundStyle(Palette.text3)
@@ -109,7 +113,7 @@ struct DashboardStatusBanner: View {
         }
     }
 
-    private static func estimateETA(processed: Int, remaining: Int, startedAt: Date?) -> String? {
+    private static func estimateETA(processed: Int, remaining: Int, startedAt: Date?, locale: Locale) -> String? {
         guard let startedAt, processed > 5, remaining > 0 else { return nil }
         let elapsed = Date().timeIntervalSince(startedAt)
         guard elapsed > 0 else { return nil }
@@ -117,20 +121,21 @@ struct DashboardStatusBanner: View {
         guard rate > 0 else { return nil }
         let secondsLeft = Int(Double(remaining) / rate)
         if secondsLeft < 60 {
-            return "~\(max(secondsLeft, 1))s remaining"
+            let secs = max(secondsLeft, 1)
+            return String(localized: "~\(secs) sec remaining", locale: locale)
         } else {
             let minutes = secondsLeft / 60
-            return "~\(minutes) min remaining"
+            return String(localized: "~\(minutes) min remaining", locale: locale)
         }
     }
 
-    private func staticSubhead(_ text: String) -> some View {
+    private func staticSubhead(_ text: LocalizedStringKey) -> some View {
         Text(text)
             .font(Typography.footnote)
             .foregroundStyle(Palette.text3)
     }
 
-    private var primaryActionLabel: String? {
+    private var primaryActionLabel: LocalizedStringKey? {
         switch status {
         case .idle: nil
         case .newItems: "Scan now"

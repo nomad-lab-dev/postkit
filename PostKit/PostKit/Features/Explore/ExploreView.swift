@@ -145,6 +145,7 @@ struct ExploreView: View {
             }
         }
         .background(Palette.bg)
+        .toolbarBackground(.visible, for: .tabBar)
         .navigationTitle(AppStrings.Explore.title)
         .onAppear { store.send(.onAppear) }
         .navigationDestination(
@@ -277,7 +278,7 @@ struct ExploreView: View {
 // MARK: - Filter Chip
 
 private struct FilterChip: View {
-    let label: String
+    let label: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
@@ -308,7 +309,7 @@ private struct FilterChip: View {
 // MARK: - Status Chip
 
 private struct StatusChip: View {
-    let label: String
+    let label: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
