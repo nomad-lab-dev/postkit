@@ -311,26 +311,25 @@ private struct TemplatePreviewCard: View {
                                 .foregroundStyle(Palette.accent)
                         }
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(slot.name)
-                            .font(Typography.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Palette.text)
-
-                        HStack(spacing: Spacing.xs) {
+                    VStack(alignment: .leading, spacing: 3) {
+                        HStack(spacing: Spacing.xxs) {
                             let matched = matchedPillars(for: slot)
                             if !matched.isEmpty {
-                                ForEach(matched.prefix(3)) { pillar in
+                                ForEach(matched.prefix(2)) { pillar in
                                     Text(pillar.emoji)
                                         .font(.system(size: 12))
                                 }
                             }
+                            Text(slot.name)
+                                .font(Typography.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Palette.text)
+                        }
 
-                            if !slot.locations.isEmpty {
-                                Text("📍 \(slot.locations.first ?? "")")
-                                    .font(Typography.caption2)
-                                    .foregroundStyle(Palette.text3)
-                            }
+                        if !slot.locations.isEmpty {
+                            Text("📍 \(slot.locations.first ?? "")")
+                                .font(Typography.caption2)
+                                .foregroundStyle(Palette.text3)
                         }
                     }
 
