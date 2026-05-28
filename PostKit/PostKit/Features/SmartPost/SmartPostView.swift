@@ -329,7 +329,13 @@ private struct TemplatePreviewCard: View {
                             }
 
                             ForEach(slot.cadrages.prefix(2), id: \.self) { cadrage in
-                                CadrageTag(cadrage: cadrage)
+                                Text(cadrage.initial)
+                                    .font(.system(size: 9, weight: .bold, design: .rounded))
+                                    .foregroundStyle(Palette.text2)
+                                    .padding(.horizontal, 5)
+                                    .padding(.vertical, 2)
+                                    .background(Palette.glassStrong, in: Capsule())
+                                    .overlay(Capsule().strokeBorder(Palette.border, lineWidth: 0.5))
                             }
 
                             if !slot.locations.isEmpty {
