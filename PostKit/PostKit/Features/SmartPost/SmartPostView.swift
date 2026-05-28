@@ -312,13 +312,14 @@ private struct TemplatePreviewCard: View {
                         }
 
                     VStack(alignment: .leading, spacing: 3) {
-                        HStack(spacing: Spacing.xxs) {
-                            let matched = matchedPillars(for: slot)
+                        let matched = matchedPillars(for: slot)
+                        HStack(alignment: .center, spacing: Spacing.xxs) {
                             if !matched.isEmpty {
-                                ForEach(matched.prefix(2)) { pillar in
-                                    Text(pillar.emoji)
-                                        .font(.system(size: 12))
-                                }
+                                Text(matched.prefix(2).map(\.emoji).joined())
+                                    .font(.system(size: 12))
+                                    .frame(width: 20, alignment: .leading)
+                            } else {
+                                Color.clear.frame(width: 20, height: 1)
                             }
                             Text(slot.name)
                                 .font(Typography.caption)
@@ -327,13 +328,13 @@ private struct TemplatePreviewCard: View {
                         }
 
                         if !slot.locations.isEmpty {
-                            Text("📍 \(slot.locations.first ?? "")")
-                                .font(Typography.caption2)
-                                .foregroundStyle(Palette.text3)
+                            HStack(spacing: Spacing.xxs) {
+                                Text("📍 \(slot.locations.first ?? "")")
+                                    .font(Typography.caption2)
+                                    .foregroundStyle(Palette.text3)
+                            }
                         }
                     }
-
-                    Spacer()
                 }
             }
         }

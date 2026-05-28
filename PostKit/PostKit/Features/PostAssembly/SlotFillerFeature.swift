@@ -116,7 +116,8 @@ struct SlotFillerFeature {
             constrainedLocations: [String] = [],
             constrainedStartDate: Date? = nil,
             constrainedEndDate: Date? = nil,
-            preselectedPhotoIDs: Set<String> = []
+            preselectedPhotoIDs: Set<String> = [],
+            activePillarID: UUID? = nil
         ) {
             self.slotID = slotID
             self.slotName = slotName
@@ -127,8 +128,12 @@ struct SlotFillerFeature {
             self.constrainedStartDate = constrainedStartDate
             self.constrainedEndDate = constrainedEndDate
             self.selectedPhotoIDs = preselectedPhotoIDs
-            self.activePillarIDs = Set(constrainedPillarIDs)
-            self.activeCadrages = Set(constrainedCadrages)
+            // Pre-activate the pillar of the currently selected photo so the user
+            // sees a filtered view matching their existing choice. Falls back to empty
+            // (show all) if no photo is selected yet.
+            self.activePillarIDs = activePillarID.map { [$0] }.map(Set.init) ?? []
+            self.activeCadrages = []
+            // Location pre-applied but sanitized after photos load (see dataLoaded).
             self.activeLocations = Set(constrainedLocations)
             self.activeStartDate = constrainedStartDate
             self.activeEndDate = constrainedEndDate
@@ -157,7 +162,6 @@ struct SlotFillerFeature {
     }
 
     @Dependency(\.gallery) var gallery
-    @Dependency(\.persistence) var persistence
     @Dependency(\.locationSearch) var locationSearch
     @Dependency(\.dismiss) var dismiss
 
@@ -171,11 +175,9 @@ struct SlotFillerFeature {
             case .onAppear:
                 guard state.photos.isEmpty else { return .none }
                 state.isLoading = true
-                // Bypass the gallery cache and fetch directly — the cache may have been
-                // populated before the scan classified photos this session.
-                return .run { [gallery, persistence] send in
+                return .run { [gallery] send in
                     async let pillarsTask = gallery.pillars()
-                    async let photosTask = persistence.fetchPhotos(.classified)
+                    async let photosTask = gallery.photos(.classified)
                     let pillars = try await pillarsTask
                     let photos = (try? await photosTask) ?? []
                     await send(.dataLoaded(pillars: pillars, photos: photos))
@@ -185,6 +187,11 @@ struct SlotFillerFeature {
                 state.pillars = pillars
                 state.photos = photos
                 state.isLoading = false
+                // Drop active locations that don't appear in loaded photos — auto-fill uses a
+                // soft location match and may have picked a photo without that location, so the
+                // constrained location chip would otherwise block the entire grid.
+                let knownLocations = Set(photos.compactMap(\.location))
+                state.activeLocations = state.activeLocations.filter { knownLocations.contains($0) }
                 return .none
 
             case let .pillarFilterToggled(id):

@@ -233,7 +233,8 @@ struct PostEditorFeature {
                         ? state.template.locations : slot.slotData.locations,
                     constrainedStartDate: nil,
                     constrainedEndDate: nil,
-                    preselectedPhotoIDs: slot.photoIDs
+                    preselectedPhotoIDs: slot.photoIDs,
+                    activePillarID: slot.activePillarID
                 )
                 return .none
 

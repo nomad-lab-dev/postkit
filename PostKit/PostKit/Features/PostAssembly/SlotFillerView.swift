@@ -233,7 +233,7 @@ struct SlotFillerView: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+        .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.card)
                 .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
