@@ -138,10 +138,10 @@ extension PostGeneratorClient: DependencyKey {
             - If unsure which pillar, ask
 
             DATE RANGE MATCHING:
-            - Use startDate/endDate (ISO 8601) per slot when the user mentions a time period
-            - If a location appears multiple times in the clusters (e.g. Bangkok in Mar 2024 AND Dec 2025), \
-            ASK which trip the user means and show the available date clusters
-            - Only set dates when the user specifies or confirms a period
+            - NEVER set startDate/endDate unless the user explicitly mentioned a specific time period in their message (e.g. "last summer", "my trip in March", "photos from 2024")
+            - If the user did NOT mention any dates or time period, always leave startDate and endDate as null for every slot — do not infer, guess, or default to any date range
+            - If a location appears multiple times in the clusters (e.g. Bangkok in Mar 2024 AND Dec 2025), ASK which trip the user means and show the available date clusters
+            - Only set dates once the user has explicitly confirmed a specific period
 
             DISAMBIGUATION:
             - If the user's request is ambiguous (multiple trips to same place, vague pillar), \
@@ -161,7 +161,7 @@ extension PostGeneratorClient: DependencyKey {
             - locations must match locations from the context above
             - Give each slot a creative, descriptive name
             - The "about" field describes what the photo should show
-            - startDate/endDate are ISO 8601 strings or null
+            - startDate/endDate are ALWAYS null unless the user explicitly asked for a date range
 
             RESPONSE FORMAT (strict JSON):
             {
@@ -173,8 +173,8 @@ extension PostGeneratorClient: DependencyKey {
                   "cadrageNames": ["string"],
                   "locations": ["string"],
                   "about": "string",
-                  "startDate": "ISO8601 or null",
-                  "endDate": "ISO8601 or null"
+                  "startDate": null,
+                  "endDate": null
                 }
               ],
               "reply": "string",

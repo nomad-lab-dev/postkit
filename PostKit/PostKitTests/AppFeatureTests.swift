@@ -60,6 +60,7 @@ final class OnboardingFeatureTests: XCTestCase {
                     source: .coreML
                 )]
             }
+            $0.postGenerator.enrichTopic = { _ in throw CancellationError() }
         }
 
         await store.send(.startScanTapped) {
@@ -116,43 +117,39 @@ final class OnboardingFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             OnboardingFeature()
         } withDependencies: {
+            $0.persistence.fetchPillars = { [] }
             $0.persistence.savePillar = { snapshot in
                 savedNames.withValue { $0.append(snapshot.name) }
             }
+            $0.gallery.invalidateAll = {}
         }
 
-        await store.send(.startPostKitTapped)
+        await store.send(.startPostKitTapped) {
+            $0.isSaving = true
+        }
 
-        await store.receive(\.persistResponse)
+        await store.receive(\.persistResponse) {
+            $0.isSaving = false
+        }
 
         XCTAssertEqual(savedNames.value, ["Travel", "Fitness"])
     }
 
-    func test_enrichTopic_addsTopicToList() async {
+    func test_addTopic_addsTopicToList() async {
         let store = TestStore(initialState: OnboardingFeature.State(step: .topicSetup)) {
             OnboardingFeature()
         } withDependencies: {
             $0.uuid = .incrementing
-            $0.postGenerator.enrichTopic = { input in
-                TopicSuggestion(
-                    name: input.capitalized,
-                    emoji: "🚗",
-                    about: "Cars and vehicles"
-                )
-            }
         }
 
-        store.exhaustivity = .off
-        await store.send(.set(\.topicInput, "cars"))
-        await store.send(.enrichRequested) {
-            $0.isEnriching = true
+        await store.send(.set(\.topicInput, "cars")) {
+            $0.topicInput = "cars"
         }
 
-        await store.receive(\.enrichmentLoaded) {
-            $0.isEnriching = false
+        await store.send(.addTopicTapped) {
             $0.topicInput = ""
             $0.topics = [
-                OnboardingTopic(id: UUID(0), name: "Cars", emoji: "🚗", about: "Cars and vehicles"),
+                OnboardingTopic(id: UUID(0), name: "Cars", emoji: "📌", about: ""),
             ]
         }
     }

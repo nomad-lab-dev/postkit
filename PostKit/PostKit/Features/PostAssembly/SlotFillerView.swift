@@ -151,43 +151,52 @@ struct SlotFillerView: View {
         store.activeStartDate != nil || store.activeEndDate != nil
     }
 
+    @ViewBuilder
     private var dateFilterRow: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "calendar")
-                .foregroundStyle(hasActiveDates ? Palette.accent : Palette.text3)
+        if hasActiveDates {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "calendar")
+                    .foregroundStyle(Palette.accent)
 
-            DatePicker(
-                "From",
-                selection: Binding(
-                    get: { store.activeStartDate ?? Calendar.current.date(byAdding: .month, value: -3, to: .now)! },
-                    set: { store.send(.startDateChanged($0)) }
-                ),
-                displayedComponents: .date
-            )
-            .labelsHidden()
+                DatePicker(
+                    "From",
+                    selection: Binding(
+                        get: { store.activeStartDate ?? .now },
+                        set: { store.send(.startDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
 
-            Image(systemName: "arrow.right")
-                .font(Typography.caption)
-                .foregroundStyle(Palette.text3)
+                Image(systemName: "arrow.right")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
 
-            DatePicker(
-                "To",
-                selection: Binding(
-                    get: { store.activeEndDate ?? .now },
-                    set: { store.send(.endDateChanged($0)) }
-                ),
-                displayedComponents: .date
-            )
-            .labelsHidden()
+                DatePicker(
+                    "To",
+                    selection: Binding(
+                        get: { store.activeEndDate ?? .now },
+                        set: { store.send(.endDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
 
-            if hasActiveDates {
                 Button { store.send(.clearDatesTapped) } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Palette.text3)
                 }
             }
+            .padding(.horizontal, Layout.Padding.screen.leading)
+        } else {
+            HStack {
+                FilterChipView(label: "📅 Add dates", isSelected: false) {
+                    store.send(.startDateChanged(Calendar.current.date(byAdding: .month, value: -1, to: .now)!))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, Layout.Padding.screen.leading)
         }
-        .padding(.horizontal, Layout.Padding.screen.leading)
     }
 
     private var confirmBar: some View {

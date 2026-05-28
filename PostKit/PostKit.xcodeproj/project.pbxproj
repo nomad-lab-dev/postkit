@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		125E5E8D2FC076BD004D2F0B /* PostKit.storekit in Resources */ = {isa = PBXBuildFile; fileRef = 125E5E8C2FC076BD004D2F0B /* PostKit.storekit */; };
 		12B3EA582FBA6C1D0090A113 /* ComposableArchitecture in Frameworks */ = {isa = PBXBuildFile; productRef = 12B3EA572FBA6C1D0090A113 /* ComposableArchitecture */; };
 		12B3EA5B2FBA6C310090A113 /* GoogleGenerativeAI in Frameworks */ = {isa = PBXBuildFile; productRef = 12B3EA5A2FBA6C310090A113 /* GoogleGenerativeAI */; };
 /* End PBXBuildFile section */
@@ -32,6 +33,7 @@
 		123EBF6E2FB0BEB800F6A1CA /* PostKit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = PostKit.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		123EBF7D2FB0BEB900F6A1CA /* PostKitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PostKitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		123EBF872FB0BEB900F6A1CA /* PostKitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PostKitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		125E5E8C2FC076BD004D2F0B /* PostKit.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = PostKit.storekit; sourceTree = "<group>"; };
 		127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Secrets.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -96,6 +98,7 @@
 		123EBF652FB0BEB800F6A1CA = {
 			isa = PBXGroup;
 			children = (
+				125E5E8C2FC076BD004D2F0B /* PostKit.storekit */,
 				127D62362FBAFB16000C0CB2 /* Secrets.xcconfig */,
 				123EBF702FB0BEB800F6A1CA /* PostKit */,
 				123EBF802FB0BEB900F6A1CA /* PostKitTests */,
@@ -240,6 +243,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				125E5E8D2FC076BD004D2F0B /* PostKit.storekit in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

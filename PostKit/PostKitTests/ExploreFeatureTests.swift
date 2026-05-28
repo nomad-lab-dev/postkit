@@ -31,13 +31,8 @@ final class ExploreFeatureTests: XCTestCase {
         let store = TestStore(initialState: ExploreFeature.State()) {
             ExploreFeature()
         } withDependencies: {
-            $0.persistence.fetchPillars = { self.pillars }
-            $0.persistence.fetchPhotosPaginated = { _, limit, offset in
-                XCTAssertEqual(limit, ExploreFeature.pageSize)
-                XCTAssertEqual(offset, 0)
-                return photos
-            }
-            $0.persistence.countPhotos = { _ in 100 }
+            $0.gallery.pillars = { self.pillars }
+            $0.gallery.photos = { _ in photos }
         }
 
         await store.send(.onAppear) {
@@ -47,7 +42,7 @@ final class ExploreFeatureTests: XCTestCase {
         await store.receive(\.initialLoaded) {
             $0.pillars = self.pillars
             $0.photos = photos
-            $0.totalCount = 100
+            $0.totalCount = 3
             $0.currentOffset = 3
             $0.isLoading = false
         }
@@ -72,9 +67,8 @@ final class ExploreFeatureTests: XCTestCase {
         let store = TestStore(initialState: ExploreFeature.State()) {
             ExploreFeature()
         } withDependencies: {
-            $0.persistence.fetchPillars = { [] }
-            $0.persistence.fetchPhotosPaginated = { _, _, _ in photos }
-            $0.persistence.countPhotos = { _ in 1 }
+            $0.gallery.pillars = { [] }
+            $0.gallery.photos = { _ in photos }
             $0.photoLibrary.image = { _, _ in UIImage() }
             $0.imageClassifier.detectCadrage = { _ in .portrait }
             $0.persistence.savePhoto = { _ in }
@@ -296,7 +290,7 @@ final class ExploreFeatureTests: XCTestCase {
         await store.send(.photoTapped(classified)) {
             $0.photoDetail = PhotoDetailFeature.State(
                 photo: classified,
-                pillar: self.pillars[0]
+                pillars: self.pillars
             )
         }
     }

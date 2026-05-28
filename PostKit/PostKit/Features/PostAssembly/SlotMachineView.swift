@@ -181,7 +181,6 @@ private struct SlotMachineCell: View {
 
     @State private var image: UIImage?
     @State private var contentScale: CGFloat = 1
-    @State private var showReshuffleLoader: Bool = false
 
     private var matchedPillars: [PillarSnapshot] {
         pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
@@ -236,58 +235,60 @@ private struct SlotMachineCell: View {
             }
 
             ZStack {
-                if showReshuffleLoader {
-                    Palette.surface
-                        .overlay { ProgressView().tint(Palette.accent) }
-                } else {
-                    Group {
-                        if let image {
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                                .blur(radius: blurred ? 20 : 0)
-                        } else if slot.isEmpty {
-                            VStack(spacing: Spacing.xs) {
-                                Image(systemName: "photo")
-                                    .font(.system(size: Typography.IconSize.md))
-                                    .foregroundStyle(Palette.text4)
-                                Text("No match")
-                                    .font(Typography.caption2)
-                                    .foregroundStyle(Palette.text3)
-                            }
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(Palette.placeholder)
-                        } else {
-                            Palette.placeholder
+                Group {
+                    if let image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .blur(radius: blurred ? 20 : 0)
+                    } else if slot.isEmpty {
+                        VStack(spacing: Spacing.xs) {
+                            Image(systemName: "photo")
+                                .font(.system(size: Typography.IconSize.md))
+                                .foregroundStyle(Palette.text4)
+                            Text("No match")
+                                .font(Typography.caption2)
+                                .foregroundStyle(Palette.text3)
                         }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Palette.placeholder)
+                    } else {
+                        Palette.placeholder
                     }
-                    .scaleEffect(contentScale)
+                }
+                .scaleEffect(contentScale)
 
-                    if !slot.isEmpty {
-                        VStack {
-                            Spacer()
-                            HStack(spacing: Spacing.xxs) {
-                                ForEach(slot.slotData.cadrages.prefix(2), id: \.self) { cadrage in
-                                    CadrageTag(cadrage: cadrage)
-                                }
-                                if let location = slot.locationLabel ?? slot.slotData.locations.first {
-                                    HStack(spacing: 2) {
-                                        Image(systemName: "mappin")
-                                            .font(.system(size: 9))
-                                        Text(location)
-                                            .font(Typography.caption2)
-                                    }
-                                    .foregroundStyle(.white)
-                                    .padding(.horizontal, Spacing.xs)
-                                    .padding(.vertical, 2)
-                                    .background(.black.opacity(0.5), in: Capsule())
-                                }
-                                Spacer()
+                if !slot.isEmpty {
+                    VStack {
+                        Spacer()
+                        HStack(spacing: Spacing.xxs) {
+                            ForEach(slot.slotData.cadrages.prefix(2), id: \.self) { cadrage in
+                                CadrageTag(cadrage: cadrage)
                             }
-                            .padding(Spacing.xs)
+                            if let location = slot.locationLabel ?? slot.slotData.locations.first {
+                                HStack(spacing: 2) {
+                                    Image(systemName: "mappin")
+                                        .font(.system(size: 9))
+                                    Text(location)
+                                        .font(Typography.caption2)
+                                }
+                                .foregroundStyle(.white)
+                                .padding(.horizontal, Spacing.xs)
+                                .padding(.vertical, 2)
+                                .background(.black.opacity(0.5), in: Capsule())
+                            }
+                            Spacer()
                         }
-                        .opacity(contentScale < 0.5 ? 0 : 1)
+                        .padding(Spacing.xs)
                     }
+                    .opacity(contentScale < 0.5 ? 0 : 1)
+                }
+
+                if isReshuffling {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay { ProgressView().tint(Palette.accent) }
+                        .transition(.opacity)
                 }
             }
             .aspectRatio(4.0 / 3.0, contentMode: .fit)
@@ -298,17 +299,7 @@ private struct SlotMachineCell: View {
             )
             .animation(.easeInOut(duration: 0.5), value: blurred)
             .onChange(of: isReshuffling) { oldValue, newValue in
-                if newValue {
-                    withAnimation(.easeIn(duration: 0.2)) {
-                        contentScale = 0.01
-                    }
-                    Task { @MainActor in
-                        try? await Task.sleep(for: .milliseconds(220))
-                        image = nil
-                        showReshuffleLoader = true
-                    }
-                } else if oldValue {
-                    showReshuffleLoader = false
+                if !newValue && oldValue {
                     contentScale = 0.01
                     withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
                         contentScale = 1

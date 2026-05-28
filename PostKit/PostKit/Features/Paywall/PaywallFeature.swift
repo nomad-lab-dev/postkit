@@ -3,6 +3,9 @@
 
 import ComposableArchitecture
 import Foundation
+import os
+
+private let log = Logger(subsystem: "PostKit", category: "Paywall")
 
 @Reducer
 struct PaywallFeature {
@@ -28,6 +31,7 @@ struct PaywallFeature {
         case closeTapped
         case delegate(Delegate)
 
+        @CasePathable
         enum Delegate: Equatable {
             case didPurchase
             case dismissed
@@ -43,9 +47,12 @@ struct PaywallFeature {
             case .onAppear:
                 state.isLoading = true
                 return .run { send in
+                    log.info("⏳ Fetching products...")
                     let products = try await subscription.fetchProducts()
+                    log.info("✅ Fetched \(products.count) products: \(products.map(\.id).joined(separator: ", "))")
                     await send(.productsLoaded(products))
                 } catch: { error, send in
+                    log.error("❌ Product fetch failed: \(error)")
                     await send(.loadFailed(error.localizedDescription))
                 }
 
@@ -53,6 +60,9 @@ struct PaywallFeature {
                 state.isLoading = false
                 state.products = products
                 state.selectedProductID = products.first(where: \.isYearly)?.id ?? products.first?.id
+                if products.isEmpty {
+                    state.errorMessage = "No products available. Check that PostKit.storekit is set in Edit Scheme > Run > Options > StoreKit Configuration."
+                }
                 return .none
 
             case let .loadFailed(message):

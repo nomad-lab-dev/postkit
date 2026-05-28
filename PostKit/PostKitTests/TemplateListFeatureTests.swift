@@ -22,7 +22,7 @@ final class TemplateListFeatureTests: XCTestCase {
         let store = TestStore(initialState: TemplateListFeature.State()) {
             TemplateListFeature()
         } withDependencies: {
-            $0.persistence.fetchTemplates = { [templates] in templates }
+            $0.gallery.templates = { [templates] in templates }
         }
 
         await store.send(.onAppear) {
@@ -70,6 +70,7 @@ final class TemplateListFeatureTests: XCTestCase {
             $0.persistence.deleteTemplate = { id in
                 deletedIDs.withValue { $0.append(id) }
             }
+            $0.gallery.invalidateTemplates = {}
         }
 
         await store.send(.deleteTemplate(IndexSet(integer: 0))) {
@@ -94,8 +95,8 @@ final class TemplateBuilderFeatureTests: XCTestCase {
         let store = TestStore(initialState: TemplateBuilderFeature.State()) {
             TemplateBuilderFeature()
         } withDependencies: {
-            $0.persistence.fetchPillars = { [pillars] in pillars }
-            $0.persistence.fetchPhotos = { _ in
+            $0.gallery.pillars = { [pillars] in pillars }
+            $0.gallery.photos = { _ in
                 [
                     ClassifiedPhotoSnapshot(assetLocalIdentifier: "a1", pillarID: UUID(0), location: "Paris, France", status: .classified),
                     ClassifiedPhotoSnapshot(assetLocalIdentifier: "a2", pillarID: UUID(1), location: "Tokyo, Japan", status: .classified),

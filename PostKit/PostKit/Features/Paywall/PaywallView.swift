@@ -155,7 +155,7 @@ struct PaywallView: View {
                     ProgressView()
                         .tint(.white)
                 } else {
-                    Text("Subscribe")
+                    Text("Start Free Trial")
                 }
             }
             .buttonStyle(PrimaryButton())
@@ -186,7 +186,7 @@ struct PaywallView: View {
     // MARK: - Legal
 
     private var legalSection: some View {
-        Text("Subscription auto-renews unless cancelled at least 24 hours before the end of the current period. Manage in Settings > Apple ID > Subscriptions.")
+        Text("7-day free trial, then auto-renews. Cancel anytime at least 24 hours before the end of the current period. Manage in Settings > Apple ID > Subscriptions.")
             .font(Typography.caption2)
             .foregroundStyle(Palette.text4)
             .multilineTextAlignment(.center)

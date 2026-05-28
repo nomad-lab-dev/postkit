@@ -20,9 +20,14 @@ struct PostEditorView: View {
                     .padding(.horizontal, Spacing.xs)
 
                 VStack(alignment: .leading, spacing: Spacing.lg) {
-                    captionSection
-                    hashtagsSection
-                    scheduleSection
+                    sectionTogglesRow
+                    if store.isCaptionExpanded || store.isGenerating {
+                        captionSection
+                        hashtagsSection
+                    }
+                    if store.isScheduleExpanded {
+                        scheduleSection
+                    }
                     shareSection
                 }
                 .padding(.horizontal, Layout.Padding.screen.leading)
@@ -112,6 +117,35 @@ struct PostEditorView: View {
                         }
                     }
                 }
+
+                VStack(spacing: Spacing.xxs) {
+                    Button {
+                        Haptics.tap()
+                        store.send(.addSlotTapped)
+                    } label: {
+                        Palette.bg
+                            .aspectRatio(1, contentMode: .fit)
+                            .overlay {
+                                VStack(spacing: Spacing.xs) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundStyle(Palette.accent)
+                                    Text("Add Slot")
+                                        .font(Typography.caption)
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(Palette.text2)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.card)
+                                    .strokeBorder(Palette.border, style: StrokeStyle(lineWidth: Layout.Border.thin, dash: [6]))
+                            )
+                    }
+                    .buttonStyle(.plain)
+
+                    Color.clear.frame(height: 14)
+                }
             }
 
             if store.filledSlots.contains(where: \.isEmpty) {
@@ -191,18 +225,63 @@ struct PostEditorView: View {
         }
     }
 
+    // MARK: - Section Toggles
+
+    private var sectionTogglesRow: some View {
+        HStack(spacing: Spacing.sm) {
+            sectionChip(
+                label: store.isCaptionExpanded ? "Caption" : "Add Caption",
+                icon: store.isCaptionExpanded ? "xmark" : "plus",
+                isActive: store.isCaptionExpanded
+            ) {
+                Haptics.lightTap()
+                store.send(.toggleCaptionSection)
+            }
+
+            sectionChip(
+                label: store.isScheduleExpanded ? "Schedule" : "Add Schedule",
+                icon: store.isScheduleExpanded ? "xmark" : "plus",
+                isActive: store.isScheduleExpanded
+            ) {
+                Haptics.lightTap()
+                store.send(.toggleScheduleSection)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func sectionChip(label: String, icon: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(label, systemImage: icon)
+                .font(Typography.caption)
+                .fontWeight(.medium)
+                .foregroundStyle(isActive ? Palette.accent : Palette.text2)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(isActive ? Palette.accentTint : Palette.surface, in: Capsule())
+                .overlay(
+                    Capsule().strokeBorder(
+                        isActive ? Palette.accent.opacity(0.4) : Palette.border,
+                        lineWidth: Layout.Border.thin
+                    )
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Caption
 
     @ViewBuilder
     private var captionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Text("Caption")
-                    .font(Typography.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Palette.text)
-                Spacer()
-                if store.totalPhotoCount > 0 && !store.isGenerating {
+            if store.totalPhotoCount > 0 && !store.isGenerating {
+                HStack {
+                    Text("Caption")
+                        .font(Typography.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Palette.text)
+                    Spacer()
                     Button {
                         Haptics.tap()
                         store.send(.generateCaptionTapped)
@@ -212,6 +291,11 @@ struct PostEditorView: View {
                             .foregroundStyle(Palette.accent)
                     }
                 }
+            } else if !store.isGenerating {
+                Text("Caption")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.text)
             }
 
             if store.isGenerating {
@@ -400,7 +484,6 @@ private struct SlotCardView: View {
 
     @State private var currentPage: Int = 0
     @State private var contentScale: CGFloat = 1
-    @State private var showReshuffleLoader: Bool = false
 
     private var matchedPillars: [PillarSnapshot] {
         pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
@@ -419,13 +502,13 @@ private struct SlotCardView: View {
 
     var body: some View {
         ZStack {
-            if slot.isEmpty && !showReshuffleLoader {
+            if slot.isEmpty {
                 emptyContent
             } else {
                 filledContent
                     .scaleEffect(contentScale)
 
-                if !showReshuffleLoader {
+                if !isReshuffling {
                     VStack {
                         HStack {
                             Button {
@@ -481,37 +564,22 @@ private struct SlotCardView: View {
                     .opacity(contentScale < 0.5 ? 0 : 1)
                 }
 
-                if showReshuffleLoader {
-                    Color.clear
-                        .aspectRatio(1, contentMode: .fit)
-                        .overlay {
-                            ProgressView()
-                                .tint(Palette.accent)
-                        }
-                        .background(Palette.surface)
+                if isReshuffling {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay { ProgressView().tint(Palette.accent) }
+                        .transition(.opacity)
                 }
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.card)
-                .strokeBorder(
-                    slot.isEmpty && !showReshuffleLoader ? Palette.border : Color.clear,
-                    lineWidth: Layout.Border.thin
-                )
+                .strokeBorder(slot.isEmpty ? Palette.border : Color.clear, lineWidth: Layout.Border.thin)
         )
         .onTapGesture { onTap() }
         .onChange(of: isReshuffling) { oldValue, newValue in
-            if newValue {
-                withAnimation(.easeIn(duration: 0.2)) {
-                    contentScale = 0.01
-                }
-                Task { @MainActor in
-                    try? await Task.sleep(for: .milliseconds(220))
-                    showReshuffleLoader = true
-                }
-            } else if oldValue {
-                showReshuffleLoader = false
+            if !newValue && oldValue {
                 contentScale = 0.01
                 withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
                     contentScale = 1

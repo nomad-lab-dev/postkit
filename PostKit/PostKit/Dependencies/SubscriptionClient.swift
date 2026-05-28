@@ -2,7 +2,10 @@
 // SubscriptionClient.swift — StoreKit 2 subscription dependency
 
 import ComposableArchitecture
+import os
 import StoreKit
+
+private let log = Logger(subsystem: "PostKit", category: "Subscription")
 
 struct ProProduct: Equatable, Identifiable, Sendable {
     let id: String
@@ -26,7 +29,9 @@ struct SubscriptionClient: Sendable {
 extension SubscriptionClient: DependencyKey {
     static let liveValue = SubscriptionClient(
         fetchProducts: {
+            log.info("🔍 Requesting products for IDs: \(productIDs)")
             let products = try await Product.products(for: productIDs)
+            log.info("📦 StoreKit returned \(products.count) products: \(products.map(\.id))")
             return products.compactMap { product in
                 let isYearly = product.id == "pro_yearly"
                 let monthlyEquivalent: String? = if isYearly {

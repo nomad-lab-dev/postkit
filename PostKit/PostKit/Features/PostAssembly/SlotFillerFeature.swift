@@ -31,10 +31,10 @@ struct SlotFillerFeature {
                 let matchesPillar: Bool
                 if activePillarIDs.isEmpty {
                     matchesPillar = true
-                } else if let pid = photo.pillarID {
-                    matchesPillar = activePillarIDs.contains(pid)
                 } else {
-                    matchesPillar = false
+                    var photoAllPillarIDs = Set(photo.pillarIDs)
+                    if let pid = photo.pillarID { photoAllPillarIDs.insert(pid) }
+                    matchesPillar = !activePillarIDs.isDisjoint(with: photoAllPillarIDs)
                 }
 
                 let matchesCadrage: Bool
@@ -63,7 +63,8 @@ struct SlotFillerFeature {
                     let beforeEnd = activeEndDate.map { captured <= $0 } ?? true
                     matchesDate = afterStart && beforeEnd
                 } else {
-                    matchesDate = false
+                    // Photos without EXIF date are always included — don't penalise missing metadata
+                    matchesDate = true
                 }
 
                 return matchesPillar && matchesCadrage && matchesLocation && matchesDate

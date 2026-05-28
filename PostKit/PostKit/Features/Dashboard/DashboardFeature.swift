@@ -54,11 +54,8 @@ struct DashboardFeature {
                 )
             }
             if newPhotoCount > 0 { return .newItems(count: newPhotoCount) }
-            if remainingToScan > 0 {
-                if classifiedAssetCount > 0 {
-                    return .paused(remaining: remainingToScan)
-                }
-                return .newItems(count: remainingToScan)
+            if remainingToScan > 0 && classifiedAssetCount > 0 {
+                return .paused(remaining: remainingToScan)
             }
             return .idle(lastScanAt: lastScanCompletedAt)
         }
@@ -197,12 +194,13 @@ struct DashboardFeature {
                 return .none
 
             case .statusPrimaryTapped:
-                switch state.derivedStatus {
-                case .idle, .newItems, .paused:
-                    return .send(.startFullScanRequested)
-                case .scanning:
+                if state.isScanning {
                     return .send(.cancelScanTapped)
                 }
+                if state.pendingReviewCount > 0 {
+                    return .send(.reviewPendingTapped)
+                }
+                return .send(.startFullScanRequested)
 
             case .pullToRefresh:
                 return .run { [gallery] send in

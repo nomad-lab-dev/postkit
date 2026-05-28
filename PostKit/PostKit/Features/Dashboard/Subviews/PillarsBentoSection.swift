@@ -120,6 +120,11 @@ private struct BentoThumbnail: View {
             }
             .clipped()
             .task(id: assetIdentifier) {
+                // Marketing capture mode: load from bundled image instead of PhotoKit
+                if let bundled = MarketingAssetLoader.loadImage(for: assetIdentifier) {
+                    withAnimation(.easeInOut(duration: 0.35)) { self.image = bundled }
+                    return
+                }
                 let fetchResult = PHAsset.fetchAssets(
                     withLocalIdentifiers: [assetIdentifier], options: nil
                 )

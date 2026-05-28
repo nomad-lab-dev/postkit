@@ -65,6 +65,10 @@ struct SmartPostView: View {
                                 .disabled(store.isFillingSlots)
                             }
                             .padding(.horizontal, Spacing.md)
+
+                            Color.clear
+                                .frame(height: Spacing.lg)
+                                .id("templateActions")
                         }
 
                         if store.showSaveAsTemplate {
@@ -122,7 +126,7 @@ struct SmartPostView: View {
                 .onChange(of: store.messages.count) {
                     withAnimation(.easeOut(duration: 0.2)) {
                         if store.generatedTemplate != nil {
-                            proxy.scrollTo("templatePreview", anchor: .bottom)
+                            proxy.scrollTo("templateActions", anchor: .bottom)
                         } else if store.isAIThinking {
                             proxy.scrollTo("thinking", anchor: .bottom)
                         } else if let last = store.messages.last {
@@ -132,7 +136,7 @@ struct SmartPostView: View {
                 }
                 .onChange(of: store.generatedTemplate != nil) {
                     withAnimation(.easeOut(duration: 0.2)) {
-                        proxy.scrollTo("templatePreview", anchor: .bottom)
+                        proxy.scrollTo("templateActions", anchor: .bottom)
                     }
                 }
             }
@@ -313,12 +317,14 @@ private struct TemplatePreviewCard: View {
                             .fontWeight(.medium)
                             .foregroundStyle(Palette.text)
 
-                        HStack(spacing: Spacing.xxs) {
+                        HStack(spacing: 2) {
                             let matched = matchedPillars(for: slot)
                             if !matched.isEmpty {
                                 ForEach(matched.prefix(3)) { pillar in
                                     Text(pillar.emoji)
-                                        .font(.system(size: 12))
+                                        .font(.system(size: 11))
+                                        .frame(width: 14, height: 14)
+                                        .clipped()
                                 }
                             }
 

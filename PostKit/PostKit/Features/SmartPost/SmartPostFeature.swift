@@ -14,6 +14,7 @@ struct SmartPostFeature {
     struct State: Equatable {
         var pillars: [PillarSnapshot] = []
         var locationClusters: String = ""
+        var availableLocations: [String] = []
         var messages: [ChatMessage] = [
             ChatMessage(
                 role: .assistant,
@@ -45,7 +46,7 @@ struct SmartPostFeature {
 
     enum Action: BindableAction {
         case onAppear
-        case dataLoaded(pillars: [PillarSnapshot], locationClusters: String)
+        case dataLoaded(pillars: [PillarSnapshot], locationClusters: String, availableLocations: [String])
         case sendMessageTapped
         case quickReplyTapped(String)
         case templateIntentReceived(AITemplateIntent)
@@ -61,6 +62,7 @@ struct SmartPostFeature {
         case editor(PresentationAction<PostEditorFeature.Action>)
         case delegate(Delegate)
 
+        @CasePathable
         enum Delegate: Equatable {
             case didSavePost
         }
@@ -70,6 +72,7 @@ struct SmartPostFeature {
     @Dependency(\.persistence) var persistence
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.uuid) var uuid
+    @Dependency(\.date) var date
 
     private enum CancelID: Hashable { case aiCall }
 
@@ -96,17 +99,19 @@ struct SmartPostFeature {
                     let photos = (try? await photosTask) ?? []
                     log.info("✅ SmartPost gallery.photos(.classified) — \(photos.count)")
                     let clusters = Self.buildLocationClusters(photos: photos, pillars: pillars)
-                    log.info("📤 sending dataLoaded")
-                    await send(.dataLoaded(pillars: pillars, locationClusters: clusters))
+                    let locations = Array(Set(photos.compactMap(\.location))).sorted()
+                    log.info("📤 sending dataLoaded — \(locations.count) unique locations")
+                    await send(.dataLoaded(pillars: pillars, locationClusters: clusters, availableLocations: locations))
                 } catch: { error, send in
                     log.error("❌ SmartPost data load FAILED: \(error)")
-                    await send(.dataLoaded(pillars: [], locationClusters: ""))
+                    await send(.dataLoaded(pillars: [], locationClusters: "", availableLocations: []))
                 }
 
-            case let .dataLoaded(pillars, locationClusters):
-                log.info("✅ dataLoaded — \(pillars.count) pillars, clusters=\(locationClusters.count) chars")
+            case let .dataLoaded(pillars, locationClusters, availableLocations):
+                log.info("✅ dataLoaded — \(pillars.count) pillars, clusters=\(locationClusters.count) chars, \(availableLocations.count) locations")
                 state.pillars = pillars
                 state.locationClusters = locationClusters
+                state.availableLocations = availableLocations
                 state.isLoadingData = false
                 return .none
 
@@ -149,7 +154,9 @@ struct SmartPostFeature {
                     state.generatedTemplate = resolveTemplateIntent(
                         intent,
                         pillars: state.pillars,
-                        uuidGenerator: { uuid() }
+                        availableLocations: state.availableLocations,
+                        uuidGenerator: { uuid() },
+                        createdAt: date.now
                     )
                 } else if intent.isComplete && intent.slots.isEmpty {
                     state.messages.append(
