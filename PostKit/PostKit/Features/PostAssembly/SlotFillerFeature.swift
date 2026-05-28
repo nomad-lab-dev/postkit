@@ -115,7 +115,7 @@ struct SlotFillerFeature {
             self.selectedPhotoIDs = preselectedPhotoIDs
             self.activePillarIDs = Set(constrainedPillarIDs)
             self.activeCadrages = Set(constrainedCadrages)
-            self.activeLocations = Set(constrainedLocations)
+            self.activeLocations = []
             self.activeStartDate = constrainedStartDate
             self.activeEndDate = constrainedEndDate
         }
