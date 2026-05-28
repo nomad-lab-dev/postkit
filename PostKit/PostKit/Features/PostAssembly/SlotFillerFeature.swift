@@ -157,6 +157,7 @@ struct SlotFillerFeature {
     }
 
     @Dependency(\.gallery) var gallery
+    @Dependency(\.persistence) var persistence
     @Dependency(\.locationSearch) var locationSearch
     @Dependency(\.dismiss) var dismiss
 
@@ -170,9 +171,11 @@ struct SlotFillerFeature {
             case .onAppear:
                 guard state.photos.isEmpty else { return .none }
                 state.isLoading = true
-                return .run { [gallery] send in
+                // Bypass the gallery cache and fetch directly — the cache may have been
+                // populated before the scan classified photos this session.
+                return .run { [gallery, persistence] send in
                     async let pillarsTask = gallery.pillars()
-                    async let photosTask = gallery.photos(nil)
+                    async let photosTask = persistence.fetchPhotos(.classified)
                     let pillars = try await pillarsTask
                     let photos = (try? await photosTask) ?? []
                     await send(.dataLoaded(pillars: pillars, photos: photos))
