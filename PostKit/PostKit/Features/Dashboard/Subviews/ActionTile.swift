@@ -5,8 +5,8 @@ import SwiftUI
 
 struct ActionTile: View {
     let icon: String
-    let title: String
-    let subtitle: String
+    let title: LocalizedStringKey
+    let subtitle: LocalizedStringKey
     let tint: Color
     let action: () -> Void
 
@@ -19,8 +19,6 @@ struct ActionTile: View {
                     .frame(width: 40, height: 40)
                     .background(tint.opacity(0.10), in: RoundedRectangle(cornerRadius: Radius.input))
 
-                Spacer(minLength: Spacing.xs)
-
                 Text(title)
                     .font(Typography.subheadline.weight(.semibold))
                     .foregroundStyle(Palette.text)
@@ -28,6 +26,8 @@ struct ActionTile: View {
                 Text(subtitle)
                     .font(Typography.caption)
                     .foregroundStyle(Palette.text3)
+                
+                Spacer(minLength: Spacing.xs)
             }
             .frame(maxWidth: .infinity, minHeight: 120, alignment: .topLeading)
             .padding(Layout.Padding.card)

@@ -81,6 +81,37 @@ struct ExploreView: View {
                                                 Label("Classify", systemImage: "tag")
                                             }
                                         }
+                                        let otherPillars = store.pillars.filter { !photo.pillarIDs.contains($0.id) }
+                                        if !otherPillars.isEmpty {
+                                            Menu {
+                                                ForEach(otherPillars) { pillar in
+                                                    Button {
+                                                        store.send(.addPhotoToPillar(photo, pillar.id))
+                                                    } label: {
+                                                        Label("\(pillar.emoji) \(pillar.name)", systemImage: "plus.circle")
+                                                    }
+                                                }
+                                            } label: {
+                                                Label("Add to topic...", systemImage: "plus.circle")
+                                            }
+                                        }
+                                        if photo.pillarID != nil {
+                                            Button {
+                                                store.send(.removePillarFromPhoto(photo))
+                                            } label: {
+                                                if let pillar = store.pillars.first(where: { $0.id == photo.pillarID }) {
+                                                    Label("Remove from \(pillar.name)", systemImage: "xmark.circle")
+                                                } else {
+                                                    Label("Remove from topic", systemImage: "xmark.circle")
+                                                }
+                                            }
+                                        }
+                                        Button(role: .destructive) {
+                                            store.send(.declassifyPhoto(photo))
+                                        } label: {
+                                            Label("Declassify", systemImage: "arrow.uturn.backward")
+                                        }
+                                        Divider()
                                         Button {
                                             store.send(.copyPhotoTapped(photo.assetLocalIdentifier))
                                         } label: {
@@ -114,6 +145,7 @@ struct ExploreView: View {
             }
         }
         .background(Palette.bg)
+        .toolbarBackground(.visible, for: .tabBar)
         .navigationTitle(AppStrings.Explore.title)
         .onAppear { store.send(.onAppear) }
         .navigationDestination(
@@ -246,7 +278,7 @@ struct ExploreView: View {
 // MARK: - Filter Chip
 
 private struct FilterChip: View {
-    let label: String
+    let label: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
@@ -277,7 +309,7 @@ private struct FilterChip: View {
 // MARK: - Status Chip
 
 private struct StatusChip: View {
-    let label: String
+    let label: LocalizedStringKey
     let isSelected: Bool
     let action: () -> Void
 
@@ -303,6 +335,7 @@ private struct StatusChip: View {
 private struct ExploreThumbnailCell: View {
     let photo: ClassifiedPhotoSnapshot
     @State private var image: UIImage?
+    @State private var requestID: PHImageRequestID?
 
     private static let thumbnailSize: CGFloat = {
         let screen = UIScreen.main.bounds.width
@@ -335,7 +368,18 @@ private struct ExploreThumbnailCell: View {
             }
             .clipShape(RoundedRectangle(cornerRadius: Radius.tile))
         .task(id: photo.assetLocalIdentifier) {
+            if let oldID = requestID {
+                PHImageManager.default().cancelImageRequest(oldID)
+                requestID = nil
+            }
+            image = nil
             await loadThumbnail()
+        }
+        .onDisappear {
+            if let id = requestID {
+                PHImageManager.default().cancelImageRequest(id)
+                requestID = nil
+            }
         }
     }
 
@@ -365,10 +409,10 @@ private struct ExploreThumbnailCell: View {
 
         let size = CGSize(width: Self.thumbnailSize, height: Self.thumbnailSize)
         let options = PHImageRequestOptions()
-        options.deliveryMode = .opportunistic
+        options.deliveryMode = .fastFormat
         options.isNetworkAccessAllowed = false
 
-        PHImageManager.default().requestImage(
+        let id = PHImageManager.default().requestImage(
             for: asset,
             targetSize: size,
             contentMode: .aspectFill,
@@ -379,5 +423,6 @@ private struct ExploreThumbnailCell: View {
                 self.image = result
             }
         }
+        self.requestID = id
     }
 }

@@ -25,16 +25,18 @@ struct SlotFillerFeature {
         var activeEndDate: Date?
         var selectedPhotoIDs: Set<String> = []
         var isLoading: Bool = false
+        var locationQuery: String = ""
+        var mapSearchResults: [String] = []
 
         var filteredPhotos: [ClassifiedPhotoSnapshot] {
             photos.filter { photo in
                 let matchesPillar: Bool
                 if activePillarIDs.isEmpty {
                     matchesPillar = true
-                } else if let pid = photo.pillarID {
-                    matchesPillar = activePillarIDs.contains(pid)
                 } else {
-                    matchesPillar = false
+                    var photoAllPillarIDs = Set(photo.pillarIDs)
+                    if let pid = photo.pillarID { photoAllPillarIDs.insert(pid) }
+                    matchesPillar = !activePillarIDs.isDisjoint(with: photoAllPillarIDs)
                 }
 
                 let matchesCadrage: Bool
@@ -63,7 +65,8 @@ struct SlotFillerFeature {
                     let beforeEnd = activeEndDate.map { captured <= $0 } ?? true
                     matchesDate = afterStart && beforeEnd
                 } else {
-                    matchesDate = false
+                    // Photos without EXIF date are always included — don't penalise missing metadata
+                    matchesDate = true
                 }
 
                 return matchesPillar && matchesCadrage && matchesLocation && matchesDate
@@ -86,6 +89,18 @@ struct SlotFillerFeature {
             return constrained + others
         }
 
+        var suggestedLocations: [String] {
+            let q = locationQuery.trimmingCharacters(in: .whitespaces).lowercased()
+            guard !q.isEmpty else { return [] }
+            let fromGallery = uniqueLocations.filter {
+                $0.lowercased().contains(q) && !activeLocations.contains($0)
+            }
+            let fromMap = mapSearchResults.filter {
+                !activeLocations.contains($0) && !fromGallery.contains($0)
+            }
+            return fromGallery + fromMap
+        }
+
         var hasActiveConstraints: Bool {
             !constrainedPillarIDs.isEmpty || !constrainedCadrages.isEmpty
                 || !constrainedLocations.isEmpty || constrainedStartDate != nil
@@ -101,7 +116,8 @@ struct SlotFillerFeature {
             constrainedLocations: [String] = [],
             constrainedStartDate: Date? = nil,
             constrainedEndDate: Date? = nil,
-            preselectedPhotoIDs: Set<String> = []
+            preselectedPhotoIDs: Set<String> = [],
+            activePillarID: UUID? = nil
         ) {
             self.slotID = slotID
             self.slotName = slotName
@@ -112,26 +128,33 @@ struct SlotFillerFeature {
             self.constrainedStartDate = constrainedStartDate
             self.constrainedEndDate = constrainedEndDate
             self.selectedPhotoIDs = preselectedPhotoIDs
-            self.activePillarIDs = Set(constrainedPillarIDs)
-            self.activeCadrages = Set(constrainedCadrages)
+            // Pre-activate the pillar of the currently selected photo so the user
+            // sees a filtered view matching their existing choice. Falls back to empty
+            // (show all) if no photo is selected yet.
+            self.activePillarIDs = activePillarID.map { [$0] }.map(Set.init) ?? []
+            self.activeCadrages = []
+            // Location pre-applied but sanitized after photos load (see dataLoaded).
             self.activeLocations = Set(constrainedLocations)
             self.activeStartDate = constrainedStartDate
             self.activeEndDate = constrainedEndDate
         }
     }
 
-    enum Action {
+    enum Action: BindableAction {
         case onAppear
         case dataLoaded(pillars: [PillarSnapshot], photos: [ClassifiedPhotoSnapshot])
         case pillarFilterToggled(UUID)
         case cadrageFilterToggled(Cadrage)
-        case locationFilterToggled(String)
+        case locationSelected(String)
+        case locationRemoved(String)
+        case locationSearchResults([String])
         case startDateChanged(Date?)
         case endDateChanged(Date?)
         case clearDatesTapped
         case photoToggled(String)
         case confirmTapped
         case delegate(Delegate)
+        case binding(BindingAction<State>)
 
         enum Delegate: Equatable {
             case didConfirm(slotID: UUID, photoIDs: Set<String>, locationLabel: String?, updatedSlotData: TemplateSlotData)
@@ -139,9 +162,14 @@ struct SlotFillerFeature {
     }
 
     @Dependency(\.gallery) var gallery
+    @Dependency(\.locationSearch) var locationSearch
     @Dependency(\.dismiss) var dismiss
 
+    private enum CancelID: Hashable { case locationSearch }
+
     var body: some ReducerOf<Self> {
+        BindingReducer()
+
         Reduce { state, action in
             switch action {
             case .onAppear:
@@ -149,7 +177,7 @@ struct SlotFillerFeature {
                 state.isLoading = true
                 return .run { [gallery] send in
                     async let pillarsTask = gallery.pillars()
-                    async let photosTask = gallery.photos(nil)
+                    async let photosTask = gallery.photos(.classified)
                     let pillars = try await pillarsTask
                     let photos = (try? await photosTask) ?? []
                     await send(.dataLoaded(pillars: pillars, photos: photos))
@@ -159,6 +187,11 @@ struct SlotFillerFeature {
                 state.pillars = pillars
                 state.photos = photos
                 state.isLoading = false
+                // Drop active locations that don't appear in loaded photos — auto-fill uses a
+                // soft location match and may have picked a photo without that location, so the
+                // constrained location chip would otherwise block the entire grid.
+                let knownLocations = Set(photos.compactMap(\.location))
+                state.activeLocations = state.activeLocations.filter { knownLocations.contains($0) }
                 return .none
 
             case let .pillarFilterToggled(id):
@@ -177,12 +210,18 @@ struct SlotFillerFeature {
                 }
                 return .none
 
-            case let .locationFilterToggled(location):
-                if state.activeLocations.contains(location) {
-                    state.activeLocations.remove(location)
-                } else {
-                    state.activeLocations.insert(location)
-                }
+            case let .locationSelected(location):
+                state.activeLocations.insert(location)
+                state.locationQuery = ""
+                state.mapSearchResults = []
+                return .cancel(id: CancelID.locationSearch)
+
+            case let .locationRemoved(location):
+                state.activeLocations.remove(location)
+                return .none
+
+            case let .locationSearchResults(results):
+                state.mapSearchResults = results
                 return .none
 
             case let .startDateChanged(date):
@@ -233,7 +272,20 @@ struct SlotFillerFeature {
                     await dismiss()
                 }
 
-            case .delegate:
+            case .binding(\.locationQuery):
+                let query = state.locationQuery.trimmingCharacters(in: .whitespaces)
+                guard query.count >= 2 else {
+                    state.mapSearchResults = []
+                    return .cancel(id: CancelID.locationSearch)
+                }
+                return .run { [locationSearch] send in
+                    try await Task.sleep(for: .milliseconds(300))
+                    let results = await locationSearch.search(query)
+                    await send(.locationSearchResults(results))
+                }
+                .cancellable(id: CancelID.locationSearch, cancelInFlight: true)
+
+            case .delegate, .binding:
                 return .none
             }
         }

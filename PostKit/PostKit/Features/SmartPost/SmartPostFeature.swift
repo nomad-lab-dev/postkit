@@ -5,6 +5,15 @@ import ComposableArchitecture
 import Foundation
 import os
 
+private func chatLocale() -> Locale {
+    let stored = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+    return stored.isEmpty ? .autoupdatingCurrent : Locale(identifier: stored)
+}
+
+private func chatMsg(_ key: String.LocalizationValue) -> String {
+    String(localized: key, locale: chatLocale())
+}
+
 private let log = Logger(subsystem: "PostKit", category: "SmartPost")
 
 @Reducer
@@ -14,10 +23,11 @@ struct SmartPostFeature {
     struct State: Equatable {
         var pillars: [PillarSnapshot] = []
         var locationClusters: String = ""
+        var availableLocations: [String] = []
         var messages: [ChatMessage] = [
             ChatMessage(
                 role: .assistant,
-                text: "Hey! Describe the post you want — topic, vibe, number of slides, locations. I'll build a template from your photo library."
+                text: chatMsg("Hey! Describe the post you want: topic, number of slides, locations… I'll build a template from your photo library.")
             )
         ]
         var inputText: String = ""
@@ -45,7 +55,7 @@ struct SmartPostFeature {
 
     enum Action: BindableAction {
         case onAppear
-        case dataLoaded(pillars: [PillarSnapshot], locationClusters: String)
+        case dataLoaded(pillars: [PillarSnapshot], locationClusters: String, availableLocations: [String])
         case sendMessageTapped
         case quickReplyTapped(String)
         case templateIntentReceived(AITemplateIntent)
@@ -61,6 +71,7 @@ struct SmartPostFeature {
         case editor(PresentationAction<PostEditorFeature.Action>)
         case delegate(Delegate)
 
+        @CasePathable
         enum Delegate: Equatable {
             case didSavePost
         }
@@ -70,6 +81,7 @@ struct SmartPostFeature {
     @Dependency(\.persistence) var persistence
     @Dependency(\.postGenerator) var postGenerator
     @Dependency(\.uuid) var uuid
+    @Dependency(\.date) var date
 
     private enum CancelID: Hashable { case aiCall }
 
@@ -96,17 +108,19 @@ struct SmartPostFeature {
                     let photos = (try? await photosTask) ?? []
                     log.info("✅ SmartPost gallery.photos(.classified) — \(photos.count)")
                     let clusters = Self.buildLocationClusters(photos: photos, pillars: pillars)
-                    log.info("📤 sending dataLoaded")
-                    await send(.dataLoaded(pillars: pillars, locationClusters: clusters))
+                    let locations = Array(Set(photos.compactMap(\.location))).sorted()
+                    log.info("📤 sending dataLoaded — \(locations.count) unique locations")
+                    await send(.dataLoaded(pillars: pillars, locationClusters: clusters, availableLocations: locations))
                 } catch: { error, send in
                     log.error("❌ SmartPost data load FAILED: \(error)")
-                    await send(.dataLoaded(pillars: [], locationClusters: ""))
+                    await send(.dataLoaded(pillars: [], locationClusters: "", availableLocations: []))
                 }
 
-            case let .dataLoaded(pillars, locationClusters):
-                log.info("✅ dataLoaded — \(pillars.count) pillars, clusters=\(locationClusters.count) chars")
+            case let .dataLoaded(pillars, locationClusters, availableLocations):
+                log.info("✅ dataLoaded — \(pillars.count) pillars, clusters=\(locationClusters.count) chars, \(availableLocations.count) locations")
                 state.pillars = pillars
                 state.locationClusters = locationClusters
+                state.availableLocations = availableLocations
                 state.isLoadingData = false
                 return .none
 
@@ -149,22 +163,24 @@ struct SmartPostFeature {
                     state.generatedTemplate = resolveTemplateIntent(
                         intent,
                         pillars: state.pillars,
-                        uuidGenerator: { uuid() }
+                        availableLocations: state.availableLocations,
+                        uuidGenerator: { uuid() },
+                        createdAt: date.now
                     )
                 } else if intent.isComplete && intent.slots.isEmpty {
                     state.messages.append(
                         ChatMessage(
                             role: .assistant,
-                            text: "I couldn't generate slots from that. Could you be more specific about what photos you want?"
+                            text: chatMsg("I couldn't generate slots from that. Could you be more specific about what photos you want?")
                         )
                     )
                 }
                 return .none
 
-            case let .aiError(message):
+            case .aiError:
                 state.isAIThinking = false
                 state.messages.append(
-                    ChatMessage(role: .assistant, text: "Something went wrong: \(message). Try again?")
+                    ChatMessage(role: .assistant, text: chatMsg("Something went wrong. Try again?"))
                 )
                 return .none
 
@@ -183,6 +199,7 @@ struct SmartPostFeature {
                 guard let template = state.generatedTemplate else { return .none }
                 var editorState = PostEditorFeature.State(template: template, filledSlots: filledSlots)
                 editorState.availablePillars = state.pillars
+                editorState.isAutoGenerated = true
                 state.editor = editorState
                 return .none
 
@@ -190,7 +207,7 @@ struct SmartPostFeature {
                 state.generatedTemplate = nil
                 state.quickReplies = []
                 state.messages.append(
-                    ChatMessage(role: .assistant, text: "Fresh start! What kind of post do you want to create?")
+                    ChatMessage(role: .assistant, text: chatMsg("Fresh start! What kind of post do you want to create?"))
                 )
                 return .none
 
@@ -200,7 +217,7 @@ struct SmartPostFeature {
                 state.messages = [
                     ChatMessage(
                         role: .assistant,
-                        text: "Chat reset! Describe the post you want — topic, vibe, number of slides, locations."
+                        text: chatMsg("Hey! Describe the post you want: topic, number of slides, locations… I'll build a template from your photo library.")
                     )
                 ]
                 state.inputText = ""
@@ -214,8 +231,8 @@ struct SmartPostFeature {
                     ChatMessage(
                         role: .assistant,
                         text: state.showSaveAsTemplate
-                            ? "Post saved! Want to save this as a reusable template? You can schedule it for specific days."
-                            : "Post saved! Want to create another one?"
+                            ? chatMsg("Post saved! Want to save this as a reusable template? You can schedule it for specific days.")
+                            : chatMsg("Post saved! Want to create another one?")
                     )
                 )
                 return .send(.delegate(.didSavePost))
@@ -228,12 +245,12 @@ struct SmartPostFeature {
                     await send(.templateSaved(template))
                 }
 
-            case let .templateSaved(template):
+            case .templateSaved:
                 state.lastSavedTemplate = nil
                 state.messages.append(
                     ChatMessage(
                         role: .assistant,
-                        text: "Template \"\(template.name)\" saved! Find it in the Create tab to schedule it for specific days."
+                        text: chatMsg("Template saved! Find it in the Create tab to schedule it for specific days.")
                     )
                 )
                 return .none

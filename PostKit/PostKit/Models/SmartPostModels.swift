@@ -20,6 +20,11 @@ struct ChatMessage: Equatable, Identifiable, Sendable {
         self.text = text
         self.timestamp = timestamp
     }
+
+    // Equality based on content, not identity — id is for SwiftUI ForEach, timestamp for display.
+    static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
+        lhs.role == rhs.role && lhs.text == rhs.text
+    }
 }
 
 struct PostFilters: Equatable, Sendable {
@@ -60,14 +65,16 @@ struct AITemplateIntent: Equatable, Sendable {
 func resolveTemplateIntent(
     _ intent: AITemplateIntent,
     pillars: [PillarSnapshot],
-    uuidGenerator: () -> UUID
+    availableLocations: [String] = [],
+    uuidGenerator: () -> UUID,
+    createdAt: Date = .now
 ) -> TemplateSnapshot {
     let pillarLookup = Dictionary(
         pillars.map { ($0.name.lowercased(), $0.id) },
         uniquingKeysWith: { first, _ in first }
     )
+    let locationAllowlist = availableLocations.isEmpty ? nil : Set(availableLocations)
 
-    let iso = ISO8601DateFormatter()
     var allLocations: [String] = []
     let slots = intent.slots.map { slot in
         let pillarIDs = slot.pillarNames.compactMap { name -> UUID? in
@@ -78,17 +85,21 @@ func resolveTemplateIntent(
                 return pillarLookup[cleaned.lowercased()] ?? pillarLookup[name.lowercased()]
             }
         let cadrages = slot.cadrageNames.compactMap { Cadrage(rawValue: $0.lowercased()) }
-        allLocations.append(contentsOf: slot.locations)
+        // Only keep locations the user actually has photos for
+        let locations = locationAllowlist == nil
+            ? slot.locations
+            : slot.locations.filter { locationAllowlist!.contains($0) }
+        allLocations.append(contentsOf: locations)
 
         return TemplateSlotData(
             id: uuidGenerator(),
             name: slot.name,
             cadrages: cadrages,
             pillarIDs: pillarIDs,
-            locations: slot.locations,
+            locations: locations,
             about: slot.about,
-            startDate: slot.startDate.flatMap { iso.date(from: $0) },
-            endDate: slot.endDate.flatMap { iso.date(from: $0) }
+            startDate: nil,
+            endDate: nil
         )
     }
 
@@ -96,6 +107,7 @@ func resolveTemplateIntent(
         id: uuidGenerator(),
         name: intent.templateName,
         slots: slots,
-        locations: Array(Set(allLocations)).sorted()
+        locations: Array(Set(allLocations)).sorted(),
+        createdAt: createdAt
     )
 }

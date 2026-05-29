@@ -6,6 +6,8 @@ import SwiftUI
 
 struct ClassificationCardView: View {
     @Bindable var store: StoreOf<ClassificationCardFeature>
+    @Dependency(\.photoLibrary) var photoLibrary
+    @State private var currentImage: UIImage?
     @State private var dragOffset: CGSize = .zero
     @State private var cardRotation: Double = 0
     @State private var flyingOut: Bool = false
@@ -29,6 +31,14 @@ struct ClassificationCardView: View {
         .background(Palette.bg)
         .navigationBarTitleDisplayMode(.inline)
         .task { await store.send(.onAppear).finish() }
+        .task(id: store.imageLoadToken) {
+            currentImage = nil
+            guard let photo = store.currentPhoto else { return }
+            let side = UIScreen.main.bounds.width * UIScreen.main.scale
+            let size = CGSize(width: side, height: side)
+            currentImage = try? await photoLibrary.image(photo.assetLocalIdentifier, size)
+            store.send(.imageLoaded)
+        }
     }
 
     // MARK: - Card Stack
@@ -69,7 +79,7 @@ struct ClassificationCardView: View {
 
     private func photoCard(width: CGFloat, height: CGFloat) -> some View {
         ZStack {
-            if let image = store.currentImage {
+            if let image = currentImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFill()

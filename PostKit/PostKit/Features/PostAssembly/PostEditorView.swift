@@ -20,9 +20,14 @@ struct PostEditorView: View {
                     .padding(.horizontal, Spacing.xs)
 
                 VStack(alignment: .leading, spacing: Spacing.lg) {
-                    captionSection
-                    hashtagsSection
-                    scheduleSection
+                    sectionTogglesRow
+                    if store.isCaptionExpanded || store.isGenerating {
+                        captionSection
+                        hashtagsSection
+                    }
+                    if store.isScheduleExpanded {
+                        scheduleSection
+                    }
                     shareSection
                 }
                 .padding(.horizontal, Layout.Padding.screen.leading)
@@ -62,6 +67,10 @@ struct PostEditorView: View {
                 ShareSheet(items: images)
             }
         }
+        .sheet(item: $store.scope(state: \.paywall, action: \.paywall)) { paywallStore in
+            PaywallView(store: paywallStore)
+                .presentationDetents([.large])
+        }
     }
 
     // MARK: - Slots Grid
@@ -71,7 +80,11 @@ struct PostEditorView: View {
             LazyVGrid(columns: columns, spacing: Spacing.sm) {
                 ForEach(store.filledSlots) { slot in
                     VStack(spacing: Spacing.xxs) {
-                        SlotCardView(slot: slot, pillars: store.availablePillars) {
+                        SlotCardView(
+                            slot: slot,
+                            pillars: store.availablePillars,
+                            isReshuffling: store.reshufflingSlotID == slot.id
+                        ) {
                             store.send(.slotTapped(slot.id))
                         } onClear: {
                             store.send(.clearSlotTapped(slot.id))
@@ -103,6 +116,35 @@ struct PostEditorView: View {
                             Spacer()
                         }
                     }
+                }
+
+                VStack(spacing: Spacing.xxs) {
+                    Button {
+                        Haptics.tap()
+                        store.send(.addSlotTapped)
+                    } label: {
+                        Palette.bg
+                            .aspectRatio(1, contentMode: .fit)
+                            .overlay {
+                                VStack(spacing: Spacing.xs) {
+                                    Image(systemName: "plus")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundStyle(Palette.accent)
+                                    Text("Add Slot")
+                                        .font(Typography.caption)
+                                        .fontWeight(.medium)
+                                        .foregroundStyle(Palette.text2)
+                                }
+                            }
+                            .clipShape(RoundedRectangle(cornerRadius: Radius.card))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.card)
+                                    .strokeBorder(Palette.border, style: StrokeStyle(lineWidth: Layout.Border.thin, dash: [6]))
+                            )
+                    }
+                    .buttonStyle(.plain)
+
+                    Color.clear.frame(height: 14)
                 }
             }
 
@@ -183,18 +225,63 @@ struct PostEditorView: View {
         }
     }
 
+    // MARK: - Section Toggles
+
+    private var sectionTogglesRow: some View {
+        HStack(spacing: Spacing.sm) {
+            sectionChip(
+                label: store.isCaptionExpanded ? "Caption" : "Add Caption",
+                icon: store.isCaptionExpanded ? "xmark" : "plus",
+                isActive: store.isCaptionExpanded
+            ) {
+                Haptics.lightTap()
+                store.send(.toggleCaptionSection)
+            }
+
+            sectionChip(
+                label: store.isScheduleExpanded ? "Schedule" : "Add Schedule",
+                icon: store.isScheduleExpanded ? "xmark" : "plus",
+                isActive: store.isScheduleExpanded
+            ) {
+                Haptics.lightTap()
+                store.send(.toggleScheduleSection)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func sectionChip(label: String, icon: String, isActive: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Label(label, systemImage: icon)
+                .font(Typography.caption)
+                .fontWeight(.medium)
+                .foregroundStyle(isActive ? Palette.accent : Palette.text2)
+                .padding(.horizontal, Spacing.sm)
+                .padding(.vertical, Spacing.xs)
+                .background(isActive ? Palette.accentTint : Palette.surface, in: Capsule())
+                .overlay(
+                    Capsule().strokeBorder(
+                        isActive ? Palette.accent.opacity(0.4) : Palette.border,
+                        lineWidth: Layout.Border.thin
+                    )
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
     // MARK: - Caption
 
     @ViewBuilder
     private var captionSection: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
-            HStack {
-                Text("Caption")
-                    .font(Typography.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Palette.text)
-                Spacer()
-                if store.totalPhotoCount > 0 && !store.isGenerating {
+            if store.totalPhotoCount > 0 && !store.isGenerating {
+                HStack {
+                    Text("Caption")
+                        .font(Typography.subheadline)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Palette.text)
+                    Spacer()
                     Button {
                         Haptics.tap()
                         store.send(.generateCaptionTapped)
@@ -204,6 +291,11 @@ struct PostEditorView: View {
                             .foregroundStyle(Palette.accent)
                     }
                 }
+            } else if !store.isGenerating {
+                Text("Caption")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.text)
             }
 
             if store.isGenerating {
@@ -385,11 +477,13 @@ struct PostEditorView: View {
 private struct SlotCardView: View {
     let slot: FilledSlot
     let pillars: [PillarSnapshot]
+    let isReshuffling: Bool
     let onTap: () -> Void
     let onClear: () -> Void
     let onReshuffle: () -> Void
 
     @State private var currentPage: Int = 0
+    @State private var contentScale: CGFloat = 1
 
     private var matchedPillars: [PillarSnapshot] {
         pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
@@ -412,74 +506,86 @@ private struct SlotCardView: View {
                 emptyContent
             } else {
                 filledContent
-            }
+                    .scaleEffect(contentScale)
 
-            // Overlays for filled slots
-            if !slot.isEmpty {
-                VStack {
-                    // Top row: reshuffle + delete
-                    HStack {
-                        Button {
-                            onReshuffle()
-                        } label: {
-                            Image(systemName: "shuffle")
-                                .font(.system(size: 13, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .frame(width: 30, height: 30)
-                                .background(Palette.accent, in: Circle())
-                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                if !isReshuffling {
+                    VStack {
+                        HStack {
+                            Button {
+                                onReshuffle()
+                            } label: {
+                                Image(systemName: "shuffle")
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 30, height: 30)
+                                    .background(Palette.accent, in: Circle())
+                                    .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                            }
+                            .disabled(isReshuffling)
+
+                            Spacer()
+
+                            Button {
+                                Haptics.lightTap()
+                                onClear()
+                            } label: {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundStyle(.white)
+                                    .frame(width: 30, height: 30)
+                                    .background(Color.black.opacity(0.55), in: Circle())
+                                    .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                            }
                         }
 
                         Spacer()
 
-                        Button {
-                            Haptics.lightTap()
-                            onClear()
-                        } label: {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundStyle(.white)
-                                .frame(width: 30, height: 30)
-                                .background(Color.black.opacity(0.55), in: Circle())
-                                .shadow(color: .black.opacity(0.35), radius: 3, y: 1)
+                        HStack(spacing: Spacing.xxs) {
+                            if let pillar = activePillar {
+                                Text(pillar.emoji)
+                                    .font(.system(size: 14))
+                                    .frame(width: 26, height: 26)
+                                    .background(.ultraThinMaterial, in: Circle())
+                            }
+
+                            if let cadrage = slot.slotData.cadrages.first {
+                                Text(cadrage.displayName)
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 3)
+                                    .background(.ultraThinMaterial, in: Capsule())
+                            }
+
+                            Spacer()
                         }
                     }
-
-                    Spacer()
-
-                    // Bottom row: pillar emoji + cadrage tag
-                    HStack(spacing: Spacing.xxs) {
-                        if let pillar = activePillar {
-                            Text(pillar.emoji)
-                                .font(.system(size: 14))
-                                .frame(width: 26, height: 26)
-                                .background(.ultraThinMaterial, in: Circle())
-                        }
-
-                        if let cadrage = slot.slotData.cadrages.first {
-                            Text(cadrage.displayName)
-                                .font(.system(size: 10, weight: .semibold))
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, 6)
-                                .padding(.vertical, 3)
-                                .background(.ultraThinMaterial, in: Capsule())
-                        }
-
-                        Spacer()
-                    }
+                    .padding(Spacing.xs)
+                    .opacity(contentScale < 0.5 ? 0 : 1)
                 }
-                .padding(Spacing.xs)
+
+                if isReshuffling {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay { ProgressView().tint(Palette.accent) }
+                        .transition(.opacity)
+                }
             }
         }
         .clipShape(RoundedRectangle(cornerRadius: Radius.card))
         .overlay(
             RoundedRectangle(cornerRadius: Radius.card)
-                .strokeBorder(
-                    slot.isEmpty ? Palette.border : Color.clear,
-                    lineWidth: Layout.Border.thin
-                )
+                .strokeBorder(slot.isEmpty ? Palette.border : Color.clear, lineWidth: Layout.Border.thin)
         )
         .onTapGesture { onTap() }
+        .onChange(of: isReshuffling) { oldValue, newValue in
+            if !newValue && oldValue {
+                contentScale = 0.01
+                withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
+                    contentScale = 1
+                }
+            }
+        }
     }
 
     private var emptyContent: some View {
@@ -579,6 +685,10 @@ private struct SlotThumbnail: View {
                         .scaledToFill()
                 } else {
                     Palette.placeholder
+                        .overlay {
+                            ProgressView()
+                                .tint(Palette.text3)
+                        }
                 }
             }
             .clipped()

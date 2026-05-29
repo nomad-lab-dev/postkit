@@ -10,7 +10,7 @@ struct ClassificationCardFeature {
     struct State: Equatable {
         var photos: [ClassifiedPhotoSnapshot]
         var currentIndex: Int
-        var currentImage: UIImage?
+        var imageLoadToken: UUID = UUID()  // bumped to trigger View image reload
         var pillars: [PillarSnapshot]
         var undoStack: [UndoEntry] = []
         var isLoadingImage: Bool = false
@@ -48,7 +48,7 @@ struct ClassificationCardFeature {
 
     enum Action {
         case onAppear
-        case imageLoaded(UIImage)
+        case imageLoaded           // View signals load is done; no UIImage in actions
         case cadrageDetected(Cadrage)
         case pillarSelected(UUID)
         case confirmTapped
@@ -76,15 +76,20 @@ struct ClassificationCardFeature {
                 } else {
                     state.selectedPillarIDs = []
                 }
-                return loadCurrentImage(state: state)
+                // imageLoadToken was set at State init — View's .task(id:) handles first load
+                return .none
 
-            case let .imageLoaded(image):
-                state.currentImage = image
+            case .imageLoaded:
                 state.isLoadingImage = false
-                let needsCadrage = state.currentPhoto?.cadrage == nil
+                guard let photo = state.currentPhoto, photo.cadrage == nil else { return .none }
+                // Re-fetch for cadrage detection; PHImageManager returns the cached image (~0ms)
+                let id = photo.assetLocalIdentifier
+                let fetchImage = photoLibrary.image
                 let detectCadrage = imageClassifier.detectCadrage
-                guard needsCadrage else { return .none }
                 return .run { send in
+                    let side = await MainActor.run { UIScreen.main.bounds.width * UIScreen.main.scale }
+                    let size = CGSize(width: side, height: side)
+                    guard let image = try? await fetchImage(id, size) else { return }
                     let cadrage = (try? await detectCadrage(image)) ?? .wide
                     await send(.cadrageDetected(cadrage))
                 }
@@ -96,7 +101,6 @@ struct ClassificationCardFeature {
                 return .run { _ in
                     try? await persistence.savePhoto(photo)
                 }
-
 
             case let .pillarSelected(id):
                 if state.selectedPillarIDs.contains(id) {
@@ -127,14 +131,11 @@ struct ClassificationCardFeature {
                 guard let entry = state.undoStack.popLast() else { return .none }
                 state.currentIndex = entry.restoredIndex
                 state.photos[entry.restoredIndex] = entry.photo
-                state.currentImage = nil
                 state.isLoadingImage = true
-                return .merge(
-                    .run { [photo = entry.photo] _ in
-                        try await persistence.savePhoto(photo)
-                    },
-                    loadCurrentImage(state: state)
-                )
+                state.imageLoadToken = UUID()  // triggers View to reload previous photo
+                return .run { [photo = entry.photo] _ in
+                    try await persistence.savePhoto(photo)
+                }
 
             case .photoSaved:
                 return .none
@@ -147,7 +148,6 @@ struct ClassificationCardFeature {
 
     private func saveAndAdvance(photo: ClassifiedPhotoSnapshot, state: inout State) -> Effect<Action> {
         state.currentIndex += 1
-        state.currentImage = nil
         if let pillarID = state.currentPhoto?.pillarID {
             state.selectedPillarIDs = [pillarID]
         } else {
@@ -162,25 +162,10 @@ struct ClassificationCardFeature {
         }
 
         state.isLoadingImage = true
-        return .merge(
-            .run { send in
-                try await persistence.savePhoto(photo)
-                await send(.photoSaved)
-            },
-            loadCurrentImage(state: state)
-        )
-    }
-
-    private func loadCurrentImage(state: State) -> Effect<Action> {
-        guard let photo = state.currentPhoto else { return .none }
-        let id = photo.assetLocalIdentifier
-        let fetchImage = photoLibrary.image
+        state.imageLoadToken = UUID()  // triggers View to load next photo
         return .run { send in
-            let size = await MainActor.run {
-                UIScreen.main.bounds.width * UIScreen.main.scale
-            }
-            let image = try await fetchImage(id, CGSize(width: size, height: size))
-            await send(.imageLoaded(image))
+            try await persistence.savePhoto(photo)
+            await send(.photoSaved)
         }
     }
 }

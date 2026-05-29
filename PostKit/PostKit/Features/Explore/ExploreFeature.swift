@@ -45,15 +45,11 @@ struct ExploreFeature {
             if let statusFilter {
                 result = result.filter { $0.status == statusFilter }
             }
-            return result
+            return result.sorted { ($0.capturedAt ?? .distantPast) > ($1.capturedAt ?? .distantPast) }
         }
 
         var filteredCount: Int { filteredPhotos.count }
 
-        func pillar(for photo: ClassifiedPhotoSnapshot) -> PillarSnapshot? {
-            guard let pillarID = photo.pillarID else { return nil }
-            return pillars.first { $0.id == pillarID }
-        }
     }
 
     enum Action {
@@ -66,6 +62,10 @@ struct ExploreFeature {
         case statusFilterSelected(ClassifiedPhoto.PhotoStatus?)
         case photoTapped(ClassifiedPhotoSnapshot)
         case copyPhotoTapped(String)
+        case removePillarFromPhoto(ClassifiedPhotoSnapshot)
+        case addPhotoToPillar(ClassifiedPhotoSnapshot, UUID)
+        case declassifyPhoto(ClassifiedPhotoSnapshot)
+        case photoUpdateSaved(ClassifiedPhotoSnapshot)
         case card(PresentationAction<ClassificationCardFeature.Action>)
         case photoDetail(PresentationAction<PhotoDetailFeature.Action>)
     }
@@ -183,8 +183,41 @@ struct ExploreFeature {
                 } else {
                     state.photoDetail = PhotoDetailFeature.State(
                         photo: photo,
-                        pillar: state.pillar(for: photo)
+                        pillars: state.pillars
                     )
+                }
+                return .none
+
+            case var .removePillarFromPhoto(photo):
+                guard let pillarID = photo.pillarID else { return .none }
+                photo.pillarIDs.removeAll { $0 == pillarID }
+                photo.pillarID = photo.pillarIDs.first
+                if photo.pillarIDs.isEmpty { photo.status = .pending }
+                return savePhotoUpdate(photo)
+
+            case var .addPhotoToPillar(photo, pillarID):
+                if !photo.pillarIDs.contains(pillarID) {
+                    photo.pillarIDs.append(pillarID)
+                }
+                if photo.pillarID == nil { photo.pillarID = pillarID }
+                photo.status = .classified
+                return savePhotoUpdate(photo)
+
+            case var .declassifyPhoto(photo):
+                photo.pillarIDs = []
+                photo.pillarID = nil
+                photo.status = .pending
+                return savePhotoUpdate(photo)
+
+            case let .photoUpdateSaved(photo):
+                if let idx = state.photos.firstIndex(where: { $0.id == photo.id }) {
+                    state.photos[idx] = photo
+                }
+                return .none
+
+            case let .photoDetail(.presented(.delegate(.didUpdatePhoto(photo)))):
+                if let idx = state.photos.firstIndex(where: { $0.id == photo.id }) {
+                    state.photos[idx] = photo
                 }
                 return .none
 
@@ -207,6 +240,14 @@ struct ExploreFeature {
         }
         .ifLet(\.$photoDetail, action: \.photoDetail) {
             PhotoDetailFeature()
+        }
+    }
+
+    private func savePhotoUpdate(_ photo: ClassifiedPhotoSnapshot) -> Effect<Action> {
+        .run { [persistence, gallery] send in
+            try? await persistence.savePhoto(photo)
+            await gallery.invalidatePhotos()
+            await send(.photoUpdateSaved(photo))
         }
     }
 

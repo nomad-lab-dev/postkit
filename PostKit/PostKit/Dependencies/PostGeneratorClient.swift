@@ -40,6 +40,8 @@ struct PostGeneratorClient: Sendable {
     var enrichTopic: @Sendable (_ input: String) async throws -> TopicSuggestion
 
     var extractImageTags: @Sendable (_ image: UIImage) async throws -> [String]
+
+    var generatePillarKeywords: @Sendable (_ name: String, _ about: String, _ topics: [String]) async throws -> [String]
 }
 
 // MARK: - Live
@@ -116,6 +118,7 @@ extension PostGeneratorClient: DependencyKey {
             You are Smart Post, the AI assistant inside PostKit — an iOS app for content creators \
             who organize their photo library by "pillars" (themes like Food, Travel, Cars, etc.) \
             and create social media posts from those photos.
+            \(PostGemini.languageInstruction())
 
             YOUR ROLE: Help the user build a post template by chatting naturally. You design a \
             set of "slots" — each slot will be auto-filled with a matching photo from their library.
@@ -136,10 +139,10 @@ extension PostGeneratorClient: DependencyKey {
             - If unsure which pillar, ask
 
             DATE RANGE MATCHING:
-            - Use startDate/endDate (ISO 8601) per slot when the user mentions a time period
-            - If a location appears multiple times in the clusters (e.g. Bangkok in Mar 2024 AND Dec 2025), \
-            ASK which trip the user means and show the available date clusters
-            - Only set dates when the user specifies or confirms a period
+            - NEVER set startDate/endDate unless the user explicitly mentioned a specific time period in their message (e.g. "last summer", "my trip in March", "photos from 2024")
+            - If the user did NOT mention any dates or time period, always leave startDate and endDate as null for every slot — do not infer, guess, or default to any date range
+            - If a location appears multiple times in the clusters (e.g. Bangkok in Mar 2024 AND Dec 2025), ASK which trip the user means and show the available date clusters
+            - Only set dates once the user has explicitly confirmed a specific period
 
             DISAMBIGUATION:
             - If the user's request is ambiguous (multiple trips to same place, vague pillar), \
@@ -159,7 +162,7 @@ extension PostGeneratorClient: DependencyKey {
             - locations must match locations from the context above
             - Give each slot a creative, descriptive name
             - The "about" field describes what the photo should show
-            - startDate/endDate are ISO 8601 strings or null
+            - startDate/endDate are ALWAYS null unless the user explicitly asked for a date range
 
             RESPONSE FORMAT (strict JSON):
             {
@@ -171,8 +174,8 @@ extension PostGeneratorClient: DependencyKey {
                   "cadrageNames": ["string"],
                   "locations": ["string"],
                   "about": "string",
-                  "startDate": "ISO8601 or null",
-                  "endDate": "ISO8601 or null"
+                  "startDate": null,
+                  "endDate": null
                 }
               ],
               "reply": "string",
@@ -242,6 +245,32 @@ extension PostGeneratorClient: DependencyKey {
             let response = try await model.generateContent(prompt, image)
             guard let text = response.text else { return [] }
             return PostGemini.parseStringArray(text) ?? []
+        },
+        generatePillarKeywords: { name, about, topics in
+            let model = try PostGemini.textModel()
+            var context = "Topic name: \"\(name)\""
+            if !about.isEmpty { context += "\nDescription: \"\(about)\"" }
+            if !topics.isEmpty { context += "\nSubtopics: \(topics.joined(separator: ", "))" }
+
+            let prompt = """
+            You help classify photos by matching Apple Vision (VNClassifyImageRequest) \
+            labels to content topics.
+
+            \(context)
+
+            Generate 20-30 lowercase keywords that Apple Vision would likely detect in \
+            photos matching this topic. Focus on:
+            - Concrete objects and scenes (not abstract concepts)
+            - Variations and synonyms (e.g. for "Cars": car, vehicle, sedan, suv, coupe, truck)
+            - Related environments (e.g. for "Cars": road, highway, garage, parking)
+            - Activities and compositions (e.g. for "Cars": driving, racing, dashboard)
+
+            Return ONLY a JSON array of lowercase strings, no markdown:
+            ["keyword1", "keyword2", ...]
+            """
+            let response = try await model.generateContent(prompt)
+            guard let text = response.text else { return [] }
+            return PostGemini.parseStringArray(text) ?? []
         }
     )
 
@@ -309,6 +338,10 @@ extension PostGeneratorClient: DependencyKey {
         extractImageTags: { _ in
             try await Task.sleep(for: .milliseconds(300))
             return ["outdoor", "natural light", "vibrant colors"]
+        },
+        generatePillarKeywords: { name, _, _ in
+            try await Task.sleep(for: .milliseconds(300))
+            return [name.lowercased(), "photo", "content", "visual"]
         }
     )
 }
@@ -323,6 +356,18 @@ extension DependencyValues {
 // MARK: - Gemini Helpers
 
 private enum PostGemini {
+
+    static func languageInstruction() -> String {
+        let code = UserDefaults.standard.string(forKey: "appLanguage") ?? ""
+        switch code {
+        case "fr":
+            return "\nLANGUAGE: Write all conversational text (\"reply\", \"quickReplies\", slot \"name\" and \"about\" fields) in French. Keep all JSON keys in English."
+        case "es":
+            return "\nLANGUAGE: Write all conversational text (\"reply\", \"quickReplies\", slot \"name\" and \"about\" fields) in Spanish. Keep all JSON keys in English."
+        default:
+            return ""
+        }
+    }
 
     static func apiKey() throws -> String {
         guard let key = Bundle.main.infoDictionary?["GeminiAPIKey"] as? String,

@@ -6,11 +6,15 @@ import SwiftUI
 
 struct SettingsView: View {
     @Bindable var store: StoreOf<SettingsFeature>
+    @AppStorage("appLanguage") private var appLanguage: String = ""
 
     var body: some View {
         List {
+            subscriptionSection
             topicsSection
+            privacySection
             notificationsSection
+            languageSection
             aboutSection
         }
         .listStyle(.insetGrouped)
@@ -20,6 +24,59 @@ struct SettingsView: View {
             NavigationStack {
                 TopicEditorView(store: editorStore)
             }
+        }
+        .sheet(item: $store.scope(state: \.paywall, action: \.paywall)) { paywallStore in
+            PaywallView(store: paywallStore)
+                .presentationDetents([.large])
+        }
+    }
+
+    private var subscriptionSection: some View {
+        Section {
+            if store.isProUser {
+                HStack(spacing: Spacing.sm) {
+                    Image(systemName: "crown.fill")
+                        .foregroundStyle(Palette.accent)
+                    Text("PostKit Pro")
+                        .font(Typography.body)
+                        .fontWeight(.semibold)
+                        .foregroundStyle(Palette.text)
+                    Spacer()
+                    Text("Active")
+                        .font(Typography.caption)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Palette.green)
+                        .padding(.horizontal, Spacing.xs)
+                        .padding(.vertical, 2)
+                        .background(Palette.green.opacity(0.15), in: Capsule())
+                }
+                .listRowBackground(Palette.surface)
+            } else {
+                Button {
+                    store.send(.upgradeToProTapped)
+                } label: {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "crown.fill")
+                            .foregroundStyle(Palette.accent)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Upgrade to Pro")
+                                .font(Typography.body)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Palette.text)
+                            Text("Unlimited AI posts, scanning & templates")
+                                .font(Typography.caption)
+                                .foregroundStyle(Palette.text3)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.text3)
+                    }
+                }
+                .listRowBackground(Palette.surface)
+            }
+        } header: {
+            Text("Subscription")
         }
     }
 
@@ -68,6 +125,42 @@ struct SettingsView: View {
         }
     }
 
+    private var privacySection: some View {
+        Section {
+            HStack {
+                Label("Cloud AI Enhancement", systemImage: "cloud.bolt")
+                    .foregroundStyle(Palette.text)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { store.cloudAIEnabled },
+                    set: { _ in store.send(.cloudAIToggled) }
+                ))
+                .labelsHidden()
+                .tint(Palette.accent)
+            }
+            .listRowBackground(Palette.surface)
+
+            if store.cloudAIEnabled {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Label("Photos may be sent to Google Gemini for better classification when on-device AI isn't confident enough.", systemImage: "info.circle")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                    Text("Photos are processed but never stored by Google.")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                }
+                .listRowBackground(Palette.surface)
+            } else {
+                Label("All classification stays on your device. No photos are sent to the cloud.", systemImage: "lock.shield")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
+                    .listRowBackground(Palette.surface)
+            }
+        } header: {
+            Text("Privacy")
+        }
+    }
+
     private var notificationsSection: some View {
         Section {
             HStack {
@@ -96,6 +189,25 @@ struct SettingsView: View {
             }
         } header: {
             Text("Notifications")
+        }
+    }
+
+    private var languageSection: some View {
+        Section {
+            Picker(selection: $appLanguage) {
+                Text("System Default").tag("")
+                Text("English").tag("en")
+                Text("Français").tag("fr")
+                Text("Español").tag("es")
+            } label: {
+                Label("Language", systemImage: "globe")
+                    .foregroundStyle(Palette.text)
+            }
+            .pickerStyle(.menu)
+            .tint(Palette.accent)
+            .listRowBackground(Palette.surface)
+        } header: {
+            Text("Language")
         }
     }
 

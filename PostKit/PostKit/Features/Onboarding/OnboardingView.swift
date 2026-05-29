@@ -32,6 +32,10 @@ struct OnboardingView: View {
                         ScanCompleteStep(
                             topics: Array(store.topics),
                             totalMatched: store.totalMatchedPhotos,
+                            emptyGallery: store.emptyGallery,
+                            isSaving: store.isSaving,
+                            cloudAIEnabled: store.cloudAIEnabled,
+                            onCloudAIToggled: { store.send(.cloudAIToggled) },
                             onStart: { store.send(.startPostKitTapped) }
                         )
                     }
@@ -157,8 +161,6 @@ private struct TopicSetupStep: View {
 
     @FocusState private var inputFocused: Bool
     @FocusState private var editingFocusedID: OnboardingTopic.ID?
-    @State private var glowAngle: Double = 0
-    @State private var glowOpacity: Double = 0
 
     var body: some View {
         VStack(spacing: 0) {
@@ -249,51 +251,35 @@ private struct TopicSetupStep: View {
                             inputFocused = false
                             store.send(.startScanTapped)
                         } label: {
-                            Text(store.topics.isEmpty
-                                 ? "Scan My Library"
-                                 : "Continue with \(store.topics.count) topic\(store.topics.count == 1 ? "" : "s")")
-                                .font(Typography.body)
-                                .fontWeight(.medium)
-                                .foregroundStyle(store.topics.isEmpty ? Palette.text4 : Palette.text2)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, Spacing.sm)
-                                .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.button))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: Radius.button)
-                                        .strokeBorder(
-                                            store.topics.isEmpty ? Palette.border.opacity(0.5) : Palette.border,
-                                            lineWidth: Layout.Border.thin
-                                        )
-                                )
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: Radius.button)
-                                        .strokeBorder(
-                                            AngularGradient(
-                                                colors: [
-                                                    Palette.accent.opacity(0),
-                                                    Palette.accent,
-                                                    Palette.accent.opacity(0),
-                                                ],
-                                                center: .center,
-                                                angle: .degrees(glowAngle)
-                                            ),
-                                            lineWidth: 2
-                                        )
-                                        .opacity(glowOpacity)
-                                )
+                            HStack(spacing: Spacing.xs) {
+                                Text(store.topics.isEmpty
+                                     ? "Scan My Library"
+                                     : "Continue with \(store.topics.count) topic\(store.topics.count == 1 ? "" : "s")")
+                                if !store.topics.isEmpty {
+                                    Image(systemName: "arrow.right")
+                                        .font(.system(size: 14, weight: .semibold))
+                                }
+                            }
+                            .font(Typography.body)
+                            .fontWeight(.semibold)
+                            .foregroundStyle(store.topics.isEmpty ? Palette.text4 : Palette.accent)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.sm)
+                            .background(
+                                store.topics.isEmpty ? Palette.surface : Palette.accentTint,
+                                in: RoundedRectangle(cornerRadius: Radius.button)
+                            )
+                            .overlay(
+                                RoundedRectangle(cornerRadius: Radius.button)
+                                    .strokeBorder(
+                                        store.topics.isEmpty ? Palette.border.opacity(0.5) : Palette.accent.opacity(0.3),
+                                        lineWidth: store.topics.isEmpty ? Layout.Border.thin : 1.5
+                                    )
+                            )
                         }
                         .buttonStyle(.plain)
                         .disabled(store.topics.isEmpty)
-                        .onChange(of: store.topics.count) { oldCount, newCount in
-                            guard newCount > oldCount else { return }
-                            glowOpacity = 1
-                            withAnimation(.linear(duration: 1.2)) {
-                                glowAngle += 360
-                            }
-                            withAnimation(.easeOut(duration: 0.5).delay(1.0)) {
-                                glowOpacity = 0
-                            }
-                        }
+                        .animation(.easeInOut(duration: 0.25), value: store.topics.isEmpty)
                     }
                     .padding(.top, Spacing.lg)
                 }
@@ -399,11 +385,55 @@ private struct ScanningStep: View {
     }
 }
 
+// MARK: - Previews
+
+#Preview("Welcome") {
+    WelcomeStep(onGetStarted: {})
+}
+
+#Preview("Topic Setup") {
+    TopicSetupStep(store: Store(
+        initialState: OnboardingFeature.State(
+            step: .topicSetup,
+            topics: [
+                OnboardingTopic(id: UUID(), name: "Food & Coffee", emoji: "☕️", about: ""),
+                OnboardingTopic(id: UUID(), name: "Tech & Dev", emoji: "💻", about: ""),
+                OnboardingTopic(id: UUID(), name: "Travel", emoji: "✈️", about: "")
+            ]
+        ),
+        reducer: { OnboardingFeature() }
+    ))
+}
+
+#Preview("Scanning") {
+    ScanningStep(progress: 0.6, scannedCount: 12, totalToScan: 20)
+}
+
+#Preview("Scan Complete") {
+    ScanCompleteStep(
+        topics: [
+            OnboardingTopic(id: UUID(), name: "Food & Coffee", emoji: "☕️", about: "", matchedPhotos: 47),
+            OnboardingTopic(id: UUID(), name: "Tech & Dev", emoji: "💻", about: "", matchedPhotos: 23),
+            OnboardingTopic(id: UUID(), name: "Travel", emoji: "✈️", about: "", matchedPhotos: 61)
+        ],
+        totalMatched: 131,
+        emptyGallery: false,
+        isSaving: false,
+        cloudAIEnabled: true,
+        onCloudAIToggled: {},
+        onStart: {}
+    )
+}
+
 // MARK: - Scan Complete
 
 private struct ScanCompleteStep: View {
     let topics: [OnboardingTopic]
     let totalMatched: Int
+    let emptyGallery: Bool
+    let isSaving: Bool
+    let cloudAIEnabled: Bool
+    let onCloudAIToggled: () -> Void
     let onStart: () -> Void
 
     @State private var showCheckmark = false
@@ -412,53 +442,129 @@ private struct ScanCompleteStep: View {
         VStack(spacing: Spacing.lg) {
             Spacer()
 
-            Image(systemName: "checkmark.circle.fill")
+            Image(systemName: emptyGallery ? "photo.on.rectangle.angled" : "checkmark.circle.fill")
                 .font(.system(size: 72))
-                .foregroundStyle(Palette.green)
+                .foregroundStyle(emptyGallery ? Palette.text3 : Palette.green)
                 .scaleEffect(showCheckmark ? 1 : 0.3)
                 .opacity(showCheckmark ? 1 : 0)
 
             VStack(spacing: Spacing.sm) {
-                Text("Library Scanned!")
+                Text(emptyGallery ? "No Photos Yet" : "Library Scanned!")
                     .font(Typography.title)
 
-                Text("\(totalMatched) photos matched across your topics")
+                Text(subtitle)
                     .font(Typography.subheadline)
                     .foregroundStyle(Palette.text3)
                     .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.lg)
             }
 
-            VStack(spacing: Spacing.sm) {
-                ForEach(topics) { topic in
-                    HStack(spacing: Layout.Stack.comfy) {
-                        Text(topic.emoji).font(.system(size: 24))
-                        Text(topic.name).font(Typography.headline)
-                        Spacer()
-                        Text("\(topic.matchedPhotos)")
-                            .font(Typography.title3)
-                            .foregroundStyle(topic.matchedPhotos > 0 ? Palette.accent : Palette.text4)
-                        Text("photos")
-                            .font(Typography.caption)
-                            .foregroundStyle(Palette.text3)
+            if !emptyGallery && !topics.isEmpty {
+                VStack(spacing: Spacing.sm) {
+                    ForEach(topics) { topic in
+                        HStack(spacing: Layout.Stack.comfy) {
+                            Text(topic.emoji).font(.system(size: 24))
+                            Text(topic.name).font(Typography.headline)
+                            Spacer()
+                            Text("\(topic.matchedPhotos)")
+                                .font(Typography.title3)
+                                .foregroundStyle(topic.matchedPhotos > 0 ? Palette.accent : Palette.text4)
+                            Text("photos")
+                                .font(Typography.caption)
+                                .foregroundStyle(Palette.text3)
+                        }
+                        .padding(.vertical, Spacing.xs)
                     }
-                    .padding(.vertical, Spacing.xs)
                 }
+                .padding(Layout.Padding.card)
+                .cardStyle()
+                .padding(.horizontal, Spacing.lg)
             }
-            .padding(Layout.Padding.card)
-            .cardStyle()
-            .padding(.horizontal, Spacing.lg)
+
+            if totalMatched == 0 && !emptyGallery && !topics.isEmpty {
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(Palette.accent)
+                    Text("The full scan will classify your entire library — this was just a quick preview.")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                }
+                .padding(.horizontal, Spacing.xl)
+            }
+
+            cloudAICard
+                .padding(.horizontal, Spacing.lg)
 
             Spacer()
 
-            Button("Start PostKit") { Haptics.success(); onStart() }
-                .buttonStyle(PrimaryButton())
-                .padding(.horizontal, Spacing.xl)
-                .padding(.bottom, Spacing.xxl)
+            Button {
+                Haptics.success()
+                onStart()
+            } label: {
+                if isSaving {
+                    ProgressView()
+                        .tint(Palette.onAccent)
+                } else {
+                    Text("Start PostKit")
+                }
+            }
+            .buttonStyle(PrimaryButton())
+            .disabled(isSaving)
+            .padding(.horizontal, Spacing.xl)
+            .padding(.bottom, Spacing.xxl)
         }
         .task {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.6)) {
                 showCheckmark = true
             }
         }
+    }
+
+    private var subtitle: LocalizedStringKey {
+        if emptyGallery {
+            return "Your photo library is empty. Add some photos and PostKit will classify them for you."
+        }
+        if totalMatched == 0 && !topics.isEmpty {
+            return "No matches in the quick scan — don't worry, the full scan will find more."
+        }
+        return "\(totalMatched) photos matched across your topics"
+    }
+
+    private var cloudAICard: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack {
+                Image(systemName: "cloud.bolt")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Palette.accent)
+                Text("Cloud AI Enhancement")
+                    .font(Typography.headline)
+                    .foregroundStyle(Palette.text)
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { cloudAIEnabled },
+                    set: { _ in onCloudAIToggled() }
+                ))
+                .labelsHidden()
+                .tint(Palette.accent)
+            }
+
+            Text(cloudAIEnabled
+                 ? "When on-device classification isn't confident, photos are sent to Google Gemini for better accuracy. Photos are processed but never stored."
+                 : "All photo classification stays on your device. You can enable Cloud AI later in Settings.")
+                .font(Typography.caption)
+                .foregroundStyle(Palette.text3)
+
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: cloudAIEnabled ? "antenna.radiowaves.left.and.right" : "lock.shield")
+                    .font(Typography.caption)
+                    .foregroundStyle(cloudAIEnabled ? Palette.yellow : Palette.green)
+                Text(cloudAIEnabled ? "Better accuracy, requires internet" : "100% private, on-device only")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text2)
+            }
+        }
+        .padding(Layout.Padding.card)
+        .cardStyle()
+        .animation(.easeInOut(duration: 0.2), value: cloudAIEnabled)
     }
 }

@@ -121,6 +121,7 @@ struct SlotMachineView: View {
                         pillars: store.pillars,
                         blurred: blurred,
                         interactive: interactive,
+                        isReshuffling: store.reshufflingSlotID == slot.id,
                         onShuffle: { store.send(.reshuffleSlotTapped(slot.id)) }
                     )
                 }
@@ -175,9 +176,11 @@ private struct SlotMachineCell: View {
     let pillars: [PillarSnapshot]
     let blurred: Bool
     let interactive: Bool
+    let isReshuffling: Bool
     let onShuffle: () -> Void
 
     @State private var image: UIImage?
+    @State private var contentScale: CGFloat = 1
 
     private var matchedPillars: [PillarSnapshot] {
         pillars.filter { slot.slotData.pillarIDs.contains($0.id) }
@@ -227,29 +230,33 @@ private struct SlotMachineCell: View {
                             .background(Palette.accentTint, in: Circle())
                     }
                     .buttonStyle(.plain)
+                    .disabled(isReshuffling)
                 }
             }
 
             ZStack {
-                if let image {
-                    Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                        .blur(radius: blurred ? 20 : 0)
-                } else if slot.isEmpty {
-                    VStack(spacing: Spacing.xs) {
-                        Image(systemName: "photo")
-                            .font(.system(size: Typography.IconSize.md))
-                            .foregroundStyle(Palette.text4)
-                        Text("No match")
-                            .font(Typography.caption2)
-                            .foregroundStyle(Palette.text3)
+                Group {
+                    if let image {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .blur(radius: blurred ? 20 : 0)
+                    } else if slot.isEmpty {
+                        VStack(spacing: Spacing.xs) {
+                            Image(systemName: "photo")
+                                .font(.system(size: Typography.IconSize.md))
+                                .foregroundStyle(Palette.text4)
+                            Text("No match")
+                                .font(Typography.caption2)
+                                .foregroundStyle(Palette.text3)
+                        }
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Palette.placeholder)
+                    } else {
+                        Palette.placeholder
                     }
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Palette.placeholder)
-                } else {
-                    Palette.placeholder
                 }
+                .scaleEffect(contentScale)
 
                 if !slot.isEmpty {
                     VStack {
@@ -274,6 +281,14 @@ private struct SlotMachineCell: View {
                         }
                         .padding(Spacing.xs)
                     }
+                    .opacity(contentScale < 0.5 ? 0 : 1)
+                }
+
+                if isReshuffling {
+                    Rectangle()
+                        .fill(.ultraThinMaterial)
+                        .overlay { ProgressView().tint(Palette.accent) }
+                        .transition(.opacity)
                 }
             }
             .aspectRatio(4.0 / 3.0, contentMode: .fit)
@@ -283,6 +298,14 @@ private struct SlotMachineCell: View {
                     .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
             )
             .animation(.easeInOut(duration: 0.5), value: blurred)
+            .onChange(of: isReshuffling) { oldValue, newValue in
+                if !newValue && oldValue {
+                    contentScale = 0.01
+                    withAnimation(.spring(duration: 0.35, bounce: 0.15)) {
+                        contentScale = 1
+                    }
+                }
+            }
         }
         .task(id: slot.photoIDs.first) {
             guard let assetID = slot.photoIDs.first else { return }

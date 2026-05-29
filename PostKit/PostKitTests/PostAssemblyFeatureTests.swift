@@ -16,7 +16,7 @@ final class PostAssemblyFeatureTests: XCTestCase {
         let store = TestStore(initialState: PostAssemblyEntryFeature.State()) {
             PostAssemblyEntryFeature()
         } withDependencies: {
-            $0.persistence.fetchPillars = { [pillars] in pillars }
+            $0.gallery.pillars = { [pillars] in pillars }
         }
 
         await store.send(.onAppear) {
@@ -32,7 +32,7 @@ final class PostAssemblyFeatureTests: XCTestCase {
     func test_pillarSelected_loadsPhotosAndAdvancesStep() async {
         let photos = [
             ClassifiedPhotoSnapshot(
-                assetLocalIdentifier: "a1", pillarID: UUID(0), status: .classified
+                assetLocalIdentifier: "a1", pillarID: UUID(0), pillarIDs: [UUID(0)], status: .classified
             ),
         ]
 
@@ -42,7 +42,7 @@ final class PostAssemblyFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             PostAssemblyEntryFeature()
         } withDependencies: {
-            $0.persistence.fetchPhotosForPillar = { _ in photos }
+            $0.gallery.photos = { _ in photos }
         }
 
         await store.send(.pillarSelected(pillars[0])) {

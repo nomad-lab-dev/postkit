@@ -17,6 +17,7 @@ struct DashboardView: View {
                     LazyVStack(alignment: .leading, spacing: Spacing.lg) {
                         DashboardStatusBanner(
                             status: store.derivedStatus,
+                            sortedUpToDate: store.sortedUpToDate,
                             onPrimary: { store.send(.statusPrimaryTapped) }
                         )
                         .padding(.top, Spacing.xs)
@@ -27,8 +28,6 @@ struct DashboardView: View {
                                 now: Date(),
                                 onTap: { store.send(.scheduledTemplateTapped($0)) }
                             )
-                        } else {
-                            TemplateNudgeCard { store.send(.composePostTapped) }
                         }
 
                         if store.pillars.isEmpty {
@@ -44,6 +43,13 @@ struct DashboardView: View {
                             onCompose: { store.send(.composePostTapped) },
                             onNewTemplate: { store.send(.newTemplateTapped) }
                         )
+
+                        if store.pendingReviewCount > 0 {
+                            PendingReviewCard(
+                                count: store.pendingReviewCount,
+                                onReview: { store.send(.reviewPendingTapped) }
+                            )
+                        }
 
                         Spacer(minLength: Spacing.xxl)
                     }
@@ -75,9 +81,6 @@ struct DashboardView: View {
             }
         }
         .onAppear { store.send(.onAppear) }
-        .navigationDestination(item: $store.scope(state: \.detail, action: \.detail)) { detailStore in
-            PillarDetailView(store: detailStore)
-        }
         .sheet(item: $store.scope(state: \.classificationQueue, action: \.classificationQueue)) { queueStore in
             NavigationStack {
                 ClassificationQueueView(store: queueStore)
@@ -133,6 +136,58 @@ struct DashboardView: View {
     }
 }
 
+// MARK: - Pending Review Card
+
+private struct PendingReviewCard: View {
+    let count: Int
+    let onReview: () -> Void
+
+    private var countKey: LocalizedStringKey {
+        count == 1
+            ? "We found 1 photo we're not sure about"
+            : "We found \(count) photos we're not sure about"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.sm) {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "eye")
+                    .font(.system(size: 18))
+                    .foregroundStyle(Palette.text3)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(countKey)
+                        .font(Typography.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundStyle(Palette.text)
+
+                    Text("Take a quick look — they might belong to a topic")
+                        .font(Typography.caption)
+                        .foregroundStyle(Palette.text3)
+                }
+
+                Spacer(minLength: 0)
+            }
+
+            Button {
+                Haptics.tap()
+                onReview()
+            } label: {
+                Text("Take a look")
+                    .font(Typography.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Palette.accent)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.xs)
+                    .background(Palette.accentTint, in: RoundedRectangle(cornerRadius: Radius.button))
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(Layout.Padding.card)
+        .cardStyle()
+    }
+}
+
 // MARK: - Scan Status Tag
 
 private struct ScanStatusTag: View {
@@ -146,7 +201,7 @@ private struct ScanStatusTag: View {
         if isScanning {
             tagContent(
                 icon: "arrow.triangle.2.circlepath",
-                text: "Scan en cours…",
+                text: "Scanning…",
                 color: Palette.accent,
                 spinning: true
             )
@@ -156,20 +211,20 @@ private struct ScanStatusTag: View {
             Button(action: onTap) {
                 tagContent(
                     icon: "viewfinder",
-                    text: "\(remaining) à scanner",
+                    text: "\(remaining) to scan",
                     color: Palette.accent
                 )
             }
         } else {
             tagContent(
                 icon: "checkmark.circle.fill",
-                text: "Galerie triée",
+                text: "Gallery sorted",
                 color: Palette.green
             )
         }
     }
 
-    private func tagContent(icon: String, text: String, color: Color, spinning: Bool = false) -> some View {
+    private func tagContent(icon: String, text: LocalizedStringKey, color: Color, spinning: Bool = false) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.system(size: 10, weight: .semibold))

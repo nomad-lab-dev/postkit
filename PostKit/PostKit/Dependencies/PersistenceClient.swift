@@ -28,6 +28,8 @@ struct PersistenceClient: Sendable {
     var fetchTemplates: @Sendable () async throws -> [TemplateSnapshot]
     var deleteTemplate: @Sendable (_ id: UUID) async throws -> Void
     var updateTemplateLastPostedAt: @Sendable (_ templateID: UUID, _ date: Date) async throws -> Void
+    var batchUpdateLocations: @Sendable (_ updates: [String: String]) async throws -> Void = { _ in }
+    var deletePhotosByAssetIDs: @Sendable (_ assetIDs: Set<String>) async throws -> Void = { _ in }
 }
 
 extension PersistenceClient: DependencyKey {
@@ -117,6 +119,8 @@ extension PersistenceClient: DependencyKey {
                         existing.classifiedByAI = snapshot.classifiedByAI
                         existing.tags = snapshot.tags
                         existing.location = snapshot.location
+                        existing.latitude = snapshot.latitude
+                        existing.longitude = snapshot.longitude
                         existing.capturedAt = snapshot.capturedAt
                         existing.status = snapshot.status
                         existing.cadrage = snapshot.cadrage
@@ -129,6 +133,8 @@ extension PersistenceClient: DependencyKey {
                             classifiedByAI: snapshot.classifiedByAI,
                             tags: snapshot.tags,
                             location: snapshot.location,
+                            latitude: snapshot.latitude,
+                            longitude: snapshot.longitude,
                             capturedAt: snapshot.capturedAt,
                             status: snapshot.status,
                             cadrage: snapshot.cadrage
@@ -233,24 +239,30 @@ extension PersistenceClient: DependencyKey {
             batchSavePhotos: { snapshots in
                 guard !snapshots.isEmpty else { return }
                 let context = ModelContext(container)
+                // 1 batch fetch instead of N individual fetches (N+1 → 2 queries)
+                let assetIDs = snapshots.map(\.assetLocalIdentifier)
+                let batchDescriptor = FetchDescriptor<ClassifiedPhoto>(
+                    predicate: #Predicate { assetIDs.contains($0.assetLocalIdentifier) }
+                )
+                let existing = (try? context.fetch(batchDescriptor)) ?? []
+                let existingByID = Dictionary(
+                    uniqueKeysWithValues: existing.map { ($0.assetLocalIdentifier, $0) }
+                )
                 for snapshot in snapshots {
-                    let assetID = snapshot.assetLocalIdentifier
-                    var descriptor = FetchDescriptor<ClassifiedPhoto>(
-                        predicate: #Predicate { $0.assetLocalIdentifier == assetID }
-                    )
-                    descriptor.fetchLimit = 1
-                    if let existing = try context.fetch(descriptor).first {
-                        existing.pillarID = snapshot.pillarID
-                        existing.pillarIDs = snapshot.pillarIDs
-                        existing.confidence = snapshot.confidence
-                        existing.classifiedByAI = snapshot.classifiedByAI
-                        existing.tags = snapshot.tags
-                        existing.location = snapshot.location
-                        existing.capturedAt = snapshot.capturedAt
-                        existing.status = snapshot.status
-                        existing.cadrage = snapshot.cadrage
+                    if let photo = existingByID[snapshot.assetLocalIdentifier] {
+                        photo.pillarID = snapshot.pillarID
+                        photo.pillarIDs = snapshot.pillarIDs
+                        photo.confidence = snapshot.confidence
+                        photo.classifiedByAI = snapshot.classifiedByAI
+                        photo.tags = snapshot.tags
+                        photo.location = snapshot.location
+                        photo.latitude = snapshot.latitude
+                        photo.longitude = snapshot.longitude
+                        photo.capturedAt = snapshot.capturedAt
+                        photo.status = snapshot.status
+                        photo.cadrage = snapshot.cadrage
                     } else {
-                        let photo = ClassifiedPhoto(
+                        context.insert(ClassifiedPhoto(
                             assetLocalIdentifier: snapshot.assetLocalIdentifier,
                             pillarID: snapshot.pillarID,
                             pillarIDs: snapshot.pillarIDs,
@@ -258,11 +270,12 @@ extension PersistenceClient: DependencyKey {
                             classifiedByAI: snapshot.classifiedByAI,
                             tags: snapshot.tags,
                             location: snapshot.location,
+                            latitude: snapshot.latitude,
+                            longitude: snapshot.longitude,
                             capturedAt: snapshot.capturedAt,
                             status: snapshot.status,
                             cadrage: snapshot.cadrage
-                        )
-                        context.insert(photo)
+                        ))
                     }
                 }
                 try context.save()
@@ -404,6 +417,43 @@ extension PersistenceClient: DependencyKey {
                         try context.save()
                     }
                 }
+            },
+
+            // MARK: - Location resolution (background)
+
+            batchUpdateLocations: { updates in
+                guard !updates.isEmpty else { return }
+                let context = ModelContext(container)
+                // 1 batch fetch instead of N individual fetches
+                let assetIDs = Array(updates.keys)
+                let descriptor = FetchDescriptor<ClassifiedPhoto>(
+                    predicate: #Predicate { assetIDs.contains($0.assetLocalIdentifier) }
+                )
+                let photos = (try? context.fetch(descriptor)) ?? []
+                for photo in photos {
+                    if let location = updates[photo.assetLocalIdentifier] {
+                        photo.location = location
+                    }
+                }
+                if !photos.isEmpty { try context.save() }
+            },
+
+            // MARK: - Orphan cleanup (background)
+
+            deletePhotosByAssetIDs: { assetIDs in
+                guard !assetIDs.isEmpty else { return }
+                log.info("🗑️ deletePhotosByAssetIDs — \(assetIDs.count) orphans")
+                let context = ModelContext(container)
+                // Predicate fetch instead of load-all + in-memory filter
+                let ids = Array(assetIDs)
+                let descriptor = FetchDescriptor<ClassifiedPhoto>(
+                    predicate: #Predicate { ids.contains($0.assetLocalIdentifier) }
+                )
+                let photos = (try? context.fetch(descriptor)) ?? []
+                guard !photos.isEmpty else { return }
+                for photo in photos { context.delete(photo) }
+                try context.save()
+                log.info("✅ deletePhotosByAssetIDs — deleted \(photos.count) photos")
             }
         )
     }

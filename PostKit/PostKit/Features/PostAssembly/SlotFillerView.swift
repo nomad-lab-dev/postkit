@@ -27,6 +27,7 @@ struct SlotFillerView: View {
 
             filterBar
                 .padding(.bottom, Spacing.sm)
+                .zIndex(1)
 
             if store.isLoading {
                 Spacer()
@@ -126,24 +127,127 @@ struct SlotFillerView: View {
                 .padding(.horizontal, Layout.Padding.screen.leading)
             }
 
-            if !store.uniqueLocations.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: Spacing.xs) {
-                        ForEach(store.uniqueLocations, id: \.self) { location in
-                            FilterChipView(
-                                label: "📍 \(location)",
-                                isSelected: store.activeLocations.contains(location),
-                                isConfigured: store.constrainedLocations.contains(location)
-                            ) {
-                                store.send(.locationFilterToggled(location))
+            locationSection
+                .zIndex(1)
+            dateFilterRow
+        }
+    }
+
+    // MARK: - Location Section
+
+    @ViewBuilder
+    private var locationSection: some View {
+        if !store.activeLocations.isEmpty {
+            // Active chips only — text field hidden until location is removed
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.xs) {
+                    ForEach(store.activeLocations.sorted(), id: \.self) { location in
+                        Button {
+                            Haptics.lightTap()
+                            store.send(.locationRemoved(location))
+                        } label: {
+                            HStack(spacing: 4) {
+                                Text("📍 \(location)")
+                                    .font(Typography.subheadline)
+                                    .fontWeight(.semibold)
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 9, weight: .bold))
                             }
+                            .foregroundStyle(Palette.onAccent)
+                            .padding(.horizontal, Spacing.sm)
+                            .padding(.vertical, Spacing.xxs + 2)
+                            .background(Palette.accent, in: Capsule())
                         }
+                        .buttonStyle(.plain)
                     }
-                    .padding(.horizontal, Layout.Padding.screen.leading)
+                }
+                .padding(.horizontal, Layout.Padding.screen.leading)
+            }
+        } else {
+            // Text field with floating autocomplete overlay
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: "mappin")
+                    .font(.system(size: 13))
+                    .foregroundStyle(Palette.text3)
+                    .padding(.leading, Spacing.sm)
+
+                TextField("Add a location…", text: $store.locationQuery)
+                    .font(Typography.body)
+                    .onSubmit { commitLocation() }
+                    .submitLabel(.done)
+
+                if !store.locationQuery.trimmingCharacters(in: .whitespaces).isEmpty {
+                    Button { commitLocation() } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.system(size: 20))
+                            .foregroundStyle(Palette.accent)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.trailing, Spacing.sm)
                 }
             }
+            .padding(.vertical, Spacing.xs)
+            .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.input))
+            .overlay(RoundedRectangle(cornerRadius: Radius.input).stroke(Palette.border))
+            .overlay(alignment: .bottom) {
+                if !store.suggestedLocations.isEmpty {
+                    locationDropdown
+                        // positions dropdown top at input bottom + gap
+                        .alignmentGuide(.bottom) { $0[.top] - Spacing.xxs }
+                }
+            }
+            .padding(.horizontal, Layout.Padding.screen.leading)
+        }
+    }
 
-            dateFilterRow
+    private var locationDropdown: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            ForEach(Array(store.suggestedLocations.prefix(5).enumerated()), id: \.element) { index, location in
+                let isFromGallery = store.uniqueLocations.contains(location)
+                Button {
+                    Haptics.lightTap()
+                    store.send(.locationSelected(location))
+                } label: {
+                    HStack(spacing: Spacing.xs) {
+                        Image(systemName: isFromGallery ? "photo.circle.fill" : "mappin.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(isFromGallery ? Palette.accent : Palette.text3)
+                        Text(location)
+                            .font(Typography.subheadline)
+                            .foregroundStyle(Palette.text)
+                        Spacer()
+                        if isFromGallery {
+                            Text("gallery")
+                                .font(Typography.caption2)
+                                .foregroundStyle(Palette.accent)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.sm)
+                    .padding(.vertical, Spacing.sm)
+                }
+                .buttonStyle(.plain)
+
+                if index < min(5, store.suggestedLocations.count) - 1 {
+                    Divider().padding(.leading, Spacing.xl)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(uiColor: .systemBackground), in: RoundedRectangle(cornerRadius: Radius.card))
+        .overlay(
+            RoundedRectangle(cornerRadius: Radius.card)
+                .strokeBorder(Palette.border, lineWidth: Layout.Border.thin)
+        )
+    }
+
+    private func commitLocation() {
+        let trimmed = store.locationQuery.trimmingCharacters(in: .whitespaces)
+        guard !trimmed.isEmpty else { return }
+        Haptics.lightTap()
+        if let match = store.suggestedLocations.first {
+            store.send(.locationSelected(match))
+        } else {
+            store.send(.locationSelected(trimmed))
         }
     }
 
@@ -151,43 +255,52 @@ struct SlotFillerView: View {
         store.activeStartDate != nil || store.activeEndDate != nil
     }
 
+    @ViewBuilder
     private var dateFilterRow: some View {
-        HStack(spacing: Spacing.sm) {
-            Image(systemName: "calendar")
-                .foregroundStyle(hasActiveDates ? Palette.accent : Palette.text3)
+        if hasActiveDates {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "calendar")
+                    .foregroundStyle(Palette.accent)
 
-            DatePicker(
-                "From",
-                selection: Binding(
-                    get: { store.activeStartDate ?? Calendar.current.date(byAdding: .month, value: -3, to: .now)! },
-                    set: { store.send(.startDateChanged($0)) }
-                ),
-                displayedComponents: .date
-            )
-            .labelsHidden()
+                DatePicker(
+                    "From",
+                    selection: Binding(
+                        get: { store.activeStartDate ?? .now },
+                        set: { store.send(.startDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
 
-            Image(systemName: "arrow.right")
-                .font(Typography.caption)
-                .foregroundStyle(Palette.text3)
+                Image(systemName: "arrow.right")
+                    .font(Typography.caption)
+                    .foregroundStyle(Palette.text3)
 
-            DatePicker(
-                "To",
-                selection: Binding(
-                    get: { store.activeEndDate ?? .now },
-                    set: { store.send(.endDateChanged($0)) }
-                ),
-                displayedComponents: .date
-            )
-            .labelsHidden()
+                DatePicker(
+                    "To",
+                    selection: Binding(
+                        get: { store.activeEndDate ?? .now },
+                        set: { store.send(.endDateChanged($0)) }
+                    ),
+                    displayedComponents: .date
+                )
+                .labelsHidden()
 
-            if hasActiveDates {
                 Button { store.send(.clearDatesTapped) } label: {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(Palette.text3)
                 }
             }
+            .padding(.horizontal, Layout.Padding.screen.leading)
+        } else {
+            HStack {
+                FilterChipView(label: "📅 Add dates", isSelected: false) {
+                    store.send(.startDateChanged(Calendar.current.date(byAdding: .month, value: -1, to: .now)!))
+                }
+                Spacer()
+            }
+            .padding(.horizontal, Layout.Padding.screen.leading)
         }
-        .padding(.horizontal, Layout.Padding.screen.leading)
     }
 
     private var confirmBar: some View {

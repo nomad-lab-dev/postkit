@@ -13,6 +13,7 @@ struct SlotMachineFeature {
         var filledSlots: [FilledSlot] = []
         var phase: Phase = .loading
         var shuffleCount: Int = 0
+        var reshufflingSlotID: UUID?
 
         enum Phase: Equatable {
             case loading, shuffling, revealed, noPhotos
@@ -35,7 +36,7 @@ struct SlotMachineFeature {
         case shuffleCompleted
         case remixTapped
         case reshuffleSlotTapped(UUID)
-        case slotReshuffled(slotID: UUID, photoID: String)
+        case slotReshuffled(slotID: UUID, photos: Set<String>, pillarID: UUID?, locationLabel: String?)
         case editTapped
         case keepTapped
         case delegate(Delegate)
@@ -123,34 +124,43 @@ struct SlotMachineFeature {
                 guard let slot = state.filledSlots.first(where: { $0.id == slotID }) else {
                     return .none
                 }
-                let currentIDs = slot.photoIDs
-                let otherUsedIDs = Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
-                let pillarIDs = slot.slotData.pillarIDs
-                return .run { [gallery] send in
-                    let classifiedPhotos = (try? await gallery.photos(.classified)) ?? []
-                    let allPhotos: [ClassifiedPhotoSnapshot]
-                    if pillarIDs.isEmpty {
-                        allPhotos = classifiedPhotos
-                    } else {
-                        let pillarSet = Set(pillarIDs)
-                        allPhotos = classifiedPhotos.filter { photo in
-                            photo.pillarIDs.contains(where: { pillarSet.contains($0) })
-                        }
-                    }
-                    let available = allPhotos.filter {
-                        !otherUsedIDs.contains($0.assetLocalIdentifier) &&
-                        !currentIDs.contains($0.assetLocalIdentifier)
-                    }
-                    if let picked = available.randomElement() {
-                        await send(.slotReshuffled(slotID: slotID, photoID: picked.assetLocalIdentifier))
-                    } else if let fallback = allPhotos.filter({ !otherUsedIDs.contains($0.assetLocalIdentifier) }).randomElement() {
-                        await send(.slotReshuffled(slotID: slotID, photoID: fallback.assetLocalIdentifier))
-                    }
+                state.reshufflingSlotID = slotID
+                let currentPhotoIDs = slot.photoIDs
+                let currentPillarID = slot.activePillarID
+                let currentLocationLabel = slot.locationLabel
+                let slotData = slot.slotData
+                let excludeIDs = slot.photoIDs.union(
+                    Set(state.filledSlots.filter { $0.id != slotID }.flatMap { Array($0.photoIDs) })
+                )
+                return .run { [persistence] send in
+                    let options = SlotFiller.Options(
+                        excludeIDs: excludeIDs,
+                        fallbackToAny: true
+                    )
+                    let filled = try await SlotFiller.fillOne(
+                        slot: slotData, using: persistence, options: options
+                    )
+                    await send(.slotReshuffled(
+                        slotID: slotID,
+                        photos: filled.isEmpty ? currentPhotoIDs : filled.photoIDs,
+                        pillarID: filled.isEmpty ? currentPillarID : filled.activePillarID,
+                        locationLabel: filled.isEmpty ? currentLocationLabel : filled.locationLabel
+                    ))
+                } catch: { _, send in
+                    await send(.slotReshuffled(
+                        slotID: slotID,
+                        photos: currentPhotoIDs,
+                        pillarID: currentPillarID,
+                        locationLabel: currentLocationLabel
+                    ))
                 }
 
-            case let .slotReshuffled(slotID, photoID):
+            case let .slotReshuffled(slotID, photos, pillarID, locationLabel):
+                state.reshufflingSlotID = nil
                 if let index = state.filledSlots.firstIndex(where: { $0.id == slotID }) {
-                    state.filledSlots[index].photoIDs = [photoID]
+                    state.filledSlots[index].photoIDs = photos
+                    state.filledSlots[index].activePillarID = pillarID
+                    state.filledSlots[index].locationLabel = locationLabel
                 }
                 return .none
 

@@ -10,32 +10,44 @@ struct SettingsFeature {
         var pillars: [PillarSnapshot] = []
         var isLoading: Bool = false
         var notificationsEnabled: Bool = false
+        var cloudAIEnabled: Bool = false
+        var isProUser: Bool = false
         @Presents var topicEditor: TopicEditorFeature.State?
+        @Presents var paywall: PaywallFeature.State?
     }
 
     enum Action {
         case onAppear
         case pillarsLoaded([PillarSnapshot])
         case notificationStatusLoaded(Bool)
+        case proStatusLoaded(Bool)
         case topicTapped(PillarSnapshot)
         case notificationToggled
+        case cloudAIToggled
+        case upgradeToProTapped
         case topicEditor(PresentationAction<TopicEditorFeature.Action>)
+        case paywall(PresentationAction<PaywallFeature.Action>)
     }
 
     @Dependency(\.gallery) var gallery
     @Dependency(\.persistence) var persistence
     @Dependency(\.notification) var notification
+    @Dependency(\.userDefaults) var userDefaults
+    @Dependency(\.subscription) var subscription
 
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
             case .onAppear:
                 state.isLoading = true
-                return .run { [gallery] send in
+                state.cloudAIEnabled = userDefaults.boolForKey("cloudAIEnabled")
+                return .run { [gallery, subscription] send in
                     let pillars = try await gallery.pillars()
                     await send(.pillarsLoaded(pillars))
                     let authorized = (try? await notification.requestAuthorization()) ?? false
                     await send(.notificationStatusLoaded(authorized))
+                    let isPro = await subscription.isProUser()
+                    await send(.proStatusLoaded(isPro))
                 }
 
             case let .pillarsLoaded(pillars):
@@ -60,6 +72,29 @@ struct SettingsFeature {
                 }
                 return .none
 
+            case let .proStatusLoaded(isPro):
+                state.isProUser = isPro
+                return .none
+
+            case .upgradeToProTapped:
+                state.paywall = PaywallFeature.State()
+                return .none
+
+            case .cloudAIToggled:
+                state.cloudAIEnabled.toggle()
+                let enabled = state.cloudAIEnabled
+                userDefaults.setBool(enabled, "cloudAIEnabled")
+                return .none
+
+            case .paywall(.presented(.delegate(.didPurchase))):
+                state.paywall = nil
+                state.isProUser = true
+                return .none
+
+            case .paywall(.presented(.delegate(.dismissed))):
+                state.paywall = nil
+                return .none
+
             case .topicEditor(.presented(.delegate(.didSave))):
                 return .run { [gallery] send in
                     await gallery.invalidatePillars()
@@ -72,12 +107,15 @@ struct SettingsFeature {
                     await send(.onAppear)
                 }
 
-            case .topicEditor:
+            case .topicEditor, .paywall:
                 return .none
             }
         }
         .ifLet(\.$topicEditor, action: \.topicEditor) {
             TopicEditorFeature()
+        }
+        .ifLet(\.$paywall, action: \.paywall) {
+            PaywallFeature()
         }
     }
 }

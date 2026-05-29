@@ -65,6 +65,10 @@ struct SmartPostView: View {
                                 .disabled(store.isFillingSlots)
                             }
                             .padding(.horizontal, Spacing.md)
+
+                            Color.clear
+                                .frame(height: Spacing.lg)
+                                .id("templateActions")
                         }
 
                         if store.showSaveAsTemplate {
@@ -122,7 +126,7 @@ struct SmartPostView: View {
                 .onChange(of: store.messages.count) {
                     withAnimation(.easeOut(duration: 0.2)) {
                         if store.generatedTemplate != nil {
-                            proxy.scrollTo("templatePreview", anchor: .bottom)
+                            proxy.scrollTo("templateActions", anchor: .bottom)
                         } else if store.isAIThinking {
                             proxy.scrollTo("thinking", anchor: .bottom)
                         } else if let last = store.messages.last {
@@ -132,7 +136,7 @@ struct SmartPostView: View {
                 }
                 .onChange(of: store.generatedTemplate != nil) {
                     withAnimation(.easeOut(duration: 0.2)) {
-                        proxy.scrollTo("templatePreview", anchor: .bottom)
+                        proxy.scrollTo("templateActions", anchor: .bottom)
                     }
                 }
             }
@@ -217,10 +221,14 @@ struct SmartPostView: View {
                 .font(Typography.body)
                 .focused($isInputFocused)
                 .submitLabel(.send)
-                .onSubmit { store.send(.sendMessageTapped) }
+                .onSubmit {
+                    isInputFocused = false
+                    store.send(.sendMessageTapped)
+                }
 
             Button {
                 Haptics.tap()
+                isInputFocused = false
                 store.send(.sendMessageTapped)
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
@@ -303,38 +311,30 @@ private struct TemplatePreviewCard: View {
                                 .foregroundStyle(Palette.accent)
                         }
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(slot.name)
-                            .font(Typography.caption)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Palette.text)
-
-                        HStack(spacing: Spacing.xxs) {
-                            let matched = matchedPillars(for: slot)
+                    VStack(alignment: .leading, spacing: 3) {
+                        let matched = matchedPillars(for: slot)
+                        HStack(alignment: .center, spacing: Spacing.xxs) {
                             if !matched.isEmpty {
-                                ForEach(matched.prefix(3)) { pillar in
-                                    Text(pillar.emoji)
-                                        .font(.system(size: 12))
-                                }
+                                Text(matched.prefix(2).map(\.emoji).joined())
+                                    .font(.system(size: 12))
+                                    .frame(width: 20, alignment: .leading)
+                            } else {
+                                Color.clear.frame(width: 20, height: 1)
                             }
+                            Text(slot.name)
+                                .font(Typography.caption)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Palette.text)
+                        }
 
-                            ForEach(slot.cadrages.prefix(2), id: \.self) { cadrage in
-                                CadrageTag(cadrage: cadrage)
-                            }
-
-                            if !slot.locations.isEmpty {
-                                HStack(spacing: 2) {
-                                    Image(systemName: "mappin")
-                                        .font(.system(size: 9))
-                                    Text(slot.locations.first ?? "")
-                                        .font(Typography.caption2)
-                                }
-                                .foregroundStyle(Palette.text3)
+                        if !slot.locations.isEmpty {
+                            HStack(spacing: Spacing.xxs) {
+                                Text("📍 \(slot.locations.first ?? "")")
+                                    .font(Typography.caption2)
+                                    .foregroundStyle(Palette.text3)
                             }
                         }
                     }
-
-                    Spacer()
                 }
             }
         }
