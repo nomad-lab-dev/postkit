@@ -69,7 +69,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "pro_yearly",
+          "productID" : "lucchettan.postkit.pro_yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "PostKit Pro Yearly",
           "subscriptionGroupID" : "postkit_pro",
@@ -102,7 +102,7 @@
               "locale" : "en_US"
             }
           ],
-          "productID" : "pro_weekly",
+          "productID" : "lucchettan.postkit.pro_weekly",
           "recurringSubscriptionPeriod" : "P1W",
           "referenceName" : "PostKit Pro Weekly",
           "subscriptionGroupID" : "postkit_pro",
