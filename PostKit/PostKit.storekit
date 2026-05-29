@@ -52,10 +52,10 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "9.99",
+          "displayPrice" : "39.99",
           "familyShareable" : false,
           "groupNumber" : 1,
-          "internalID" : "pro_monthly_001",
+          "internalID" : "pro_yearly_001",
           "introductoryOffer" : {
             "displayPrice" : "0",
             "internalID" : "free_trial_7d",
@@ -64,14 +64,14 @@
           },
           "localizations" : [
             {
-              "description" : "Unlimited AI posts, scanning, and templates",
-              "displayName" : "Monthly",
+              "description" : "Unlimited AI posts, scanning, and templates — save 74% vs weekly",
+              "displayName" : "Yearly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "pro_monthly",
-          "recurringSubscriptionPeriod" : "P1M",
-          "referenceName" : "PostKit Pro Monthly",
+          "productID" : "pro_yearly",
+          "recurringSubscriptionPeriod" : "P1Y",
+          "referenceName" : "PostKit Pro Yearly",
           "subscriptionGroupID" : "postkit_pro",
           "type" : "RecurringSubscription",
           "winbackOffers" : [
@@ -85,10 +85,10 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "79.99",
+          "displayPrice" : "2.99",
           "familyShareable" : false,
-          "groupNumber" : 1,
-          "internalID" : "pro_yearly_001",
+          "groupNumber" : 2,
+          "internalID" : "pro_weekly_001",
           "introductoryOffer" : {
             "displayPrice" : "0",
             "internalID" : "free_trial_7d",
@@ -97,14 +97,14 @@
           },
           "localizations" : [
             {
-              "description" : "Unlimited AI posts, scanning, and templates — save 33%",
-              "displayName" : "Yearly",
+              "description" : "Unlimited AI posts, scanning, and templates",
+              "displayName" : "Weekly",
               "locale" : "en_US"
             }
           ],
-          "productID" : "pro_yearly",
-          "recurringSubscriptionPeriod" : "P1Y",
-          "referenceName" : "PostKit Pro Yearly",
+          "productID" : "pro_weekly",
+          "recurringSubscriptionPeriod" : "P1W",
+          "referenceName" : "PostKit Pro Weekly",
           "subscriptionGroupID" : "postkit_pro",
           "type" : "RecurringSubscription",
           "winbackOffers" : [

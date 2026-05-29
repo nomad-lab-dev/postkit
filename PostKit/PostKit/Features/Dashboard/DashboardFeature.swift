@@ -218,10 +218,15 @@ struct DashboardFeature {
                 state.scanProgress = 0
                 state.totalPhotosToScan = state.remainingToScan
 
+                let disableIdleTimer: Effect<Action> = .run { _ in
+                    await MainActor.run { UIApplication.shared.isIdleTimerDisabled = true }
+                }
+
                 let pillarsNeedingKeywords = state.pillars.filter { $0.referenceTags.isEmpty }
                 if !pillarsNeedingKeywords.isEmpty {
                     let pillars = Array(state.pillars)
                     return .merge(
+                        disableIdleTimer,
                         .cancel(id: CancelID.autoScanTimer),
                         .run { [postGenerator = self.postGenerator, persistence] send in
                             var enriched = pillars
@@ -242,6 +247,7 @@ struct DashboardFeature {
                 }
 
                 return .merge(
+                    disableIdleTimer,
                     .cancel(id: CancelID.autoScanTimer),
                     .send(.pillarsEnriched(Array(state.pillars)))
                 )
@@ -277,7 +283,7 @@ struct DashboardFeature {
                         ? alreadyClassified
                         : alreadyClassified.subtracting(orphanIDs)
 
-                    for await batch in fetchAllPhotos(30) {
+                    for try await batch in fetchAllPhotos(30) {
                         try Task.checkCancellation()
                         var perPillar: [String: Int] = [:]
                         var perPillarAssetIDs: [String: [String]] = [:]
@@ -401,7 +407,10 @@ struct DashboardFeature {
 
             case .cancelScanTapped:
                 state.isScanning = false
-                return .cancel(id: CancelID.fullScan)
+                return .merge(
+                    .cancel(id: CancelID.fullScan),
+                    .run { _ in await MainActor.run { UIApplication.shared.isIdleTimerDisabled = false } }
+                )
 
             case let .batchProcessed(processedCount, perPillar, perPillarAssetIDs, pendingCount, batchFrontierDate):
                 state.totalPhotosSorted += processedCount
@@ -437,6 +446,7 @@ struct DashboardFeature {
                 state.lastScanCompletedAt = now
                 let frontierDate = state.sortedUpToDate
                 return .merge(
+                    .run { _ in await MainActor.run { UIApplication.shared.isIdleTimerDisabled = false } },
                     .run { [userDefaults, gallery] send in
                         userDefaults.setBool(true, "fullScanComplete")
                         if let frontier = frontierDate {

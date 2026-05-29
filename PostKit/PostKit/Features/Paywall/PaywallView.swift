@@ -106,7 +106,7 @@ struct PaywallView: View {
                         .font(Typography.headline)
                         .foregroundStyle(Palette.text)
                     if product.isYearly {
-                        Text("SAVE 33%")
+                        Text("SAVE 74%")
                             .font(Typography.caption2)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
@@ -115,8 +115,8 @@ struct PaywallView: View {
                             .background(Palette.green, in: Capsule())
                     }
                 }
-                if let monthly = product.monthlyEquivalent {
-                    Text("$\(monthly)/mo")
+                if let weekly = product.weeklyEquivalent {
+                    Text("$\(weekly)/wk")
                         .font(Typography.caption)
                         .foregroundStyle(Palette.text3)
                 }

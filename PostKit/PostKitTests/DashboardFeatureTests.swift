@@ -90,13 +90,7 @@ final class DashboardFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             DashboardFeature()
         } withDependencies: {
-            $0.photoLibrary.fetchAllPhotos = { _ in
-                AsyncStream { continuation in
-                    continuation.yield(batch1)
-                    continuation.yield(batch2)
-                    continuation.finish()
-                }
-            }
+            $0.photoLibrary.fetchAllPhotos = { _ in PhotoBatchSequence(batches: [batch1, batch2]) }
             $0.photoLibrary.fetchAllAssetIDs = { [] }
             $0.photoLibrary.image = { _, _ in UIImage() }
             $0.imageClassifier.classifyWithCadrage = { _, _ in
@@ -166,7 +160,7 @@ final class DashboardFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             DashboardFeature()
         } withDependencies: {
-            $0.photoLibrary.fetchAllPhotos = { _ in AsyncStream { _ in } }
+            $0.photoLibrary.fetchAllPhotos = { _ in .pending }
             $0.photoLibrary.fetchAllAssetIDs = { [] }
             $0.photoLibrary.image = { _, _ in UIImage() }
             $0.imageClassifier.classifyWithCadrage = { _, _ in
@@ -270,7 +264,7 @@ final class DashboardFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             DashboardFeature()
         } withDependencies: {
-            $0.photoLibrary.fetchAllPhotos = { _ in AsyncStream { $0.finish() } }
+            $0.photoLibrary.fetchAllPhotos = { _ in .empty }
             $0.photoLibrary.fetchAllAssetIDs = { [] }
             $0.photoLibrary.image = { _, _ in UIImage() }
             $0.imageClassifier.classifyWithCadrage = { _, _ in
@@ -320,7 +314,7 @@ final class DashboardFeatureTests: XCTestCase {
         let store = TestStore(initialState: state) {
             DashboardFeature()
         } withDependencies: {
-            $0.photoLibrary.fetchAllPhotos = { _ in AsyncStream { $0.finish() } }
+            $0.photoLibrary.fetchAllPhotos = { _ in .empty }
             $0.photoLibrary.fetchAllAssetIDs = { [] }
             $0.photoLibrary.image = { _, _ in UIImage() }
             $0.imageClassifier.classifyWithCadrage = { _, _ in

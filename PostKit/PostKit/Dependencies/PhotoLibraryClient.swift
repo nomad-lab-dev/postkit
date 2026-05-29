@@ -27,7 +27,7 @@ enum PhotoLibraryError: Error, Sendable {
 struct PhotoLibraryClient: Sendable {
     var requestAuthorization: @Sendable () async -> PHAuthorizationStatus = { .notDetermined }
     var fetchRecentPhotos: @Sendable (_ limit: Int) async throws -> [PhotoAsset]
-    var fetchAllPhotos: @Sendable (_ batchSize: Int) -> AsyncStream<[PhotoAsset]> = { _ in .finished }
+    var fetchAllPhotos: @Sendable (_ batchSize: Int) -> PhotoBatchSequence = { _ in .empty }
     var countAllPhotos: @Sendable () async -> Int = { 0 }
     var fetchAllAssetIDs: @Sendable () async -> Set<String> = { [] }
     var image: @Sendable (_ identifier: String, _ size: CGSize) async throws -> UIImage
@@ -53,39 +53,7 @@ extension PhotoLibraryClient: DependencyKey {
             }
             return assets
         },
-        fetchAllPhotos: { batchSize in
-            let (stream, continuation) = AsyncStream<[PhotoAsset]>.makeStream(
-                bufferingPolicy: .unbounded
-            )
-            // Detached to avoid inheriting actor context — PHFetchResult enumeration is synchronous
-            let task = Task.detached(priority: .utility) {
-                let options = PHFetchOptions()
-                options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-                let result = PHAsset.fetchAssets(with: .image, options: options)
-                var batch: [PhotoAsset] = []
-                result.enumerateObjects { asset, _, stop in
-                    if Task.isCancelled {
-                        stop.pointee = true
-                        return
-                    }
-                    batch.append(PhotoAsset(
-                        localIdentifier: asset.localIdentifier,
-                        creationDate: asset.creationDate,
-                        location: asset.location
-                    ))
-                    if batch.count == batchSize {
-                        continuation.yield(batch)
-                        batch = []
-                    }
-                }
-                if !batch.isEmpty && !Task.isCancelled {
-                    continuation.yield(batch)
-                }
-                continuation.finish()
-            }
-            continuation.onTermination = { _ in task.cancel() }
-            return stream
-        },
+        fetchAllPhotos: { batchSize in PhotoBatchSequence(batchSize: batchSize) },
         countAllPhotos: {
             PHAsset.fetchAssets(with: .image, options: nil).count
         },
@@ -142,7 +110,7 @@ extension PhotoLibraryClient: DependencyKey {
         fetchRecentPhotos: { limit in
             (0..<limit).map { PhotoAsset(localIdentifier: "preview-\($0)") }
         },
-        fetchAllPhotos: { _ in .finished },
+        fetchAllPhotos: { _ in .empty },
         countAllPhotos: { 0 },
         fetchAllAssetIDs: { [] },
         image: { _, _ in UIImage(systemName: "photo") ?? UIImage() }

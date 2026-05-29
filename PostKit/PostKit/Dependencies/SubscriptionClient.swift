@@ -12,11 +12,11 @@ struct ProProduct: Equatable, Identifiable, Sendable {
     let displayName: String
     let displayPrice: String
     let description: String
-    let monthlyEquivalent: String?
+    let weeklyEquivalent: String?  // per-week cost shown under the annual card
     let isYearly: Bool
 }
 
-private let productIDs = ["pro_monthly", "pro_yearly"]
+private let productIDs = ["pro_weekly", "pro_yearly"]
 
 @DependencyClient
 struct SubscriptionClient: Sendable {
@@ -34,19 +34,16 @@ extension SubscriptionClient: DependencyKey {
             log.info("📦 StoreKit returned \(products.count) products: \(products.map(\.id))")
             return products.compactMap { product in
                 let isYearly = product.id == "pro_yearly"
-                let monthlyEquivalent: String? = if isYearly {
-                    product.price / 12 > 0
-                        ? String(format: "%.2f", NSDecimalNumber(decimal: product.price / 12).doubleValue)
-                        : nil
-                } else {
-                    nil
-                }
+                // annual plan: show per-week equivalent ($39.99 ÷ 52 ≈ $0.77/wk)
+                let weeklyEquivalent: String? = isYearly
+                    ? String(format: "%.2f", NSDecimalNumber(decimal: product.price / 52).doubleValue)
+                    : nil
                 return ProProduct(
                     id: product.id,
                     displayName: product.displayName,
                     displayPrice: product.displayPrice,
                     description: product.description,
-                    monthlyEquivalent: monthlyEquivalent,
+                    weeklyEquivalent: weeklyEquivalent,
                     isYearly: isYearly
                 )
             }
@@ -89,8 +86,8 @@ extension SubscriptionClient: DependencyKey {
     static let previewValue = SubscriptionClient(
         fetchProducts: {
             [
-                ProProduct(id: "pro_monthly", displayName: "Monthly", displayPrice: "$9.99", description: "PostKit Pro Monthly", monthlyEquivalent: nil, isYearly: false),
-                ProProduct(id: "pro_yearly", displayName: "Yearly", displayPrice: "$79.99", description: "PostKit Pro Yearly", monthlyEquivalent: "6.67", isYearly: true),
+                ProProduct(id: "pro_yearly", displayName: "Yearly", displayPrice: "$39.99", description: "PostKit Pro Yearly", weeklyEquivalent: "0.77", isYearly: true),
+                ProProduct(id: "pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "PostKit Pro Weekly", weeklyEquivalent: nil, isYearly: false),
             ]
         },
         purchase: { _ in true },

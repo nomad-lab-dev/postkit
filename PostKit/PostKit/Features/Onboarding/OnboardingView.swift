@@ -385,6 +385,46 @@ private struct ScanningStep: View {
     }
 }
 
+// MARK: - Previews
+
+#Preview("Welcome") {
+    WelcomeStep(onGetStarted: {})
+}
+
+#Preview("Topic Setup") {
+    TopicSetupStep(store: Store(
+        initialState: OnboardingFeature.State(
+            step: .topicSetup,
+            topics: [
+                OnboardingTopic(id: UUID(), name: "Food & Coffee", emoji: "☕️", about: ""),
+                OnboardingTopic(id: UUID(), name: "Tech & Dev", emoji: "💻", about: ""),
+                OnboardingTopic(id: UUID(), name: "Travel", emoji: "✈️", about: "")
+            ]
+        ),
+        reducer: { OnboardingFeature() }
+    ))
+}
+
+#Preview("Scanning") {
+    ScanningStep(progress: 0.6, scannedCount: 12, totalToScan: 20)
+}
+
+#Preview("Scan Complete") {
+    ScanCompleteStep(
+        topics: [
+            OnboardingTopic(id: UUID(), name: "Food & Coffee", emoji: "☕️", about: "", matchedPhotos: 47),
+            OnboardingTopic(id: UUID(), name: "Tech & Dev", emoji: "💻", about: "", matchedPhotos: 23),
+            OnboardingTopic(id: UUID(), name: "Travel", emoji: "✈️", about: "", matchedPhotos: 61)
+        ],
+        totalMatched: 131,
+        emptyGallery: false,
+        isSaving: false,
+        cloudAIEnabled: true,
+        onCloudAIToggled: {},
+        onStart: {}
+    )
+}
+
 // MARK: - Scan Complete
 
 private struct ScanCompleteStep: View {
@@ -480,7 +520,7 @@ private struct ScanCompleteStep: View {
         }
     }
 
-    private var subtitle: String {
+    private var subtitle: LocalizedStringKey {
         if emptyGallery {
             return "Your photo library is empty. Add some photos and PostKit will classify them for you."
         }
