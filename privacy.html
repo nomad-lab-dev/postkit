@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Privacy Policy — PostKit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    background: #fff;
+    color: #0a0a0c;
+    line-height: 1.7;
+  }
+  header {
+    border-bottom: 1px solid #f0f0f0;
+    padding: 20px 24px;
+  }
+  header a {
+    font-weight: 700;
+    font-size: 18px;
+    color: #0a0a0c;
+    text-decoration: none;
+    letter-spacing: -0.3px;
+  }
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 64px 24px 96px;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .updated {
+    font-size: 14px;
+    color: #888;
+    margin-bottom: 48px;
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 40px;
+    margin-bottom: 12px;
+    letter-spacing: -0.2px;
+  }
+  p {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 16px;
+  }
+  ul {
+    padding-left: 20px;
+    margin-bottom: 16px;
+  }
+  li {
+    font-size: 16px;
+    color: #333;
+    margin-bottom: 8px;
+  }
+  a { color: #007AFF; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .callout {
+    background: #f5f9ff;
+    border: 1px solid #d0e4ff;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 15px;
+    color: #1a1a2e;
+  }
+  footer {
+    text-align: center;
+    padding: 32px 24px;
+    font-size: 13px;
+    color: #aaa;
+    border-top: 1px solid #f0f0f0;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="/">PostKit</a>
+</header>
+
+<main>
+  <h1>Privacy Policy</h1>
+  <p class="updated">Last updated: May 29, 2026</p>
+
+  <div class="callout">
+    <strong>Short version:</strong> PostKit processes your photos on your device using on-device AI. Your photos are never uploaded or stored on our servers. The only optional exception is Cloud AI enhancement, which you can disable at any time.
+  </div>
+
+  <h2>1. What PostKit Does</h2>
+  <p>PostKit is an iOS app that scans your photo library, classifies your photos by content topic using AI, and helps you create social media posts. All core functionality runs entirely on your device.</p>
+
+  <h2>2. Photo Library Access</h2>
+  <p>PostKit requires access to your photo library to scan and classify your photos. We request full photo library access to browse and organize your content.</p>
+  <ul>
+    <li>Photos are <strong>read-only</strong> — PostKit never modifies, deletes, or uploads your original photos.</li>
+    <li>PostKit stores only <strong>references</strong> (asset identifiers) to your photos, not copies of the images themselves.</li>
+    <li>All photo data is stored locally in the app's private sandbox using SwiftData.</li>
+  </ul>
+
+  <h2>3. On-Device AI Classification</h2>
+  <p>By default, PostKit uses on-device machine learning models (Core ML) to classify your photos. This processing happens entirely on your iPhone — no image data is sent to any server.</p>
+
+  <h2>4. Cloud AI Enhancement (Optional)</h2>
+  <p>PostKit offers an optional Cloud AI feature that sends photo data to Google Gemini for improved classification accuracy when on-device confidence is low.</p>
+  <ul>
+    <li>This feature is <strong>opt-in</strong> and can be toggled during onboarding and in Settings.</li>
+    <li>When enabled, thumbnail image data is sent to Google's Gemini API for analysis.</li>
+    <li>Google processes the data to return a classification result. <strong>Google does not store or use your photos for training.</strong></li>
+    <li>PostKit does not store any data on its own servers — requests go directly from your device to Google's API.</li>
+    <li>You can disable Cloud AI at any time in Settings → Cloud AI Enhancement.</li>
+  </ul>
+  <p>Google's privacy policy applies to data processed by Gemini: <a href="https://policies.google.com/privacy" target="_blank">policies.google.com/privacy</a></p>
+
+  <h2>5. AI Caption Generation</h2>
+  <p>When you use the AI caption feature, PostKit sends text-only data (your content pillar names, selected tags, and optional notes) to Google Gemini to generate captions. No photo images are sent during caption generation.</p>
+
+  <h2>6. Subscriptions</h2>
+  <p>PostKit Pro subscriptions are processed entirely by Apple through the App Store. PostKit does not collect, store, or have access to your payment information. Subscription management is handled by Apple — you can manage or cancel your subscription at any time in Settings → Apple ID → Subscriptions.</p>
+
+  <h2>7. Data We Do Not Collect</h2>
+  <p>PostKit does not collect:</p>
+  <ul>
+    <li>Personal identifiers (name, email, phone number)</li>
+    <li>Location data</li>
+    <li>Usage analytics or behavioral tracking</li>
+    <li>Crash reports sent to third parties</li>
+    <li>Any data on our own servers</li>
+  </ul>
+
+  <h2>8. Local Data Storage</h2>
+  <p>All app data (classified photo metadata, pillars, templates, generated posts) is stored locally on your device using Apple's SwiftData framework. This data is included in your iCloud backup if you have iCloud backup enabled for PostKit.</p>
+
+  <h2>9. Children's Privacy</h2>
+  <p>PostKit is not directed at children under 13. We do not knowingly collect any personal information from children.</p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this Privacy Policy from time to time. We will notify you of significant changes by updating the "Last updated" date at the top of this page. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
+
+  <h2>11. Contact</h2>
+  <p>If you have any questions about this Privacy Policy, please contact us at:<br>
+  <a href="mailto:hello@nomad-lab.io">hello@nomad-lab.io</a></p>
+</main>
+
+<footer>
+  © 2026 PostKit · <a href="/">Home</a> · <a href="mailto:hello@nomad-lab.io">Contact</a>
+</footer>
+
+</body>
+</html>
