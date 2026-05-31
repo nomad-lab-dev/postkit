@@ -27,18 +27,19 @@ enum AppStrings {
 
         // Step 01 – Before / After
         static let step01Eyebrow: LocalizedStringKey = "STEP 01 · BEFORE / AFTER"
-        static let step01HeadlinePart1: LocalizedStringKey = "Your gallery, "
-        static let step01HeadlinePart2: LocalizedStringKey = "two ways."
+        static let step01HeadlinePart1: LocalizedStringKey = "Your photos."
+        static let step01HeadlinePart2: LocalizedStringKey = "Your content."
         static let step01SegWithout: LocalizedStringKey = "Actuellement"
         static let step01SegWith: LocalizedStringKey = "Avec PostKit"
-        static let step01CTA: LocalizedStringKey = "Show me how it works →"
+        static let step01CTAReveal: LocalizedStringKey = "Ta galerie est déjà pleine de posts →"
+        static let step01CTA: LocalizedStringKey = "Montre-moi comment ça marche →"
 
         // Step 02 – Magic Demo
         static let step02Eyebrow: LocalizedStringKey = "STEP 02 · SMART POST"
         static let step02HeadlinePart1: LocalizedStringKey = "Type a sentence.\n"
         static let step02HeadlineEmphasis: LocalizedStringKey = "Get"
         static let step02HeadlinePart2: LocalizedStringKey = " a post."
-        static let step02CTA: LocalizedStringKey = "Continue · I'm sold →"
+        static let step02CTA: LocalizedStringKey = "Choisir mes sujets →"
         static let step02GeneratedLabel: LocalizedStringKey = "GENERATED · 2.1 S"
         static let step02ShareLabel: LocalizedStringKey = "Share on Instagram"
 
@@ -49,12 +50,9 @@ enum AppStrings {
         static let step03HeadlinePart2: LocalizedStringKey = " post about?"
         static let step03Body: LocalizedStringKey = "Pick or write 2–7 topics. Edit anytime."
         static let step03AddPlaceholder: LocalizedStringKey = "Add a topic"
-        static let step03CTAMin: LocalizedStringKey = "Add at least 2 pillars"
-        static let step03CTAMax: LocalizedStringKey = "Maximum 7 pillars"
-        // Parameterized CTA — Text("\(count) pillars") resolved by xcstrings plural rules
-        static func step03CTA(_ count: Int) -> LocalizedStringKey {
-            "Continue with \(count) pillar\(count == 1 ? "" : "s") →"
-        }
+        static let step03CTAMin: LocalizedStringKey = "Choisis au moins 2 sujets"
+        static let step03CTAMax: LocalizedStringKey = "7 sujets maximum"
+        static let step03CTAContinue: LocalizedStringKey = "Scanner mes photos →"
 
         // Step 04 – Live Sort
         static let step04Eyebrow: LocalizedStringKey = "AI SCAN"
@@ -75,11 +73,11 @@ enum AppStrings {
 
         // Step 05 – Your Turn
         static let step05EyebrowEmpty: LocalizedStringKey = "ALMOST READY"
-        static let step05HeadlinePart1: LocalizedStringKey = "Now "
-        static let step05HeadlineEmphasis: LocalizedStringKey = "your turn."
+        static let step05HeadlinePart1: LocalizedStringKey = "Génère ton\n"
+        static let step05HeadlineEmphasis: LocalizedStringKey = "premier post."
         static let step05InputLabel: LocalizedStringKey = "TYPE OR PICK"
         static let step05InputPlaceholder: LocalizedStringKey = "A post about…"
-        static let step05CTA: LocalizedStringKey = "Generate my first post →"
+        static let step05CTA: LocalizedStringKey = "Générer mes premiers posts →"
         static let step05CloudAITitle: LocalizedStringKey = "Cloud AI Enhancement"
         static let step05CloudAIOnBody: LocalizedStringKey = "Better accuracy · uses Google Gemini"
         static let step05CloudAIOffBody: LocalizedStringKey = "100% on-device · fully private"

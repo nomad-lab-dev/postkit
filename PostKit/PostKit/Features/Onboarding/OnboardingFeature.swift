@@ -46,7 +46,7 @@ struct OnboardingFeature {
         // Step 04 — Live Sort
         var scanProgress: Double = 0
         var scannedCount: Int = 0
-        var totalToScan: Int = 20
+        var totalToScan: Int = 300
         var photoAccessDenied: Bool = false
         var emptyGallery: Bool = false
 
@@ -62,13 +62,16 @@ struct OnboardingFeature {
             topics.reduce(0) { $0 + $1.matchedPhotos }
         }
 
-        /// All pillars sorted by matched photo count, for the pick-pills in step 05.
+        var maxMatchedPhotos: Int {
+            topics.map(\.matchedPhotos).max() ?? 1
+        }
+
         var topPillars: [OnboardingTopic] {
             topics.sorted { $0.matchedPhotos > $1.matchedPhotos }
         }
 
         enum Step: Equatable {
-            case beforeAfter, magicDemo, pillars, liveSort, yourTurn
+            case beforeAfter, magicDemo, pillars, liveSort
         }
     }
 
@@ -98,13 +101,11 @@ struct OnboardingFeature {
         case emojiResolved(OnboardingTopic.ID, String)
         case pillarsContinueTapped
 
-        // Step 04 — Live Sort
+        // Step 04 — Scan + Your Turn (merged)
         case scanStarted(totalPhotos: Int)
         case scanProgressed([ClassificationResult], assetIdentifier: String)
         case scanFinished
-        case liveSortContinueTapped
-
-        // Step 05 — Your Turn
+        case goBackTapped
         case cloudAIToggled
         case yourTurnPillarPillTapped(OnboardingTopic.ID)
         case generateFirstPostTapped
@@ -157,10 +158,12 @@ struct OnboardingFeature {
                 return .none
 
             case .magicDemoContinueTapped:
-                return .run { send in
-                    let status = await photoLibrary.requestAuthorization()
-                    await send(.authorizationResponse(status))
+                // No permission needed here — go straight to topic selection
+                state.step = .pillars
+                if state.topics.isEmpty {
+                    state.topics = makeDefaultTopics()
                 }
+                return .none
 
             // ─── Photo permission ──────────────────────────────────────────────
             case .openSettingsTapped:
@@ -178,11 +181,10 @@ struct OnboardingFeature {
                 switch status {
                 case .authorized:
                     state.photoAccessDenied = false
-                    state.step = .pillars
-                    if state.topics.isEmpty {
-                        state.topics = makeDefaultTopics()
-                    }
-                    return .none
+                    state.step = .liveSort
+                    state.scannedCount = 0
+                    state.scanProgress = 0
+                    return startQuickScan(state: state)
 
                 case .limited, .denied, .restricted:
                     state.photoAccessDenied = true
@@ -235,10 +237,11 @@ struct OnboardingFeature {
             case .pillarsContinueTapped:
                 guard state.topics.count >= 2 else { return .none }
                 state.editingTopicID = nil
-                state.step = .liveSort
-                state.scannedCount = 0
-                state.scanProgress = 0
-                return startQuickScan(state: state)
+                // Request permission now — user has context (they're about to scan)
+                return .run { send in
+                    let status = await photoLibrary.requestAuthorization()
+                    await send(.authorizationResponse(status))
+                }
 
             // ─── Step 04 ───────────────────────────────────────────────────────
             case let .scanStarted(totalPhotos):
@@ -258,9 +261,6 @@ struct OnboardingFeature {
 
             case .scanFinished:
                 state.scanProgress = 1.0
-                return .none
-
-            case .liveSortContinueTapped:
                 let sorted = state.topics.sorted { $0.matchedPhotos > $1.matchedPhotos }
                 if let top = sorted.first {
                     state.firstPromptText = "A post about \(top.name.lowercased())"
@@ -269,10 +269,28 @@ struct OnboardingFeature {
                     state.firstPromptText = "A post about \(first.name.lowercased())"
                     state.selectedPillarPillID = first.id
                 }
-                state.step = .yourTurn
                 return .none
 
-            // ─── Step 05 ───────────────────────────────────────────────────────
+            case .goBackTapped:
+                switch state.step {
+                case .beforeAfter: return .none
+                case .magicDemo:
+                    state.step = .beforeAfter
+                case .pillars:
+                    state.step = .magicDemo
+                case .liveSort:
+                    state.step = .pillars
+                    state.scannedCount = 0
+                    state.scanProgress = 0
+                    for i in state.topics.indices { state.topics[i].matchedPhotos = 0 }
+                    return .merge(
+                        .cancel(id: CancelID.quickScan),
+                        .cancel(id: CancelID.emojiResolution)
+                    )
+                }
+                return .none
+
+            // ─── Step 04 + 05 merged ───────────────────────────────────────────
             case .cloudAIToggled:
                 state.cloudAIEnabled.toggle()
                 userDefaults.setBool(state.cloudAIEnabled, "cloudAIEnabled")
@@ -360,7 +378,7 @@ struct OnboardingFeature {
 
         return .merge(
             .run { send in
-                let assets = try await fetchRecent(20)
+                let assets = try await fetchRecent(300)
                 if assets.isEmpty {
                     await send(.scanStarted(totalPhotos: 0))
                     await send(.scanFinished)
