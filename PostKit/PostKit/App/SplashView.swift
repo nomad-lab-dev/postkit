@@ -54,7 +54,10 @@ struct SplashView: View {
             }
         }
         .ignoresSafeArea()
-        .task { await runAnimation() }
+        .task {
+            preloadOnboardingImages()
+            await runAnimation()
+        }
     }
 
     private func background(radialEndRadius: CGFloat) -> some View {
