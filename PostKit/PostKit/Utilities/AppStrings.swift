@@ -43,6 +43,28 @@ enum AppStrings {
         static let step02GeneratedLabel: LocalizedStringKey = "GENERATED · 2.1 S"
         static let step02ShareLabel: LocalizedStringKey = "Share on Instagram"
 
+        // Step 02 — Demo chips
+        static let step02ChipItaly: LocalizedStringKey = "🌍 Italy"
+        static let step02ChipCoffee: LocalizedStringKey = "☕ Coffee"
+        static let step02ChipBuild: LocalizedStringKey = "💼 Build"
+
+        // Step 02 — Demo card prompts + captions
+        static let step02ItalyPrompt: LocalizedStringKey = "My weekend in Italy"
+        static let step02ItalyCaption: LocalizedStringKey = "Three days, two cities, one road. Naples → Capri."
+        static let step02CoffeePrompt: LocalizedStringKey = "Coffee shops I keep coming back to"
+        static let step02CoffeeCaption: LocalizedStringKey = "Three rooms, one ritual. The flat white that started the day."
+        static let step02BuildPrompt: LocalizedStringKey = "Build log · what shipped this week"
+        static let step02BuildCaption: LocalizedStringKey = "Three PRs, one feature, zero regressions. Subscription tier is live."
+
+        // Step 03 — Default topics
+        static let defaultTopic1: LocalizedStringKey = "Cars"
+        static let defaultTopic2: LocalizedStringKey = "Food & Coffee"
+        static let defaultTopic3: LocalizedStringKey = "Build in public"
+        static let defaultTopic4: LocalizedStringKey = "Travel"
+
+        // Step 05 — First prompt prefix
+        static let step05FirstPromptPrefix: LocalizedStringKey = "A post about"
+
         // Step 03 – Pillars
         static let step03Eyebrow: LocalizedStringKey = "YOUR TURN"
         static let step03HeadlinePart1: LocalizedStringKey = "What do "

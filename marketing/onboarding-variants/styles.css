@@ -1,0 +1,430 @@
+/* PostKit — Onboarding wireframe variants
+ *
+ * 5 UX + copy directions, each addressing a different psychological angle.
+ * Phones are rendered as iPhone-shaped CSS frames so the focus stays on
+ * content + flow, not pixel-perfect design.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300..700&family=Geist+Mono:wght@400..700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0E0E12;
+  --panel: #1A1A22;
+  --panel-2: #22222C;
+  --border: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.14);
+  --text: #FFFFFF;
+  --text-2: rgba(255, 255, 255, 0.72);
+  --text-3: rgba(255, 255, 255, 0.48);
+  --text-4: rgba(255, 255, 255, 0.30);
+  --accent: #007AFF;
+  --purple: #AF52DE;
+  --green: #34C759;
+  --orange: #FF9500;
+  --pink: #FF2D55;
+  --cream: #FF9500;
+}
+
+html, body {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+  min-height: 100vh;
+}
+
+body { padding: 64px 32px 96px; }
+
+/* ───── PAGE HEADER ───── */
+.page-header {
+  max-width: 1320px;
+  margin: 0 auto 64px;
+  text-align: center;
+}
+.page-header .eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 14px;
+}
+.page-header h1 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 56px;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  margin-bottom: 16px;
+}
+.page-header h1 em { color: var(--orange); font-style: italic; }
+.page-header p {
+  font-size: 15px;
+  color: var(--text-3);
+  line-height: 1.65;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.page-header p b { color: var(--text-2); font-weight: 600; }
+
+/* ───── VARIANT ROW ───── */
+.variant {
+  max-width: 1320px;
+  margin: 0 auto 72px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.variant-header {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 18px;
+  margin-bottom: 28px;
+  align-items: flex-start;
+  padding-bottom: 24px;
+  border-bottom: 1px solid var(--border);
+}
+.variant-letter {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', monospace;
+  font-size: 20px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.variant-a .variant-letter { background: linear-gradient(135deg, #FFFFFF, #E5E5EA); color: #0A0A0C; }
+.variant-b .variant-letter { background: linear-gradient(135deg, #FFB088, #FF9500); color: #0A0A0C; }
+.variant-c .variant-letter { background: linear-gradient(135deg, #007AFF, #AF52DE); color: #FFF; }
+.variant-d .variant-letter { background: linear-gradient(135deg, #FFD60A, #FF9500); color: #0A0A0C; }
+.variant-e .variant-letter { background: linear-gradient(135deg, #FF9F8B, #BF5AF2); color: #FFF; }
+
+.variant-title h2 {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 32px;
+  font-weight: 400;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.variant-title .codename {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.variant-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: right;
+  font-size: 11px;
+  font-family: 'Geist Mono', monospace;
+  color: var(--text-3);
+  letter-spacing: 0.04em;
+}
+.variant-meta .row { display: flex; gap: 6px; justify-content: flex-end; align-items: baseline; }
+.variant-meta .lab { color: var(--text-4); text-transform: uppercase; letter-spacing: 0.1em; }
+.variant-meta .val { color: var(--text-2); }
+.variant-meta .val.accent { color: var(--orange); }
+
+/* ───── HOOK / RATIONALE ───── */
+.hook {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 28px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.hook .cell {
+  padding: 14px 16px;
+  background: var(--panel-2);
+  border-radius: 12px;
+  border-left: 3px solid var(--accent);
+}
+.hook .cell.psych { border-left-color: var(--pink); }
+.hook .cell.copy  { border-left-color: var(--orange); }
+.hook .cell.visual { border-left-color: var(--green); }
+.hook .lab {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--text-3);
+  margin-bottom: 6px;
+}
+.hook .body { color: var(--text-2); }
+.hook .body em {
+  color: var(--orange);
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-size: 14px;
+}
+
+/* ───── FLOW STRIP (4 phones + arrows) ───── */
+.flow {
+  display: grid;
+  grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr;
+  gap: 0;
+  align-items: stretch;
+}
+.flow .arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-4);
+  font-size: 22px;
+  font-family: 'Instrument Serif', Georgia, serif;
+}
+
+.step { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.step-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 2px;
+}
+.step-label .num {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  color: var(--text-4);
+}
+.step-label .name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+/* ───── PHONE FRAME ───── */
+.phone {
+  width: 240px;
+  height: 500px;
+  border-radius: 36px;
+  background: #0A0A0A;
+  padding: 6px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  flex-shrink: 0;
+}
+.phone-screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 32px;
+  background: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.phone-notch {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 78px;
+  height: 18px;
+  background: #0A0A0A;
+  border-radius: 11px;
+  z-index: 5;
+}
+.phone-statusbar {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 22px 0;
+  font-size: 10px;
+  font-weight: 600;
+  color: #1C1C1E;
+}
+.phone-statusbar.dark { color: #FFFFFF; }
+
+/* Body — screen content */
+.phone-body {
+  flex: 1;
+  padding: 22px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  color: #1C1C1E;
+  overflow: hidden;
+  position: relative;
+}
+.phone-body.dark { color: #FFFFFF; }
+
+.cta {
+  margin-top: auto;
+  background: #007AFF;
+  color: #FFF;
+  padding: 11px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+.cta.dark { background: #0A0A0A; }
+.cta.green { background: #34C759; }
+.cta.orange { background: #FF9500; }
+.cta.outline {
+  background: transparent;
+  border: 1.5px solid #1C1C1E;
+  color: #1C1C1E;
+}
+.cta.ghost {
+  background: rgba(0, 122, 255, 0.08);
+  color: #007AFF;
+}
+.cta-sub {
+  font-size: 9px;
+  color: rgba(0, 0, 0, 0.5);
+  text-align: center;
+  margin-top: 6px;
+}
+
+/* Common typography utilities for phone bodies */
+.h-eyebrow {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8E8E93;
+  margin-bottom: 8px;
+}
+.h-title {
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  margin-bottom: 8px;
+}
+.h-title.serif {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-weight: 400;
+  font-style: italic;
+  font-size: 28px;
+}
+.h-sub {
+  font-size: 11px;
+  color: #3C3C43;
+  line-height: 1.5;
+}
+.h-mega {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.h-mega.serif {
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: "opsz" 144;
+  font-weight: 600;
+}
+
+.divider {
+  height: 1px;
+  background: rgba(0, 0, 0, 0.08);
+  margin: 10px 0;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 100px;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #1C1C1E;
+}
+.chip.accent { background: rgba(0, 122, 255, 0.08); color: #007AFF; border-color: rgba(0, 122, 255, 0.15); }
+.chip.orange { background: rgba(255, 149, 0, 0.10); color: #FF9500; border-color: rgba(255, 149, 0, 0.18); }
+.chip.purple { background: rgba(175, 82, 222, 0.10); color: #AF52DE; border-color: rgba(175, 82, 222, 0.18); }
+
+/* Card / Tile / Mini IG mockup helpers */
+.mini-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.mini-tile {
+  aspect-ratio: 1;
+  background: linear-gradient(135deg, #C7C7CC, #AEAEB2);
+}
+.mini-tile.cars   { background: linear-gradient(135deg, #007AFF, #5AC8FA); }
+.mini-tile.food   { background: linear-gradient(135deg, #FF9500, #FF6D00); }
+.mini-tile.travel { background: linear-gradient(135deg, #34C759, #00B894); }
+.mini-tile.build  { background: linear-gradient(135deg, #AF52DE, #FF2D55); }
+.mini-tile.life   { background: linear-gradient(135deg, #FF9F8B, #FFB6C1); }
+.mini-tile.empty  { background: rgba(0, 0, 0, 0.04); border: 1px dashed rgba(0, 0, 0, 0.12); }
+
+.progress-bar {
+  height: 4px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress-bar .fill { height: 100%; background: linear-gradient(90deg, #007AFF, #AF52DE); border-radius: 100px; }
+
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #007AFF, #AF52DE);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 2px;
+  padding: 4px;
+}
+.brand-icon span { background: rgba(255, 255, 255, 0.92); border-radius: 2px; }
+.brand-icon span:nth-child(2) { background: rgba(255, 255, 255, 0.62); }
+.brand-icon span:nth-child(3) { background: rgba(255, 255, 255, 0.72); }
+
+/* ───── BACKGROUND TREATMENTS PER VARIANT ───── */
+.bg-cream    { background: #F7F5F0; }
+.bg-dawn     { background: linear-gradient(180deg, #FFE4B5 0%, #FFB088 60%, #FFFFFF 100%); }
+.bg-mediter  { background: linear-gradient(135deg, #34C759 0%, #00B0FF 80%, #007AFF 100%); color: #FFF; }
+.bg-gold     { background: linear-gradient(180deg, #FFF8E1 0%, #FFE08A 60%, #FFC107 100%); }
+.bg-night    { background: #0A0A14; color: #FFFFFF; }
+.bg-pillar-a { background: linear-gradient(160deg, #007AFF 0%, #5AC8FA 60%, #F0F8FF 100%); color: #FFFFFF; }
+
+/* ───── FOOTER ───── */
+.footer-note {
+  max-width: 1320px;
+  margin: 24px auto 0;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  font-size: 12px;
+  color: var(--text-3);
+  line-height: 1.6;
+}
+.footer-note code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+}

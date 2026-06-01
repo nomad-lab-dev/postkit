@@ -1,0 +1,153 @@
+/* Shared phone mockup + prompt placeholder.
+ * Identical across all 3 variants — only backgrounds, typography
+ * and cartouche treatment differ per variant.
+ *
+ * Canvas: 1242 × 2688 (iPhone 6.7" App Store spec).
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300..700&family=Geist+Mono:wght@400..700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 1242px;
+  height: 2688px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.slide {
+  position: relative;
+  width: 1242px;
+  height: 2688px;
+  overflow: hidden;
+}
+
+/* ---------- PHONE MOCKUP ---------- */
+
+.phone {
+  position: absolute;
+  width: 720px;
+  height: 1460px;
+  border-radius: 88px;
+  background: #0A0A0A;
+  padding: 16px;
+  overflow: hidden;
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, .12),
+    0 70px 140px rgba(0, 0, 0, .30),
+    0 30px 60px rgba(0, 0, 0, .22);
+}
+
+.phone__screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 74px;
+  background: #FFFFFF;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone__notch {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 220px;
+  height: 36px;
+  background: #0A0A0A;
+  border-radius: 22px;
+  z-index: 2;
+}
+
+.phone__statusbar {
+  height: 68px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 56px;
+  font-size: 26px;
+  font-weight: 600;
+  color: #1C1C1E;
+}
+
+/* The placeholder body — where the real screenshot eventually goes */
+.prompt {
+  flex: 1;
+  margin: 4px 22px 22px;
+  border: 2.5px dashed rgba(0, 0, 0, .18);
+  border-radius: 30px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(0,0,0,.014) 0 18px,
+      rgba(0,0,0,.038) 18px 36px
+    );
+  display: flex;
+  flex-direction: column;
+  padding: 32px 28px;
+  gap: 14px;
+  overflow: hidden;
+}
+
+.prompt__label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: #C71F37;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.prompt__label::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #C71F37;
+  flex-shrink: 0;
+}
+
+.prompt__title {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1C1C1E;
+  line-height: 1.18;
+}
+
+.prompt__body {
+  font-size: 20px;
+  font-weight: 500;
+  color: #3C3C43;
+  line-height: 1.42;
+}
+.prompt__body ul { list-style: none; padding-left: 0; margin-top: 6px; }
+.prompt__body li {
+  padding-left: 20px;
+  position: relative;
+  margin-bottom: 5px;
+}
+.prompt__body li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: #007AFF;
+  font-weight: 700;
+}
+
+/* Phone variants */
+.phone--small { width: 580px; height: 1180px; border-radius: 70px; }
+.phone--small .phone__screen { border-radius: 58px; }
+.phone--small .phone__notch { width: 180px; }
+
+.phone--tilt-l3 { transform: rotate(-3deg); }
+.phone--tilt-r3 { transform: rotate(3deg); }
+.phone--tilt-l6 { transform: rotate(-6deg); }
+.phone--tilt-r6 { transform: rotate(6deg); }

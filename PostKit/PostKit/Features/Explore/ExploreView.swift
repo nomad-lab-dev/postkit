@@ -160,7 +160,7 @@ struct ExploreView: View {
         }
     }
 
-    private var emptyMessage: String {
+    private var emptyMessage: LocalizedStringKey {
         if store.statusFilter != nil || store.selectedFilter != .all {
             return "No photos match the current filters."
         }

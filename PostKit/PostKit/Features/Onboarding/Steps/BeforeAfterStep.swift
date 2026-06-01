@@ -27,30 +27,31 @@ struct BeforeAfterStep: View {
     private let xFracs: [CGFloat] = [0.00, 0.50, 1.00, 0.03, 0.52, 0.97, 0.01, 0.50, 0.99]
     private let yFracs: [CGFloat] = [0.02, 0.04, 0.00, 0.38, 0.36, 0.40, 0.72, 0.70, 0.74]
 
-    private let bentoItems: [(emoji: String, name: String, count: Int, photos: [String])] = [
-        ("🚗", "Cars",   47, ["gallery-auto-1",  "gallery-auto-2",  "gallery-auto-3",  "gallery-auto-4"]),
-        ("☕", "Coffee", 32, ["gallery-food-1",  "gallery-food-2",  "gallery-food-3",  "gallery-life-1"]),
-        ("🌍", "Travel", 89, ["gallery-nomad-1", "gallery-nomad-2", "gallery-nomad-3", "gallery-nomad-4"]),
-        ("💼", "Build",  23, ["gallery-dev-1",   "gallery-dev-2",   "gallery-dev-3",   "gallery-life-2"]),
-    ]
+    private var bentoItems: [(emoji: String, name: String, count: Int, photos: [String])] {
+        [
+            ("🚗", NSLocalizedString("Cars", comment: ""), 47, ["gallery-auto-1",  "gallery-auto-2",  "gallery-auto-3",  "gallery-auto-4"]),
+            ("☕", NSLocalizedString("Coffee", comment: ""), 32, ["gallery-food-1",  "gallery-food-2",  "gallery-food-3",  "gallery-life-1"]),
+            ("🌍", NSLocalizedString("Travel", comment: ""), 89, ["gallery-nomad-1", "gallery-nomad-2", "gallery-nomad-3", "gallery-nomad-4"]),
+            ("💼", NSLocalizedString("Build", comment: ""), 23, ["gallery-dev-1",   "gallery-dev-2",   "gallery-dev-3",   "gallery-life-2"]),
+        ]
+    }
 
     var body: some View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 TypewriterText(
                     text: localizedString(for: AppStrings.Onboarding.step01Eyebrow),
-                    font: .obMono(9), color: Palette.text4, show: phase >= 1,
-                    onFinished: { phase = 2 }
+                    font: .obMono(9), color: Palette.text4, show: phase >= 1
                 )
                 .padding(.top, Spacing.md)
 
                 TypewriterHeadline(
                     segments: [
                         HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step01HeadlinePart1), font: .obHeadline(28), color: Palette.text),
-                        HeadlineSegment(text: "\n", font: .obHeadline(28), color: Palette.text),
+                        HeadlineSegment(text: " ", font: .obHeadline(28), color: Palette.text),
                         HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step01HeadlinePart2), font: .obEmphasis(30), color: Color(red: 1, green: 149/255, blue: 0)),
                     ],
-                    show: phase >= 2,
+                    show: phase >= 1,
                     onFinished: {
                         Task { @MainActor in
                             try? await Task.sleep(for: .milliseconds(120))
@@ -80,7 +81,7 @@ struct BeforeAfterStep: View {
                     .scaleEffect(showSorted ? 1 : 0.97)
             }
             .padding(.horizontal, Layout.Padding.screen.leading)
-            .padding(.top, Spacing.sm)
+            .padding(.top, Spacing.md)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .layoutPriority(1)
             .animation(.easeInOut(duration: 0.45), value: showSorted)
@@ -116,6 +117,9 @@ struct BeforeAfterStep: View {
             let sz: CGFloat = 100
             let rangeX = max(geo.size.width  - sz, 1)
             let rangeY = max(geo.size.height - sz, 1)
+            // yFracs span 0..0.74 → cluster occupies 74% of rangeY + sz
+            let clusterH = 0.74 * rangeY + sz
+            let topOffset = max((geo.size.height - clusterH) / 2, 0)
             ZStack(alignment: .topLeading) {
                 Color.clear
                 ForEach(chaosPhotos.indices, id: \.self) { i in
@@ -124,7 +128,7 @@ struct BeforeAfterStep: View {
                         .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .shadow(color: .black.opacity(0.26), radius: 7, y: 4)
                         .rotationEffect(.degrees(chaosPhotos[i].1))
-                        .offset(x: xFracs[i] * rangeX, y: yFracs[i] * rangeY)
+                        .offset(x: xFracs[i] * rangeX, y: topOffset + yFracs[i] * rangeY)
                 }
             }
         }

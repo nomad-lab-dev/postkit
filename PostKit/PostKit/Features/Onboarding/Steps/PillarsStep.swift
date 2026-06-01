@@ -16,8 +16,7 @@ struct PillarsStep: View {
             VStack(alignment: .leading, spacing: Spacing.sm) {
                 TypewriterText(
                     text: localizedString(for: AppStrings.Onboarding.step03Eyebrow),
-                    font: .obMono(9), color: Palette.text4, show: phase >= 1,
-                    onFinished: { phase = 2 }
+                    font: .obMono(9), color: Palette.text4, show: phase >= 1
                 )
                 .padding(.top, Spacing.md)
 
@@ -27,7 +26,7 @@ struct PillarsStep: View {
                         HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step03HeadlineEmphasis), font: .obEmphasis(28), color: Color(red: 0/255, green: 122/255, blue: 255/255)),
                         HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step03HeadlinePart2), font: .obHeadline(26), color: Palette.text),
                     ],
-                    show: phase >= 2,
+                    show: phase >= 1,
                     onFinished: {
                         Task { @MainActor in
                             try? await Task.sleep(for: .milliseconds(120))

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Slide 1 — Hook</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="slide bg-hook">
+
+  <!-- Background ambient glows -->
+  <div class="glow" style="width:520px;height:520px;background:rgba(255,255,255,.55);top:-160px;left:-160px;"></div>
+  <div class="glow" style="width:680px;height:680px;background:rgba(0,122,255,.45);bottom:-220px;right:-200px;"></div>
+
+  <!-- ARC HEADLINE -->
+  <div class="arc-headline">
+    <svg viewBox="0 0 1242 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Arc that opens downward, headline sits along its inside -->
+        <path id="arc-1-top" d="M 60 540 A 620 620 0 0 1 1182 540" fill="none"/>
+        <path id="arc-1-bot" d="M 110 660 A 540 540 0 0 1 1132 660" fill="none"/>
+      </defs>
+      <text class="arc-text arc-text--solid" font-size="92">
+        <textPath href="#arc-1-top" startOffset="50%" text-anchor="middle">
+          YOUR CAMERA ROLL
+        </textPath>
+      </text>
+      <text class="arc-text" font-size="80">
+        <textPath href="#arc-1-bot" startOffset="50%" text-anchor="middle">
+          ALREADY HAS YOUR NEXT POST
+        </textPath>
+      </text>
+    </svg>
+  </div>
+
+  <!-- LABEL PILL trust signal -->
+  <div class="label-pill label-pill--blue" style="top:790px;left:50%;transform:translateX(-50%);">
+    Built for daily creators
+  </div>
+
+  <!-- PHONE MOCKUP -->
+  <div class="phone-mockup phone-mockup--tilt-left" style="top:880px;left:261px;">
+    <div class="phone-mockup__screen">
+      <div class="phone-mockup__notch"></div>
+      <div class="phone-mockup__statusbar">
+        <span>9:41</span>
+        <span>● ●●●</span>
+      </div>
+      <div class="phone-mockup__prompt">
+        <div class="phone-mockup__prompt-label">SCREENSHOT PROMPT</div>
+        <div class="phone-mockup__prompt-title">Dashboard — hero stat + status banner + bento grid</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Top: greeting eyebrow + <b>"1,247"</b> in 52pt rounded heavy + "photos ready" sub</li>
+            <li>Status banner (green strip) — "All caught up · Last scan 2h ago"</li>
+            <li><b>"Your Pillars"</b> section header + Add CTA</li>
+            <li>2×2 bento: 🚗 Automotive 47 · 🍽️ Food 32 · 🌍 Travel 89 · 💼 Build 23</li>
+            <li>Each pillar tile shows 4-photo preview grid below the emoji</li>
+            <li>Bottom: Quick Actions (Smart Post · From template)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTOUCHE -->
+  <div class="cartouche">
+    <span>Start</span>
+    <span>posting</span>
+  </div>
+
+</div>
+</body>
+</html>

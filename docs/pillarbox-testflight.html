@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — TestFlight Builds</title>
+<style>
+  :root {
+    --bg: #f2f2f7; --surface: rgba(255,255,255,0.72); --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.78); --glass-border: rgba(0,0,0,0.08);
+    --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --text: #1c1c1e; --text-2: #3c3c43; --text-3: #8e8e93; --text-4: #aeaeb2;
+    --accent: #007aff; --accent-bg: rgba(0,122,255,0.08);
+    --green: #34c759; --green-bg: rgba(52,199,89,0.10);
+    --yellow: #ff9f0a; --yellow-bg: rgba(255,159,10,0.10);
+    --orange: #ff9500; --orange-bg: rgba(255,149,0,0.10);
+    --purple: #af52de; --purple-bg: rgba(175,82,222,0.10);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .container { max-width:920px; margin:0 auto; padding:1.5rem; }
+
+  .back { display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--text-3); text-decoration:none; padding:.4rem .75rem; background:var(--glass); border:1px solid var(--glass-border); border-radius:100px; margin-bottom:1rem; }
+  .back:hover { color:var(--accent); border-color:rgba(0,122,255,.2); }
+
+  .header { padding:2rem; background:var(--surface); backdrop-filter:blur(20px) saturate(180%); border:1px solid var(--glass-border); border-radius:20px; box-shadow:var(--glass-shadow); margin-bottom:1.5rem; }
+  .header-top { display:flex; align-items:center; gap:1rem; margin-bottom:.6rem; }
+  .header-icon { width:56px; height:56px; border-radius:14px; background:#007aff; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(0,122,255,.3); }
+  .header-icon svg { width:32px; height:32px; }
+  .header h1 { font-size:1.85rem; font-weight:700; }
+  .header p { color:var(--text-3); font-size:.88rem; line-height:1.55; }
+
+  /* Latest build callout */
+  .latest-card { background:linear-gradient(135deg,rgba(0,122,255,.06),rgba(52,199,89,.05)); border:1px solid rgba(0,122,255,.2); border-radius:18px; padding:1.5rem; margin-bottom:1.5rem; box-shadow:var(--glass-shadow); }
+  .latest-pill { display:inline-flex; align-items:center; gap:.4rem; font-size:.62rem; padding:.22rem .65rem; background:var(--green-bg); color:var(--green); border-radius:100px; font-weight:700; letter-spacing:.05em; text-transform:uppercase; margin-bottom:.85rem; }
+  .latest-pill::before { content:''; width:6px; height:6px; border-radius:50%; background:var(--green); }
+  .latest-card h2 { font-size:1.4rem; font-weight:700; margin-bottom:.3rem; }
+  .latest-card .desc { font-size:.85rem; color:var(--text-2); line-height:1.55; margin-bottom:1rem; max-width:560px; }
+  .latest-card .cta { display:inline-flex; align-items:center; gap:.5rem; padding:.85rem 1.4rem; background:#0a0a0c; color:#fff; border-radius:100px; font-size:.88rem; font-weight:600; text-decoration:none; box-shadow:0 8px 24px rgba(0,0,0,.18); transition:transform .15s; }
+  .latest-card .cta:hover { transform:translateY(-2px); }
+
+  /* Build list */
+  .section-title { font-size:.78rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin:2rem 0 .75rem; padding-left:.25rem; }
+
+  .build { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1.15rem 1.35rem; margin-bottom:.65rem; box-shadow:var(--glass-shadow); display:grid; grid-template-columns:auto 1fr auto; gap:1.1rem; align-items:center; transition:all .15s; }
+  .build:hover { transform:translateY(-1px); border-color:rgba(0,122,255,.18); }
+
+  .build-version { font-size:1.1rem; font-weight:700; font-family:'SF Mono',ui-monospace,monospace; color:var(--accent); min-width:64px; }
+
+  .build-body { min-width:0; }
+  .build-top { display:flex; align-items:center; gap:.5rem; margin-bottom:.25rem; flex-wrap:wrap; }
+  .build-title { font-size:.92rem; font-weight:600; }
+  .build-badge { font-size:.55rem; padding:.18rem .5rem; border-radius:100px; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
+  .build-badge.live { background:var(--green-bg); color:var(--green); display:inline-flex; align-items:center; gap:.25rem; }
+  .build-badge.live::before { content:''; width:5px; height:5px; border-radius:50%; background:var(--green); }
+  .build-badge.upcoming { background:var(--orange-bg); color:var(--orange); }
+  .build-badge.expired { background:rgba(0,0,0,.06); color:var(--text-3); }
+  .build-meta { font-size:.72rem; color:var(--text-3); font-family:'SF Mono',ui-monospace,monospace; }
+  .build-notes { font-size:.78rem; color:var(--text-2); margin-top:.4rem; line-height:1.5; }
+  .build-notes summary { cursor:pointer; font-size:.72rem; color:var(--accent); padding-top:.3rem; list-style:none; }
+  .build-notes summary::-webkit-details-marker { display:none; }
+  .build-notes summary::after { content:' ▾'; color:var(--text-3); }
+  .build-notes[open] summary::after { content:' ▴'; }
+  .build-notes ul { padding-left:1.2rem; margin-top:.45rem; }
+  .build-notes li { margin-bottom:.2rem; color:var(--text-2); font-size:.78rem; }
+
+  .build-action { display:flex; flex-direction:column; align-items:flex-end; gap:.3rem; flex-shrink:0; }
+  .join-btn { display:inline-flex; align-items:center; gap:.35rem; padding:.5rem 1rem; background:var(--accent); color:#fff; border-radius:100px; font-size:.76rem; font-weight:600; text-decoration:none; box-shadow:0 4px 12px rgba(0,122,255,.22); transition:transform .15s; }
+  .join-btn:hover { transform:translateY(-1px); }
+  .join-btn.disabled { background:rgba(0,0,0,.05); color:var(--text-3); pointer-events:none; box-shadow:none; }
+
+  /* Empty / coming soon row */
+  .build.future { background:repeating-linear-gradient(135deg,var(--bg) 0 12px,var(--glass) 12px 24px); border-style:dashed; }
+  .build.future .build-version { color:var(--text-4); }
+  .build.future .build-title { color:var(--text-3); }
+
+  @media (max-width:680px) {
+    .build { grid-template-columns:1fr; gap:.6rem; }
+    .build-action { align-items:flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a href="pillarbox-product-cockpit.html" class="back">← Cockpit</a>
+
+  <div class="header">
+    <div class="header-top">
+      <div class="header-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>TestFlight Builds</h1>
+      </div>
+    </div>
+    <p>All PostKit beta builds shipped via Apple TestFlight. Public links — no invite required. Apple-approved beta review.</p>
+  </div>
+
+  <!-- LATEST BUILD HIGHLIGHT -->
+  <div class="latest-card">
+    <span class="latest-pill">Currently live</span>
+    <h2>PostKit v0.1 · Beta</h2>
+    <p class="desc">First public TestFlight build — Apple-approved on May 21, 2026. Includes the full v0.1 feature scope: onboarding, classification, pillars dashboard, Smart Post AI chat, slot machine reveal, template scheduling.</p>
+    <a class="cta" href="https://testflight.apple.com/join/K4MqVuWe" target="_blank" rel="noopener">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round"/></svg>
+      Join the beta
+      <span style="font-size:1rem;">↗</span>
+    </a>
+  </div>
+
+  <!-- ALL BUILDS -->
+  <div class="section-title">All builds · chronological</div>
+
+  <!-- v0.2 — upcoming -->
+  <div class="build future">
+    <div class="build-version">v0.2</div>
+    <div class="build-body">
+      <div class="build-top">
+        <div class="build-title">Monetization arc</div>
+        <span class="build-badge upcoming">Upcoming</span>
+      </div>
+      <div class="build-meta">Target submit · late May 2026</div>
+      <details class="build-notes">
+        <summary>What's planned</summary>
+        <ul>
+          <li>StoreKit 2 subscription (Pro tier · 9.99 €/mo · 7-day free trial)</li>
+          <li>Settings &gt; Pro status + upgrade paywall</li>
+          <li>Scan pipeline v2 (PR #3 merged) — Vision crash-proof, Explorer UX</li>
+          <li>AI share token system (Pro-gated)</li>
+        </ul>
+      </details>
+    </div>
+    <div class="build-action">
+      <a class="join-btn disabled">Pending submission</a>
+    </div>
+  </div>
+
+  <!-- v0.1 — current -->
+  <div class="build">
+    <div class="build-version">v0.1</div>
+    <div class="build-body">
+      <div class="build-top">
+        <div class="build-title">First public beta — MVP scope</div>
+        <span class="build-badge live">Live</span>
+      </div>
+      <div class="build-meta">Submitted May 19 · Apple-approved May 21, 2026</div>
+      <details class="build-notes">
+        <summary>What ships in this build</summary>
+        <ul>
+          <li>3-step onboarding (Welcome · Quick Scan · Pillars setup)</li>
+          <li>Photo classification — Core ML on-device + Gemini Flash fallback</li>
+          <li>Pillar CRUD + Dashboard bento 2×2 with Italian Summer template</li>
+          <li>Smart Post AI chat with template auto-generation</li>
+          <li>Slot machine reveal animation when filling templates</li>
+          <li>Explore tab with multi-filter (pillar × cadrage × location)</li>
+          <li>Scheduled posting (weekday picker, reminders)</li>
+          <li>SwiftUI Liquid Glass design system (iOS 18+ / iPad 18+)</li>
+        </ul>
+      </details>
+    </div>
+    <div class="build-action">
+      <a class="join-btn" href="https://testflight.apple.com/join/K4MqVuWe" target="_blank" rel="noopener">Join ↗</a>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

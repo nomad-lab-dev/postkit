@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Onboarding round 2 — Magic Moment forward</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ─── ROUND-2 ADDITIONS ─── */
+
+  /* Per-variant gradient backgrounds (welcome screens) */
+  .bg-brand-flow {
+    background: linear-gradient(160deg, #007AFF 0%, #5856D6 40%, #AF52DE 75%, #FF2D55 100%);
+    color: #FFFFFF;
+  }
+  .bg-sunrise {
+    background: linear-gradient(160deg, #FFD60A 0%, #FF9500 40%, #FF6D00 80%, #FF2D55 100%);
+    color: #1C1C1E;
+  }
+  .bg-mint-morning {
+    background: linear-gradient(165deg, #5CE6C7 0%, #5AC8FA 50%, #007AFF 100%);
+    color: #FFFFFF;
+  }
+
+  /* Soft gradient for non-welcome screens */
+  .bg-soft-blue   { background: linear-gradient(180deg, #F0F7FF 0%, #FFFFFF 100%); }
+  .bg-soft-amber  { background: linear-gradient(180deg, #FFFBF0 0%, #FFFFFF 100%); }
+  .bg-soft-mint   { background: linear-gradient(180deg, #F0FFFB 0%, #FFFFFF 100%); }
+
+  /* ─── DEMO CARD ─── */
+  /* The "type a sentence → get a post" card that appears on welcome screens */
+  .demo {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    padding: 10px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+    color: #1C1C1E;
+  }
+  .demo-prompt {
+    background: #007AFF;
+    color: #FFFFFF;
+    font-size: 10.5px;
+    font-weight: 500;
+    line-height: 1.35;
+    padding: 7px 10px;
+    border-radius: 12px;
+    border-bottom-right-radius: 4px;
+    margin-bottom: 8px;
+    align-self: flex-end;
+    display: inline-block;
+    max-width: 88%;
+  }
+  .demo-prompt-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 6px;
+  }
+  .demo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 8px;
+  }
+  .demo-grid img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .demo-cap {
+    font-size: 9.5px;
+    color: #1C1C1E;
+    line-height: 1.4;
+    padding: 0 2px;
+  }
+  .demo-cap .by {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .demo-cap .by::before {
+    content: "";
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #34C759;
+  }
+
+  /* Prompt chips below demo (variant F) */
+  .prompt-chips {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .prompt-chip {
+    flex: 1;
+    min-width: 0;
+    padding: 5px 7px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 500;
+    color: #FFFFFF;
+    text-align: center;
+    white-space: nowrap;
+    backdrop-filter: blur(6px);
+  }
+  .prompt-chip.active {
+    background: #FFFFFF;
+    color: #1C1C1E;
+    font-weight: 700;
+    border-color: #FFFFFF;
+  }
+
+  /* Annotated timeline (variant G) */
+  .timeline {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 8px;
+  }
+  .timeline-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+  }
+  .timeline-dot.done { background: #34C759; }
+
+  /* Single-tap big CTA (variant G) */
+  .big-cta {
+    background: rgba(255, 255, 255, 0.96);
+    color: #1C1C1E;
+    padding: 14px;
+    border-radius: 18px;
+    text-align: center;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.22);
+  }
+  .big-cta .lab {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: #FF9500;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .big-cta .ti {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 22px;
+    line-height: 1.05;
+  }
+
+  /* Sentence input (variant H) */
+  .sentence-input {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 14px;
+    padding: 12px;
+    color: #1C1C1E;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  }
+  .sentence-input .hint {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: #8E8E93;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    margin-bottom: 6px;
+  }
+  .sentence-input .typed {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.35;
+    color: #1C1C1E;
+  }
+  .sentence-input .caret {
+    display: inline-block;
+    width: 2px;
+    height: 14px;
+    background: #007AFF;
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 1s steps(2, end) infinite;
+  }
+  @keyframes blink { from, to { opacity: 1; } 50% { opacity: 0; } }
+
+  .suggestion-photos {
+    display: flex;
+    gap: 4px;
+    margin-top: 10px;
+  }
+  .suggestion-photos img {
+    flex: 1;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    object-fit: cover;
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<header class="page-header">
+  <div class="eyebrow">Onboarding round 2 · Magic Moment forward</div>
+  <h1>Show the <em>magic</em>. Use it everywhere.</h1>
+  <p>
+    Round 1 explored 5 angles. You picked <b>"show me the sentence-to-post moment, use it more"</b>.
+    These 3 new variants all keep the demo card as the hero — different framings, gradient backgrounds, no
+    features we haven't built. The post photos in the mockups are real images (Unsplash) matching each
+    example prompt so you feel the demo, not the wireframe.
+  </p>
+</header>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT F — THREE PROMPTS (variety hook)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-c">
+  <div class="variant-header">
+    <span class="variant-letter">F</span>
+    <div class="variant-title">
+      <h2>Three Prompts</h2>
+      <div class="codename">Variety hook · "whatever you want, it works"</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Tappable prompt chips swap the demo live</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Brand gradient · saturated</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Welcome is denser — needs animation polish</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Range demonstration</em> — by showing 3 different prompts producing 3 different posts, the user sees the app isn't a one-trick pony. Their own use case is implicitly covered.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Imperative + playful. "Try one." "Tap to swap." Short, confident, no hedge words.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Brand gradient (blue→purple→pink). Demo card lives on a glass surface. Chips below are tappable to switch.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome — live demo with 3 chips -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-brand-flow">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="h-eyebrow" style="color:rgba(255,255,255,.7);">Try Smart Post</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:12px;">Type a sentence.<br>Get a post.</div>
+
+            <div class="demo">
+              <div class="demo-prompt-row"><div class="demo-prompt">"My weekend in Italy"</div></div>
+              <div class="demo-grid">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="demo-cap">
+                <div class="by">Generated · 2.1 s</div>
+                Three days, two cities, one road. Naples → Capri.
+              </div>
+            </div>
+
+            <div class="prompt-chips">
+              <div class="prompt-chip active">Italy</div>
+              <div class="prompt-chip">Coffee</div>
+              <div class="prompt-chip">Build log</div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;margin-top:10px;">Try with my photos →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Live demo + variety</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Topic Setup -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-blue">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-eyebrow">Your turn</div>
+            <div class="h-title" style="font-size:19px;margin-bottom:4px;">What do <em style="font-family:'Instrument Serif';font-style:italic;color:#007AFF;">you</em> post about?</div>
+            <div class="h-sub" style="margin-bottom:12px;">Pick or write 2–4. Edit anytime.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div class="chip accent" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">🚗 Cars</div>
+              <div class="chip orange" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">☕ Food &amp; Coffee</div>
+              <div class="chip purple" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">💼 Build in public</div>
+              <div class="chip" style="justify-content:flex-start;padding:8px 10px;font-size:11px;color:#34C759;border-color:rgba(52,199,89,.18);background:rgba(52,199,89,.06);">🌍 Travel</div>
+              <div class="chip" style="justify-content:flex-start;padding:8px 10px;font-size:11px;color:#8E8E93;border-style:dashed;">+ Add your own</div>
+            </div>
+            <div class="cta" style="margin-top:auto;">Continue with 4 pillars →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Your pillars</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scan -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-blue">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Sorting your gallery</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:14px;">Tagging photos to pillars.</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;"><span>🚗 Cars</span><span style="font-family:'Geist Mono',monospace;color:#007AFF;">47</span></div>
+                <div class="progress-bar" style="margin-top:3px;"><div class="fill" style="width:100%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;"><span>☕ Food</span><span style="font-family:'Geist Mono',monospace;color:#FF9500;">32</span></div>
+                <div class="progress-bar" style="margin-top:3px;"><div class="fill" style="width:78%;background:linear-gradient(90deg,#FF9500,#FF2D55);"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;"><span>🌍 Travel</span><span style="font-family:'Geist Mono',monospace;color:#34C759;">62</span></div>
+                <div class="progress-bar" style="margin-top:3px;"><div class="fill" style="width:48%;background:linear-gradient(90deg,#34C759,#5AC8FA);"></div></div>
+              </div>
+            </div>
+            <div style="font-size:9px;color:#8E8E93;text-align:center;font-family:'Geist Mono',monospace;margin-top:auto;">3,621 / 5,847 · ~45s</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Live sort</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Now your prompt -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-blue">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Done. 191 photos sorted.</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:10px;">Now <em style="font-family:'Instrument Serif';font-style:italic;color:#007AFF;">your</em> first prompt.</div>
+            <div class="sentence-input">
+              <div class="hint">Type or pick</div>
+              <div class="typed">A post about my…<span class="caret"></span></div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:4px;margin-top:10px;">
+              <div class="chip" style="justify-content:flex-start;padding:7px 10px;font-size:10px;">🚗 Porsche meetup last weekend</div>
+              <div class="chip" style="justify-content:flex-start;padding:7px 10px;font-size:10px;">☕ Coffee shops I love</div>
+              <div class="chip" style="justify-content:flex-start;padding:7px 10px;font-size:10px;">🌍 Italy roadtrip</div>
+            </div>
+            <div class="cta">Generate my first post →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Your turn</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT G — THE REVEAL (cinematic moment)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-d">
+  <div class="variant-header">
+    <span class="variant-letter">G</span>
+    <div class="variant-title">
+      <h2>The Reveal</h2>
+      <div class="codename">Cinematic · "tap to see it happen"</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">A single tap triggers the magic</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Sunrise gradient · warm + dramatic</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">User must tap to see — friction</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Anticipation + payoff</em> — the welcome screen promises, but holds. One tap unleashes the demo. The reveal is built sequentially (prompt → photos → caption) so the user watches each layer land.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Cinematic, present-tense. "Tap. Watch." Almost a director's instruction. Closer is short and personal.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Warm sunrise gradient (gold→coral→pink). The demo card has an annotated timeline showing the build (0.5s prompt · 1.2s photos · 2.0s caption).</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome — single tap CTA -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-sunrise">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:30px 14px 14px;color:#1C1C1E;">
+            <div class="h-eyebrow" style="color:rgba(28,28,30,.6);">PostKit</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:32px;line-height:1.0;color:#1C1C1E;margin-bottom:6px;">Watch a post<br>build itself.</div>
+            <div style="font-size:11px;color:#1C1C1E;opacity:.7;line-height:1.45;margin-bottom:auto;">In about 2 seconds. From one sentence.</div>
+
+            <!-- Big CTA card -->
+            <div class="big-cta" style="margin-top:20px;">
+              <div class="lab">Tap to play</div>
+              <div class="ti">Show me →</div>
+            </div>
+            <div style="font-size:9.5px;color:rgba(28,28,30,.55);text-align:center;margin-top:8px;font-family:'Geist Mono',monospace;letter-spacing:.04em;">no signup · no permission yet</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Anticipation</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Reveal — the demo plays -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-sunrise">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 12px 12px;color:#1C1C1E;">
+            <div class="h-eyebrow" style="color:rgba(28,28,30,.6);">Generating…</div>
+
+            <div class="demo" style="margin-top:6px;">
+              <div class="demo-prompt-row"><div class="demo-prompt">"Coffee mornings in Paris"</div></div>
+              <div class="demo-grid">
+                <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="demo-cap">
+                <div class="by">Caption · 2.0 s</div>
+                Latte before email. The only ritual that survived 2026.
+              </div>
+            </div>
+
+            <!-- Timeline annotation -->
+            <div class="timeline" style="color:rgba(28,28,30,.7);">
+              <div style="display:flex;align-items:center;gap:4px;"><div class="timeline-dot done" style="background:#34C759;"></div>0.5s</div>
+              <div style="display:flex;align-items:center;gap:4px;"><div class="timeline-dot done" style="background:#34C759;"></div>1.2s</div>
+              <div style="display:flex;align-items:center;gap:4px;"><div class="timeline-dot done" style="background:#34C759;"></div>2.0s</div>
+            </div>
+            <div class="cta dark" style="margin-top:auto;">Now with my photos →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Reveal plays</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Topic + Scan combo -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-amber">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Your turn</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:4px;">Pick 3 you'll post about.</div>
+            <div class="h-sub" style="margin-bottom:12px;font-size:10.5px;">We'll find them while you wait.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div class="chip orange" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>☕ Food &amp; Coffee</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:9.5px;">✓</span>
+              </div>
+              <div class="chip accent" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>🌍 Travel</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:9.5px;">✓</span>
+              </div>
+              <div class="chip purple" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>💼 Build</span>
+                <span style="font-family:'Geist Mono',monospace;font-size:9.5px;">✓</span>
+              </div>
+              <div class="chip" style="justify-content:flex-start;padding:8px 10px;font-size:11px;color:#8E8E93;border-style:dashed;">+ Custom</div>
+            </div>
+            <div style="background:rgba(255,149,0,.08);border-radius:10px;padding:8px 10px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;font-size:10px;">
+              <span>Scan running…</span>
+              <span style="font-family:'Geist Mono',monospace;color:#FF9500;font-weight:600;">68%</span>
+            </div>
+            <div class="cta orange">Done · take me in</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Pick + scan</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Build your first -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-amber">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:28px;">
+            <div class="h-eyebrow">Day 1 · build your first</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:10px;">What's <em style="font-family:'Instrument Serif';font-style:italic;color:#FF9500;">your</em> sentence?</div>
+            <div class="sentence-input">
+              <div class="hint">Type</div>
+              <div class="typed">Italy road trip<span class="caret"></span></div>
+              <div class="suggestion-photos">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=120&h=120&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div style="font-size:9px;color:#8E8E93;margin-top:6px;font-family:'Geist Mono',monospace;">From your gallery · 3 of 12 matches</div>
+            </div>
+            <div class="cta orange" style="margin-top:auto;">Generate post →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Build first post</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT H — POST FIRST (reverse the flow)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-e">
+  <div class="variant-header">
+    <span class="variant-letter">H</span>
+    <div class="variant-title">
+      <h2>Post First</h2>
+      <div class="codename">Reverse · ship one post before setup</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">First action = ship a real post</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Cool mint morning · clean +  hopeful</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Photo permission needed earlier</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Commitment via early win</em> — instead of "setup → demo → magic", flip to "magic with YOUR photos → setup → habit". The user posts before they've invested anything, so cancellation costs feel high.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Conversational, present moment. "What did you do today?" — the question a friend asks. Not promotional.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Cool mint gradient. The whole UX feels like a thought-organizer, not a content tool. Hero element is a friendly input box.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome — "what did you do today?" -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-mint-morning">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:30px 14px 14px;">
+            <div class="h-eyebrow" style="color:rgba(255,255,255,.7);">Welcome to PostKit</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:24px;line-height:1.05;margin-bottom:14px;">Let's ship<br>your first post.<br><span style="opacity:.8;">Right now.</span></div>
+
+            <div class="sentence-input" style="margin-bottom:10px;">
+              <div class="hint">What did you do today?</div>
+              <div class="typed">Coffee shop in Paris this morning<span class="caret"></span></div>
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,.8);line-height:1.45;margin-bottom:auto;">→ I'll find photos that match + write the caption.</div>
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;margin-top:14px;">Find my photos &amp; build it</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.6);">photo access required · on-device only</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Reverse flow</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Result — the post is built -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-mint-morning">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 12px 12px;">
+            <div class="h-eyebrow" style="color:rgba(255,255,255,.7);">Your first post</div>
+
+            <div class="demo" style="margin-top:8px;">
+              <div class="demo-prompt-row"><div class="demo-prompt" style="background:#34C759;">"Coffee shop in Paris this morning"</div></div>
+              <div class="demo-grid">
+                <img src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="demo-cap">
+                <div class="by">Caption · ready</div>
+                A round table, a flat white, and a city that still doesn't know it's noon yet.
+              </div>
+            </div>
+
+            <div class="cta green" style="margin-top:auto;">Publish ✓</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.6);">or Skip · Re-roll caption</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">First win</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Catch the rest -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-mint">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Loved that?</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:4px;">Let's catch the <em style="font-family:'Instrument Serif';font-style:italic;color:#5AC8FA;">rest</em>.</div>
+            <div class="h-sub" style="margin-bottom:12px;font-size:10.5px;">We spotted these in your gallery while you were posting.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div class="chip orange" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>☕ Food &amp; Coffee</span><span style="font-family:'Geist Mono',monospace;font-size:10px;">32</span>
+              </div>
+              <div class="chip accent" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>🌍 Travel</span><span style="font-family:'Geist Mono',monospace;font-size:10px;">89</span>
+              </div>
+              <div class="chip purple" style="justify-content:space-between;padding:8px 10px;font-size:11px;">
+                <span>💼 Build</span><span style="font-family:'Geist Mono',monospace;font-size:10px;">23</span>
+              </div>
+              <div class="chip" style="justify-content:space-between;padding:8px 10px;font-size:11px;color:#34C759;background:rgba(52,199,89,.06);border-color:rgba(52,199,89,.18);">
+                <span>🚗 Cars</span><span style="font-family:'Geist Mono',monospace;font-size:10px;">47</span>
+              </div>
+            </div>
+            <div class="cta" style="margin-top:auto;background:#0A0A0C;">Lock my pillars →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Catch the rest</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Make it a ritual -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-soft-mint">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">191 photos sorted</div>
+            <div class="h-title serif" style="font-size:22px;margin-bottom:6px;">Make it a habit?</div>
+            <div class="h-sub" style="margin-bottom:14px;font-size:10.5px;">One post / morning. ~30 sec each.</div>
+            <div style="background:rgba(0,0,0,.04);border-radius:12px;padding:10px;margin-bottom:6px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:10.5px;font-weight:600;color:#1C1C1E;">
+                <span>Daily reminder</span>
+                <span style="display:inline-block;width:30px;height:18px;background:#34C759;border-radius:100px;position:relative;"><span style="position:absolute;top:2px;right:2px;width:14px;height:14px;background:#FFF;border-radius:50%;"></span></span>
+              </div>
+              <div style="font-size:9px;color:#8E8E93;margin-top:4px;">Tomorrow at <strong style="color:#1C1C1E;">7:00 AM</strong></div>
+            </div>
+            <div style="background:rgba(0,0,0,.04);border-radius:12px;padding:10px;display:flex;justify-content:space-between;align-items:center;font-size:10.5px;color:#1C1C1E;">
+              <span style="font-weight:600;">First scheduled post</span>
+              <span style="font-family:'Geist Mono',monospace;color:#5AC8FA;font-size:9.5px;">Italy trip · Mon</span>
+            </div>
+            <div class="cta" style="margin-top:auto;background:#0A0A0C;">Yes, daily at 7:00</div>
+            <div class="cta-sub">Skip · I'll come back when I want</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Ritual lock-in</span></div>
+    </div>
+  </div>
+</section>
+
+
+<div class="footer-note">
+  <strong style="color:#fff;font-family:'Instrument Serif';font-style:italic;font-size:16px;">Three things to notice across these 3 —</strong><br><br>
+  1. The "sentence → post" demo appears on <strong>welcome of F</strong>, <strong>screen 2 of G</strong>, and <strong>screen 2 of H</strong> (with the user's real prompt). It's the recurring visual motif so the brand promise becomes obvious.<br>
+  2. <strong>All photos are Unsplash</strong> — they'll be swapped for real captures via the marketing-capture skill once we pick the variant. For now they sell the demo, not the wireframe.<br>
+  3. Each variant has a <strong>distinct gradient personality</strong> on the welcome — brand-saturated (F), warm sunrise (G), cool mint (H). Easy to A/B in App Store screenshots later.<br><br>
+  <em style="color:rgba(255,255,255,.55);">Round 1 toujours dispo dans <code>index.html</code>. Si tu veux un round 3 mixant des angles, ou approfondir un seul variant, dis-moi.</em>
+</div>
+
+</body>
+</html>

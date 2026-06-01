@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — App Store Connect</title>
+<style>
+  :root {
+    --bg: #f2f2f7; --surface: rgba(255,255,255,0.72); --glass: rgba(255,255,255,0.55);
+    --glass-strong: rgba(255,255,255,0.78); --glass-border: rgba(0,0,0,0.08);
+    --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    --text: #1c1c1e; --text-2: #3c3c43; --text-3: #8e8e93; --text-4: #aeaeb2;
+    --accent: #007aff; --accent-bg: rgba(0,122,255,0.08);
+    --green: #34c759; --green-bg: rgba(52,199,89,0.1);
+    --yellow: #ff9f0a; --yellow-bg: rgba(255,159,10,0.1);
+    --orange: #ff9500; --orange-bg: rgba(255,149,0,0.1);
+    --purple: #af52de; --purple-bg: rgba(175,82,222,0.08);
+    --pink: #ff2d55;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; -webkit-font-smoothing:antialiased; }
+  .container { max-width:1100px; margin:0 auto; padding:1.5rem; }
+
+  /* Back link */
+  .back { display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--text-3); text-decoration:none; padding:.4rem .75rem; background:var(--glass); border:1px solid var(--glass-border); border-radius:100px; margin-bottom:1rem; }
+  .back:hover { color:var(--accent); border-color:rgba(0,122,255,.2); }
+
+  .header { padding:2rem; background:var(--surface); backdrop-filter:blur(20px) saturate(180%); border:1px solid var(--glass-border); border-radius:20px; box-shadow:var(--glass-shadow); margin-bottom:1.5rem; }
+  .header h1 { font-size:2rem; font-weight:700; margin-bottom:.3rem; }
+  .header p { color:var(--text-3); font-size:.9rem; }
+  .header .badges { display:flex; gap:.4rem; margin-top:.75rem; flex-wrap:wrap; }
+  .pill { display:inline-flex; align-items:center; gap:.35rem; padding:.3rem .7rem; border-radius:100px; font-size:.72rem; font-weight:600; }
+  .pill-live { background:var(--green-bg); color:var(--green); }
+  .pill-live::before { content:''; display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--green); }
+  .pill-accent { background:var(--accent-bg); color:var(--accent); }
+  .pill-purple { background:var(--purple-bg); color:var(--purple); }
+
+  /* Section grid */
+  .grid-2 { display:grid; grid-template-columns:repeat(auto-fit,minmax(360px,1fr)); gap:1rem; margin-bottom:1.5rem; }
+
+  .section-title { font-size:.78rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.08em; font-weight:600; margin:2rem 0 .75rem; padding-left:.25rem; }
+  .section-title:first-child { margin-top:0; }
+
+  /* Meta blocks (ASO) */
+  .meta-block { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1.1rem 1.25rem; box-shadow:var(--glass-shadow); position:relative; }
+  .meta-block h3 { font-size:.7rem; color:var(--accent); text-transform:uppercase; letter-spacing:.08em; margin-bottom:.5rem; font-weight:600; }
+  .meta-block .val { background:var(--bg); padding:.7rem .85rem; border-radius:8px; font-size:.85rem; line-height:1.55; color:var(--text); }
+  .meta-block .val.mono { font-family:'SF Mono',ui-monospace,monospace; font-size:.78rem; word-break:break-word; }
+  .meta-block .charcount { font-size:.65rem; color:var(--text-4); text-align:right; margin-top:.3rem; }
+  .copy-btn { position:absolute; top:.85rem; right:.85rem; background:var(--glass); border:1px solid var(--glass-border); color:var(--text-3); padding:.25rem .6rem; border-radius:6px; font-size:.65rem; cursor:pointer; font-family:inherit; font-weight:500; }
+  .copy-btn:hover { border-color:rgba(0,122,255,.25); color:var(--accent); }
+
+  /* TestFlight CTA card */
+  .tf-card { background:linear-gradient(135deg, rgba(0,122,255,0.06), rgba(52,199,89,0.06)); border:1px solid rgba(0,122,255,0.18); border-radius:18px; padding:1.5rem; display:flex; align-items:center; gap:1.25rem; box-shadow:var(--glass-shadow); }
+  .tf-icon { width:56px; height:56px; border-radius:14px; background:#007aff; display:flex; align-items:center; justify-content:center; flex-shrink:0; box-shadow:0 6px 16px rgba(0,122,255,.3); }
+  .tf-icon svg { width:32px; height:32px; }
+  .tf-body { flex:1; min-width:0; }
+  .tf-body h3 { font-size:1rem; font-weight:700; margin-bottom:.2rem; }
+  .tf-body p { font-size:.78rem; color:var(--text-3); line-height:1.5; margin-bottom:.4rem; }
+  .tf-link { display:inline-flex; align-items:center; gap:.35rem; font-size:.72rem; color:var(--accent); font-family:'SF Mono',monospace; text-decoration:none; word-break:break-all; }
+  .tf-link:hover { text-decoration:underline; }
+
+  /* Privacy / compliance */
+  .compliance-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:.6rem; }
+  .compliance-item { padding:.75rem .9rem; background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:10px; }
+  .compliance-item .label { font-size:.62rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; font-weight:600; margin-bottom:.25rem; }
+  .compliance-item .value { font-size:.82rem; font-weight:500; color:var(--text); }
+  .compliance-item .value.ok::before { content:'✓ '; color:var(--green); font-weight:700; }
+
+  /* Icon section */
+  .icon-current { display:flex; gap:1rem; align-items:center; background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:14px; padding:1rem 1.25rem; box-shadow:var(--glass-shadow); margin-bottom:.75rem; }
+  .icon-current-img { width:96px; height:96px; border-radius:22px; background:linear-gradient(135deg,#007AFF,#AF52DE); display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:4px; padding:8px; box-shadow:0 8px 24px rgba(0,122,255,.25); flex-shrink:0; }
+  .icon-current-img span { background:rgba(255,255,255,.95); border-radius:6px; }
+  .icon-current-img span:nth-child(2) { background:rgba(255,255,255,.62); }
+  .icon-current-img span:nth-child(3) { background:rgba(255,255,255,.72); }
+  .icon-current .text h3 { font-size:.95rem; font-weight:700; margin-bottom:.2rem; }
+  .icon-current .text p { font-size:.78rem; color:var(--text-3); line-height:1.5; }
+
+  /* Icon prompts (history) */
+  details.prompts { background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:14px; padding:.85rem 1.25rem; box-shadow:var(--glass-shadow); }
+  details.prompts summary { font-size:.85rem; font-weight:600; cursor:pointer; padding:.25rem 0; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+  details.prompts summary::-webkit-details-marker { display:none; }
+  details.prompts summary::after { content:'▾'; color:var(--text-3); transition:transform .2s; }
+  details.prompts[open] summary::after { transform:rotate(180deg); }
+  details.prompts[open] summary { margin-bottom:.75rem; padding-bottom:.5rem; border-bottom:1px solid rgba(0,0,0,.06); }
+  .prompts-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:.5rem; counter-reset:p; }
+  .prompt-card { background:var(--bg); border-radius:10px; padding:.85rem 1rem; counter-increment:p; }
+  .prompt-card::before { content:'#' counter(p); font-size:.62rem; color:var(--accent); font-family:'SF Mono',monospace; }
+  .prompt-card h4 { font-size:.82rem; margin:.25rem 0; }
+  .prompt-card p { font-size:.74rem; color:var(--text-2); line-height:1.5; }
+
+  /* Marketing screenshots preview */
+  .ms-preview { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.6rem; }
+  .ms-thumb { aspect-ratio:1242/2688; background:var(--glass); border:1px solid var(--glass-border); border-radius:12px; overflow:hidden; position:relative; }
+  .ms-thumb iframe { width:1242px; height:2688px; border:0; transform:scale(.12); transform-origin:top left; pointer-events:none; display:block; }
+  .ms-thumb a { position:absolute; inset:0; }
+  .ms-thumb .label { position:absolute; bottom:6px; left:6px; right:6px; padding:4px 8px; background:rgba(0,0,0,.62); color:#fff; font-size:.6rem; font-family:'SF Mono',monospace; border-radius:6px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <a href="pillarbox-product-cockpit.html" class="back">← Cockpit</a>
+
+  <div class="header">
+    <h1>App Store Connect</h1>
+    <p>Live ASO metadata, TestFlight beta, app icon and marketing assets — everything Apple-facing in one place.</p>
+    <div class="badges">
+      <span class="pill pill-live">TestFlight live</span>
+      <span class="pill pill-accent">App Store v1.0 — in review prep</span>
+      <span class="pill pill-purple">EN + FR</span>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TESTFLIGHT ═══════════════════════════ -->
+  <div class="section-title">Public TestFlight beta</div>
+  <div class="tf-card">
+    <div class="tf-icon">
+      <svg viewBox="0 0 24 24" fill="none">
+        <path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <div class="tf-body">
+      <h3>PostKit beta — Apple approved</h3>
+      <p>Public TestFlight link, no invite needed. iPhone + iPad. Approved by Apple beta review on May 21, 2026.</p>
+      <a class="tf-link" href="https://testflight.apple.com/join/K4MqVuWe" target="_blank" rel="noopener">https://testflight.apple.com/join/K4MqVuWe ↗</a>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ ASO METADATA ═══════════════════════════ -->
+  <div class="section-title">ASO metadata — English (primary)</div>
+  <div class="grid-2">
+    <div class="meta-block">
+      <h3>App Name (30 chars max)</h3>
+      <div class="val mono">PostKit: AI Photos to Posts</div>
+      <div class="charcount">27 / 30</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Subtitle (30 chars max)</h3>
+      <div class="val mono">Generate Posts from Gallery</div>
+      <div class="charcount">27 / 30</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Keywords (100 chars max)</h3>
+      <div class="val mono">organize,brand,social,creator,planner,schedule,sort,classify,template,pillar,feed,instagram,linkedin</div>
+      <div class="charcount">100 / 100</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+    <div class="meta-block">
+      <h3>Promotional Text (170 chars)</h3>
+      <div class="val">Turn your camera roll into a content engine. PostKit classifies your photos into pillars on-device, then assembles posts from one prompt — daily output, zero effort.</div>
+      <div class="charcount">163 / 170</div>
+      <button class="copy-btn" onclick="copyText(this)">Copy</button>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="meta-block">
+      <h3>Category</h3>
+      <div class="val">Primary — <strong>Photo &amp; Video</strong><br>Secondary — <strong>Productivity</strong></div>
+    </div>
+    <div class="meta-block">
+      <h3>Age rating</h3>
+      <div class="val"><strong>4+</strong> — no objectionable content, on-device AI</div>
+    </div>
+    <div class="meta-block">
+      <h3>Pricing</h3>
+      <div class="val">Freemium · Pro subscription <strong>9.99 €/mo</strong> (StoreKit 2)</div>
+    </div>
+    <div class="meta-block">
+      <h3>Platforms</h3>
+      <div class="val">iPhone 18+ · iPad 18+ <em>(macOS &amp; visionOS unticked)</em></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ FULL DESCRIPTION ═══════════════════════════ -->
+  <div class="section-title">Full description</div>
+  <div class="meta-block">
+    <h3>App Store description (4 000 chars max)</h3>
+    <div class="val" style="white-space:pre-wrap;line-height:1.65;">PostKit turns your camera roll into daily content.
+
+You have 15,000 photos. PostKit classifies them by content pillar on-device — Travel, Food, Build in public, whatever you want to be known for. Then Smart Post drafts a finished post in one prompt: "Make a post about my Italy trip" → 6 photos, 6 cities, a ready-to-share carousel.
+
+WHY POSTKIT
+• Your camera roll is the best content you'll never post — until now
+• On-device classification: photos never leave your phone unless you decide
+• 30 seconds a day, every morning. That's the entire deal.
+
+CORE FEATURES
+• Smart classification — Core ML on-device + Gemini Flash fallback when uncertain
+• Content Pillars — declare 2-7 things you want to be known for
+• Smart Post — type a prompt, get a finished post draft with photos + caption
+• Templates — reusable formats (Italian Summer, Weekly Cars, Build Logs)
+• Scheduled posting — pick weekdays, the right post drops into your queue
+• Privacy-first — Apple-style on-device by default, cloud opt-in
+
+DESIGNED FOR DAILY CREATORS
+Whether you're an indie founder posting #buildinpublic, a coffee shop owner with too many product shots, or a traveler whose Instagram lags 6 months behind reality — PostKit cuts the gap between "I should post" and "I posted" from 30 minutes to 30 seconds.
+
+PRO SUBSCRIPTION (optional)
+• Unlimited Smart Post generations
+• Cloud-assisted classification for ambiguous photos
+• Multi-platform tone (Instagram / LinkedIn / X)
+• Priority support
+9.99 €/mo · cancel anytime · 7-day free trial
+
+PRIVACY
+Photos stay on-device. Pillars and templates sync via iCloud if you opt in. Optional Gemini Flash fallback only sends low-resolution thumbnails for ambiguous photos, and only with your explicit consent.
+
+Built native in SwiftUI with on-device Core ML. Made in France.</div>
+    <div class="charcount">~1 740 / 4 000</div>
+    <button class="copy-btn" onclick="copyText(this)">Copy</button>
+  </div>
+
+  <!-- ═══════════════════════════ PRIVACY / COMPLIANCE ═══════════════════════════ -->
+  <div class="section-title">Privacy &amp; review compliance</div>
+  <div class="compliance-grid">
+    <div class="compliance-item"><div class="label">Data collected</div><div class="value ok">None</div></div>
+    <div class="compliance-item"><div class="label">Photo access</div><div class="value">Read-only · on-device</div></div>
+    <div class="compliance-item"><div class="label">Encryption (ITSAppUsesNonExemptEncryption)</div><div class="value ok">No (false)</div></div>
+    <div class="compliance-item"><div class="label">Third-party SDKs</div><div class="value">Google Generative AI Swift (opt-in)</div></div>
+    <div class="compliance-item"><div class="label">Account required</div><div class="value">No</div></div>
+    <div class="compliance-item"><div class="label">In-app purchases</div><div class="value">1 auto-renewing subscription (Pro)</div></div>
+  </div>
+
+  <!-- ═══════════════════════════ MARKETING SCREENSHOTS ═══════════════════════════ -->
+  <div class="section-title">Marketing screenshots — Bold Stack variant</div>
+  <div class="meta-block">
+    <p style="font-size:.82rem;color:var(--text-3);margin-bottom:.85rem;">5 slides at 1242×2688 (iPhone 6.7"). Real app captures dropped inside iPhone bezel — gradient background, Space Grotesk Black headlines with italic serif emphasis, white pill cartouche.</p>
+    <div class="ms-preview">
+      <div class="ms-thumb">
+        <iframe src="../marketing/app-store-screenshots/variants/b-01-hook.html"></iframe>
+        <span class="label">01 · Hook</span>
+        <a href="../marketing/app-store-screenshots/variants/b-01-hook.html" target="_blank"></a>
+      </div>
+      <div class="ms-thumb">
+        <iframe src="../marketing/app-store-screenshots/variants/b-03-smartpost.html"></iframe>
+        <span class="label">03 · Smart Post</span>
+        <a href="../marketing/app-store-screenshots/variants/b-03-smartpost.html" target="_blank"></a>
+      </div>
+      <div class="ms-thumb">
+        <iframe src="../marketing/app-store-screenshots/variants/b-05-habit.html"></iframe>
+        <span class="label">05 · Habit</span>
+        <a href="../marketing/app-store-screenshots/variants/b-05-habit.html" target="_blank"></a>
+      </div>
+    </div>
+    <p style="font-size:.7rem;color:var(--text-4);margin-top:.85rem;font-family:'SF Mono',monospace;">Slides 02 (Before/After) and 04 (Pillars) pending. Open <a href="../marketing/app-store-screenshots/variants/index.html" style="color:var(--accent);">the full variant gallery →</a></p>
+  </div>
+
+  <!-- ═══════════════════════════ APP ICON ═══════════════════════════ -->
+  <div class="section-title">App icon — current</div>
+  <div class="icon-current">
+    <div class="icon-current-img">
+      <span></span><span></span><span></span><span></span>
+    </div>
+    <div class="text">
+      <h3>Liquid Glass · 4-tile gradient</h3>
+      <p>Generated with Gemini 3.1 Flash Image (v10), matches the SplashView animation in the iOS app and the brand gradient on the landing. Apple Asset Catalog at <code>PostKit/Assets.xcassets/AppIcon.appiconset/</code>.</p>
+    </div>
+  </div>
+
+  <details class="prompts">
+    <summary>Icon iteration history — 10 prompts explored</summary>
+    <div class="prompts-grid">
+      <div class="prompt-card"><h4>Liquid Glass Pillars (winner)</h4><p>Apple Liquid Glass style: 4 translucent tiles with glass morphism, light refracting through. Brand gradient bg (blue → purple). iOS 26 feel. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Minimal Pillar Columns</h4><p>Three vertical columns (pillars) in gradient indigo to purple, arranged like a building facade. Middle pillar taller. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Open Box with Pillars</h4><p>Sleek open box from above, colorful vertical pillars rising from inside. Metallic finish. Dark bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Grid of Categorized Photos</h4><p>2×2 grid of abstract photo thumbnails, each with different colored tag overlay. Rounded corners. Dark charcoal bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Prism Light Split</h4><p>White light beam entering geometric prism, splitting into 5 colorful beams. Black bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Compass Rose</h4><p>Modern compass rose, 7 points in different colors. Center has camera lens motif. Indigo-purple gradient bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Stacked Cards with Tags</h4><p>Three overlapping photo cards fanned out, colored dot badges. Top card shows abstract landscape. Frosted glass. Dark bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Letter P as Pillar</h4><p>Bold geometric "P" designed as classical pillar. Vertical stroke = fluted column, curve = modern arch. Indigo gradient on dark bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Neural Network Nodes</h4><p>Abstract neural network: 7 glowing nodes connected by luminous lines. Constellation pattern. Deep dark bg. No text. 1024×1024.</p></div>
+      <div class="prompt-card"><h4>Pillar Box Hybrid</h4><p>British "pillar box" (mailbox) concept: modern mailbox shape, slot replaced by camera aperture. Indigo instead of red. Metallic. No text. 1024×1024.</p></div>
+    </div>
+  </details>
+
+</div>
+
+<script>
+  function copyText(btn) {
+    const v = btn.parentElement.querySelector('.val').innerText;
+    navigator.clipboard.writeText(v).then(() => {
+      btn.textContent = 'Copied ✓';
+      setTimeout(() => btn.textContent = 'Copy', 1500);
+    });
+  }
+</script>
+</body>
+</html>

@@ -2,9 +2,9 @@ import SwiftUI
 
 struct EmptyStateView: View {
     let icon: String
-    let title: String
-    let message: String
-    var actionTitle: String? = nil
+    let title: LocalizedStringKey
+    let message: LocalizedStringKey
+    var actionTitle: LocalizedStringKey? = nil
     var onAction: (() -> Void)? = nil
 
     var body: some View {

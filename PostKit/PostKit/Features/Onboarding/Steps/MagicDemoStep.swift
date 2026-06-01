@@ -7,48 +7,28 @@ struct MagicDemoStep: View {
 
     var body: some View {
         ZStack {
-            ZStack {
-                LinearGradient(
-                    stops: [
-                        .init(color: Color(red: 0/255, green: 122/255, blue: 255/255), location: 0),
-                        .init(color: Color(red: 88/255, green: 86/255, blue: 214/255), location: 0.5),
-                        .init(color: Color(red: 175/255, green: 82/255, blue: 222/255), location: 1),
-                    ],
-                    startPoint: UnitPoint(x: 0, y: 0),
-                    endPoint: UnitPoint(x: 0.7, y: 1)
-                )
-                RadialGradient(
-                    colors: [Color(red: 1, green: 159/255, blue: 0).opacity(0.2), .clear],
-                    center: UnitPoint(x: 0.85, y: 0),
-                    startRadius: 0,
-                    endRadius: 220
-                )
-            }
-            .ignoresSafeArea()
+            Palette.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.md) {
                         TypewriterText(
                             text: localizedString(for: AppStrings.Onboarding.step02Eyebrow),
-                            font: .obMono(9), color: .white.opacity(0.7), show: phase >= 1,
-                            onFinished: { phase = 2 }
+                            font: .obMono(9), color: Palette.text4, show: phase >= 1
                         )
                         .padding(.top, Spacing.md)
 
                         TypewriterHeadline(
                             segments: [
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart1), font: .obHeadline(28), color: .white),
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlineEmphasis), font: .obEmphasis(30), color: Color(red: 1, green: 174/255, blue: 66/255)),
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart2), font: .obHeadline(28), color: .white),
+                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart1), font: .obHeadline(28), color: Palette.text),
+                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlineEmphasis), font: .obEmphasis(30), color: Color(red: 1, green: 149/255, blue: 0)),
+                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart2), font: .obHeadline(28), color: Palette.text),
                             ],
-                            show: phase >= 2,
+                            show: phase >= 1,
                             onFinished: {
                                 Task { @MainActor in
                                     try? await Task.sleep(for: .milliseconds(120))
                                     phase = 3
-                                    try? await Task.sleep(for: .milliseconds(450))
-                                    phase = 4
                                 }
                             }
                         )
@@ -61,16 +41,16 @@ struct MagicDemoStep: View {
                                 } label: {
                                     Text(chip.label)
                                         .font(.obBody(12))
-                                        .foregroundStyle(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255) : .white)
+                                        .foregroundStyle(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255) : Palette.text2)
                                         .padding(.horizontal, Spacing.sm)
                                         .padding(.vertical, 6)
                                         .background(
-                                            store.activeDemoChip == chip ? .white : Color.white.opacity(0.18),
+                                            store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.1) : Color.black.opacity(0.04),
                                             in: Capsule()
                                         )
                                         .overlay(
                                             Capsule()
-                                                .strokeBorder(Color.white.opacity(store.activeDemoChip == chip ? 0 : 0.32), lineWidth: 1)
+                                                .strokeBorder(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.35) : Color.black.opacity(0.1), lineWidth: 1)
                                         )
                                 }
                                 .buttonStyle(.plain)
@@ -79,24 +59,24 @@ struct MagicDemoStep: View {
                         }
                         .obEntrance(show: phase >= 3)
 
-                        MagicDemoCard(data: DemoData.make(store.activeDemoChip))
+                        MagicDemoCard(data: DemoData.make(store.activeDemoChip), onShareVisible: { phase = 4 })
                             .shadow(color: .black.opacity(0.22), radius: 14, y: 6)
                             .obEntrance(show: phase >= 3)
                     }
                     .padding(.horizontal, Layout.Padding.screen.leading)
-                    .padding(.bottom, Spacing.xxl)
+                    .padding(.bottom, 28)
                 }
+                .scrollClipDisabled()
 
-                Button {
-                    Haptics.heavyTap()
-                    store.send(.magicDemoContinueTapped)
-                } label: {
-                    Text(AppStrings.Onboarding.step02CTA)
+                ctaBar {
+                    Button {
+                        Haptics.heavyTap()
+                        store.send(.magicDemoContinueTapped)
+                    } label: {
+                        Text(AppStrings.Onboarding.step02CTA)
+                    }
+                    .buttonStyle(PrimaryButton())
                 }
-                .buttonStyle(PrimaryButton())
-                .padding(.horizontal, Layout.Padding.screen.leading)
-                .padding(.top, Spacing.md)
-                .padding(.bottom, Spacing.xxl)
                 .obCTAEntrance(show: phase >= 4)
             }
             .task {
@@ -111,6 +91,7 @@ struct MagicDemoStep: View {
 
 struct MagicDemoCard: View {
     let data: DemoData
+    var onShareVisible: (() -> Void)? = nil
 
     @State private var typedPrompt: String = ""
     @State private var showCursor: Bool = false
@@ -267,6 +248,7 @@ struct MagicDemoCard: View {
                 showCaption = true
                 showShare = true
             }
+            onShareVisible?()
             return
         }
 
@@ -300,5 +282,6 @@ struct MagicDemoCard: View {
         try? await Task.sleep(for: .milliseconds(400))
 
         withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) { showShare = true }
+        onShareVisible?()
     }
 }

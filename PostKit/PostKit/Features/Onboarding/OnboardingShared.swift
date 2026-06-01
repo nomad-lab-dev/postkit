@@ -119,25 +119,52 @@ struct DemoData: Equatable, Identifiable {
         case .italy:
             return DemoData(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
-                prompt: "My weekend in Italy",
+                prompt: localizedString(for: AppStrings.Onboarding.step02ItalyPrompt),
                 photoNames: ["gallery-nomad-1", "gallery-nomad-2", "gallery-nomad-3", "gallery-nomad-4"],
-                caption: "Three days, two cities, one road. Naples → Capri."
+                caption: localizedString(for: AppStrings.Onboarding.step02ItalyCaption)
             )
         case .coffee:
             return DemoData(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
-                prompt: "Coffee shops I keep coming back to",
+                prompt: localizedString(for: AppStrings.Onboarding.step02CoffeePrompt),
                 photoNames: ["gallery-food-1", "gallery-food-2", "gallery-food-3", "gallery-life-1"],
-                caption: "Three rooms, one ritual. The flat white that started the day."
+                caption: localizedString(for: AppStrings.Onboarding.step02CoffeeCaption)
             )
         case .build:
             return DemoData(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
-                prompt: "Build log · what shipped this week",
+                prompt: localizedString(for: AppStrings.Onboarding.step02BuildPrompt),
                 photoNames: ["gallery-dev-1", "gallery-dev-2", "gallery-dev-3", "gallery-dev-1"],
-                caption: "Three PRs, one feature, zero regressions. Subscription tier is live."
+                caption: localizedString(for: AppStrings.Onboarding.step02BuildCaption)
             )
         }
+    }
+}
+
+// MARK: - Shared onboarding gradient background
+
+extension View {
+    func obBackground() -> some View {
+        background(
+            ZStack {
+                LinearGradient(
+                    stops: [
+                        .init(color: Color(red: 0/255, green: 122/255, blue: 255/255), location: 0),
+                        .init(color: Color(red: 88/255, green: 86/255, blue: 214/255), location: 0.5),
+                        .init(color: Color(red: 175/255, green: 82/255, blue: 222/255), location: 1),
+                    ],
+                    startPoint: UnitPoint(x: 0, y: 0),
+                    endPoint: UnitPoint(x: 0.7, y: 1)
+                )
+                RadialGradient(
+                    colors: [Color(red: 1, green: 159/255, blue: 0).opacity(0.2), .clear],
+                    center: UnitPoint(x: 0.85, y: 0),
+                    startRadius: 0,
+                    endRadius: 220
+                )
+            }
+            .ignoresSafeArea()
+        )
     }
 }
 
@@ -149,7 +176,7 @@ func ctaBar<Content: View>(dark: Bool = false, @ViewBuilder content: () -> Conte
             .padding(.horizontal, Layout.Padding.screen.leading)
             .padding(.bottom, Spacing.xxl)
             .padding(.top, Spacing.md)
-            .background(dark ? Color.black.opacity(0.25) : Palette.bg)
+            .background(.clear)
     }
 }
 

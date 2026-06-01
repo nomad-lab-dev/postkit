@@ -72,7 +72,7 @@ struct PaywallView: View {
         .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
     }
 
-    private func benefitRow(_ text: String) -> some View {
+    private func benefitRow(_ text: LocalizedStringKey) -> some View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: "checkmark.circle.fill")
                 .foregroundStyle(Palette.green)
@@ -192,4 +192,29 @@ struct PaywallView: View {
             .multilineTextAlignment(.center)
             .padding(.bottom, Spacing.lg)
     }
+}
+
+private let mockProducts = [
+    ProProduct(id: "lucchettan.postkit.pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "Weekly Pro", weeklyEquivalent: nil, isYearly: false),
+    ProProduct(id: "lucchettan.postkit.pro_yearly", displayName: "Yearly", displayPrice: "$39.99", description: "Yearly Pro", weeklyEquivalent: "0.77", isYearly: true),
+]
+
+#Preview("Yearly selected") {
+    PaywallView(store: Store(initialState: PaywallFeature.State(
+        products: mockProducts,
+        selectedProductID: "lucchettan.postkit.pro_yearly",
+        isLoading: false
+    )) {
+        Reduce { _, _ in .none }
+    })
+}
+
+#Preview("Weekly selected") {
+    PaywallView(store: Store(initialState: PaywallFeature.State(
+        products: mockProducts,
+        selectedProductID: "lucchettan.postkit.pro_weekly",
+        isLoading: false
+    )) {
+        Reduce { _, _ in .none }
+    })
 }

@@ -19,14 +19,13 @@ struct LiveSortStep: View {
                 Group {
                     if scanDone {
                         TypewriterText(
-                            text: total > 0 ? "DONE · \(total) PHOTOS SORTED" : localizedString(for: AppStrings.Onboarding.step05EyebrowEmpty),
+                            text: total > 0 ? localizedString(for: AppStrings.Onboarding.step05Eyebrow(total)) : localizedString(for: AppStrings.Onboarding.step05EyebrowEmpty),
                             font: .obMono(9), color: Palette.green, show: scanDone
                         )
                     } else {
                         TypewriterText(
                             text: localizedString(for: AppStrings.Onboarding.step04Eyebrow),
-                            font: .obMono(9), color: Palette.text4, show: phase >= 1,
-                            onFinished: { phase = 2 }
+                            font: .obMono(9), color: Palette.text4, show: phase >= 1
                         )
                     }
                 }
@@ -49,7 +48,7 @@ struct LiveSortStep: View {
                             HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step04HeadlineEmphasis), font: .obEmphasis(30), color: Palette.accent),
                             HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step04HeadlinePart2), font: .obHeadline(28), color: Palette.text),
                         ],
-                        show: phase >= 2,
+                        show: phase >= 1,
                         onFinished: {
                             Task { @MainActor in
                                 try? await Task.sleep(for: .milliseconds(120))

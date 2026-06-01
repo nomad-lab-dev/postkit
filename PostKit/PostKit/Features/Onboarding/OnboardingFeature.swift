@@ -24,9 +24,9 @@ struct OnboardingFeature {
 
         var label: String {
             switch self {
-            case .italy:  "🌍 Italy"
-            case .coffee: "☕ Coffee"
-            case .build:  "💼 Build"
+            case .italy:  NSLocalizedString("🌍 Italy", comment: "")
+            case .coffee: NSLocalizedString("☕ Coffee", comment: "")
+            case .build:  NSLocalizedString("💼 Build", comment: "")
             }
         }
     }
@@ -261,12 +261,13 @@ struct OnboardingFeature {
 
             case .scanFinished:
                 state.scanProgress = 1.0
+                let prefix = String(localized: "A post about")
                 let sorted = state.topics.sorted { $0.matchedPhotos > $1.matchedPhotos }
                 if let top = sorted.first {
-                    state.firstPromptText = "A post about \(top.name.lowercased())"
+                    state.firstPromptText = "\(prefix) \(top.name.lowercased())"
                     state.selectedPillarPillID = top.id
                 } else if let first = state.topics.first {
-                    state.firstPromptText = "A post about \(first.name.lowercased())"
+                    state.firstPromptText = "\(prefix) \(first.name.lowercased())"
                     state.selectedPillarPillID = first.id
                 }
                 return .none
@@ -299,7 +300,7 @@ struct OnboardingFeature {
             case let .yourTurnPillarPillTapped(id):
                 guard let topic = state.topics[id: id] else { return .none }
                 state.selectedPillarPillID = id
-                state.firstPromptText = "A post about \(topic.name.lowercased())"
+                state.firstPromptText = "\(String(localized: "A post about")) \(topic.name.lowercased())"
                 return .none
 
             case .generateFirstPostTapped:
@@ -356,10 +357,10 @@ struct OnboardingFeature {
 
     private func makeDefaultTopics() -> IdentifiedArrayOf<OnboardingTopic> {
         let defaults: [(String, String)] = [
-            ("Cars", "🚗"),
-            ("Food & Coffee", "☕"),
-            ("Build in public", "💼"),
-            ("Travel", "🌍"),
+            (String(localized: "Cars"), "🚗"),
+            (String(localized: "Food & Coffee"), "☕"),
+            (String(localized: "Build in public"), "💼"),
+            (String(localized: "Travel"), "🌍"),
         ]
         return IdentifiedArray(uniqueElements: defaults.map { name, emoji in
             OnboardingTopic(id: uuid(), name: name, emoji: emoji, about: "")

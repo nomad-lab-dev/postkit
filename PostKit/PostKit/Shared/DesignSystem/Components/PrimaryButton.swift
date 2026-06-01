@@ -1,14 +1,20 @@
 import SwiftUI
 
 struct PrimaryButton: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(Typography.headline)
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .padding(Layout.Padding.button)
-            .background(Palette.accent, in: RoundedRectangle(cornerRadius: Radius.button))
+            .background(
+                isEnabled ? Palette.accent : Color.black.opacity(0.18),
+                in: RoundedRectangle(cornerRadius: Radius.button)
+            )
             .opacity(configuration.isPressed ? 0.85 : 1)
+            .animation(.easeInOut(duration: 0.25), value: isEnabled)
     }
 }
 

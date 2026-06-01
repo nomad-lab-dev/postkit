@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Slide 2 — Before / After</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="slide bg-before-after">
+
+  <!-- Ambient glow on the "after" side -->
+  <div class="glow" style="width:780px;height:780px;background:rgba(255,159,10,.55);top:-180px;right:-200px;"></div>
+  <div class="glow" style="width:520px;height:520px;background:rgba(60,60,67,.4);bottom:-160px;left:-180px;"></div>
+
+  <!-- ARC HEADLINE -->
+  <div class="arc-headline">
+    <svg viewBox="0 0 1242 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <path id="arc-2-top" d="M 60 540 A 620 620 0 0 1 1182 540" fill="none"/>
+      </defs>
+      <text class="arc-text arc-text--solid" font-size="90">
+        <textPath href="#arc-2-top" startOffset="50%" text-anchor="middle">
+          FROM CAMERA ROLL TO FEED READY
+        </textPath>
+      </text>
+    </svg>
+  </div>
+
+  <!-- DAY 1 LABEL -->
+  <div class="label-pill label-pill--red" style="top:780px;left:120px;">
+    Day 1
+  </div>
+
+  <!-- DAY 7 LABEL -->
+  <div class="label-pill" style="top:780px;right:120px;">
+    Day 7
+  </div>
+
+  <!-- BEFORE phone (left, tilted) -->
+  <div class="phone-mockup phone-mockup--tilt-l8" style="top:880px;left:30px;width:580px;height:1200px;">
+    <div class="phone-mockup__screen" style="border-radius:62px;">
+      <div class="phone-mockup__notch" style="width:180px;"></div>
+      <div class="phone-mockup__statusbar">
+        <span>9:41</span>
+        <span>● ●●●</span>
+      </div>
+      <div class="phone-mockup__prompt" style="background:#F2F2F7;">
+        <div class="phone-mockup__prompt-label">BEFORE</div>
+        <div class="phone-mockup__prompt-title">Sparse Instagram-style feed</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Profile header with grey "no avatar" placeholder + <b>2 posts · 47 followers</b></li>
+            <li>3 visible posts in 3-col grid, dated 6+ months apart</li>
+            <li>6 empty placeholder tiles (light grey, "+ post" icon)</li>
+            <li>Muted / desaturated overall tone — feels stale</li>
+            <li>Bio line: "thinking about posting more"</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Curved arrow between phones -->
+  <div class="arrow-curved" style="top:1380px;left:50%;transform:translateX(-50%) rotate(8deg);font-size:160px;">→</div>
+
+  <!-- AFTER phone (right, tilted) -->
+  <div class="phone-mockup phone-mockup--tilt-r8" style="top:880px;right:30px;width:580px;height:1200px;">
+    <div class="phone-mockup__screen" style="border-radius:62px;">
+      <div class="phone-mockup__notch" style="width:180px;"></div>
+      <div class="phone-mockup__statusbar">
+        <span>9:41</span>
+        <span>● ●●●</span>
+      </div>
+      <div class="phone-mockup__prompt" style="background:linear-gradient(180deg,#FFF8F0 0%,#FFFFFF 100%);">
+        <div class="phone-mockup__prompt-label">AFTER</div>
+        <div class="phone-mockup__prompt-title">Full vibrant feed</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Same profile, now: <b>47 posts · 8.2k followers</b></li>
+            <li>Full 3×3 grid of cohesive posts: 1 Fiat 500, 2 Italy landscapes, 2 food close-ups, 1 portrait sunset, 2 dev/desk shots, 1 espresso cup</li>
+            <li>Consistent warm-toned aesthetic</li>
+            <li>Bio: "creator · 4 content pillars · daily"</li>
+            <li>Posts dated within last 7 days</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CARTOUCHE -->
+  <div class="cartouche" style="bottom:120px;">
+    <span>In 30</span>
+    <span>seconds</span>
+  </div>
+
+</div>
+</body>
+</html>
