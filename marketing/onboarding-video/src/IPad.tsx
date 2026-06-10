@@ -134,7 +134,7 @@ export const IPad: React.FC<IPadProps> = ({
  */
 export const useIPadScale = (hasBottomHeadline = false) => {
   const { height, width } = useVideoConfig();
-  const frac = hasBottomHeadline ? 0.72 : 0.84;
+  const frac = hasBottomHeadline ? 0.72 : 0.76;
   const iPadH = height * frac;
   // IPAD_BASE_W/IPAD_BASE_H = 820/1180. Content elements were designed for
   // ~410px display width (half of 820). Multiply by iPadH/IPAD_BASE_H to get

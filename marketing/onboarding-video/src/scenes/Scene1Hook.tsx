@@ -1,4 +1,4 @@
-import { Img, interpolate, useCurrentFrame } from "remotion";
+import { Img, interpolate, useCurrentFrame, useVideoConfig } from "remotion";
 import { COLORS, FONTS, type SceneCopy } from "../tokens";
 import { Stage, usePhoneScale } from "../Phone";
 
@@ -41,6 +41,9 @@ const BENTO_CELLS = [
 export const Scene1Hook: React.FC<Props> = ({ copy }) => {
   const frame = useCurrentFrame();
   const s = usePhoneScale(true);  // split-headline layout
+  const { width, height } = useVideoConfig();
+  // On iPad canvas (wide aspect), spread chaos photos to fill the taller content area.
+  const pm = width / height > 0.6 ? 1.4 : 1;
 
   const chaosOpacity = interpolate(frame, [60, 100], [1, 0], { extrapolateRight: "clamp" });
   const chaosScale = interpolate(frame, [60, 100], [1, 1.05], { extrapolateRight: "clamp" });
@@ -155,19 +158,20 @@ export const Scene1Hook: React.FC<Props> = ({ copy }) => {
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
             {CHAOS.map((p, i) => {
               const wobble = Math.sin((frame + i * 9) * 0.05) * 1.2;
+              const sp = s * pm;
               return (
                 <div
                   key={i}
                   style={{
                     position: "absolute",
-                    top: `${p.top * s}px`,
-                    left: `${p.left * s}px`,
-                    width: `${46 * s}px`,
-                    height: `${46 * s}px`,
-                    borderRadius: 6 * s,
+                    top: `${p.top * sp}px`,
+                    left: `${p.left * sp}px`,
+                    width: `${46 * sp}px`,
+                    height: `${46 * sp}px`,
+                    borderRadius: 6 * sp,
                     overflow: "hidden",
                     transform: `rotate(${p.rotate + wobble}deg)`,
-                    boxShadow: `0 ${4 * s}px ${10 * s}px rgba(0,0,0,0.25)`,
+                    boxShadow: `0 ${4 * sp}px ${10 * sp}px rgba(0,0,0,0.25)`,
                     zIndex: i,
                   }}
                 >

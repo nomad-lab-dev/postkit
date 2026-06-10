@@ -6,6 +6,10 @@ import { OnboardingShowcase } from "./OnboardingShowcase";
 const APPSTORE_W = 1242;
 const APPSTORE_H = 2688;
 
+/** iPad 12.9" / 13" — App Store screenshot spec */
+const APPSTORE_IPAD_W = 2064;
+const APPSTORE_IPAD_H = 2752;
+
 export const Root: React.FC = () => {
   return (
     <>
@@ -68,6 +72,34 @@ export const Root: React.FC = () => {
         fps={FPS}
         width={APPSTORE_W}
         height={APPSTORE_H}
+        defaultProps={{ headlines: HEADLINES_ES }}
+      />
+      {/* ─── APP STORE iPad 12.9" / 13" — per locale ─── */}
+      <Composition
+        id="AppStore129EN"
+        component={OnboardingShowcase}
+        durationInFrames={Math.round(TOTAL_SEC * FPS)}
+        fps={FPS}
+        width={APPSTORE_IPAD_W}
+        height={APPSTORE_IPAD_H}
+        defaultProps={{ headlines: HEADLINES_EN }}
+      />
+      <Composition
+        id="AppStore129FR"
+        component={OnboardingShowcase}
+        durationInFrames={Math.round(TOTAL_SEC * FPS)}
+        fps={FPS}
+        width={APPSTORE_IPAD_W}
+        height={APPSTORE_IPAD_H}
+        defaultProps={{ headlines: HEADLINES_FR }}
+      />
+      <Composition
+        id="AppStore129ES"
+        component={OnboardingShowcase}
+        durationInFrames={Math.round(TOTAL_SEC * FPS)}
+        fps={FPS}
+        width={APPSTORE_IPAD_W}
+        height={APPSTORE_IPAD_H}
         defaultProps={{ headlines: HEADLINES_ES }}
       />
     </>

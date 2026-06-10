@@ -69,9 +69,13 @@ const COPY = {
       quote: "Je sais que je dois poster pour mon business. J'ai des milliers de photos cool — voyages, code, events. Mais organiser tout ça me prend tellement de temps que je finis par ne rien poster.",
     },
     download: {
-      eyebrow: "Shipping mai 2026",
-      title: "Natif. Privé. Fait pour durer.",
-      sub: "SwiftUI sur iPhone, iPad et Mac. Photos jamais uploadées sans ton consentement. Classification on-device par défaut.",
+      eyebrow: "Beta accessible · TestFlight",
+      title: "Pas en attente. Testable maintenant.",
+      sub: "PostKit est validé par Apple en beta. Rejoins TestFlight pour tester l'app, partager ton feedback et obtenir un accès gratuit au lancement.",
+      cta: "Rejoindre la beta TestFlight",
+      ctaSub: "Apple approved · iPhone + iPad",
+      ctaUrl: "https://testflight.apple.com/join/K4MqVuWe",
+      badge: "Apple-approved beta",
     },
     waitlist: {
       eyebrow: "Early access",
@@ -163,9 +167,13 @@ const COPY = {
       quote: "I know I should post for my business. I've got thousands of cool photos — trips, code, events. But organizing it all takes so long I end up not posting at all.",
     },
     download: {
-      eyebrow: "Shipping May 2026",
-      title: "Native. Private. Built to last.",
-      sub: "SwiftUI on iPhone, iPad and Mac. Photos never uploaded without consent. On-device classification by default.",
+      eyebrow: "Beta ready · TestFlight",
+      title: "Not coming soon. Live now.",
+      sub: "PostKit is Apple-approved on TestFlight. Join the beta, share your feedback, and get free access at launch.",
+      cta: "Join the TestFlight beta",
+      ctaSub: "Apple approved · iPhone + iPad",
+      ctaUrl: "https://testflight.apple.com/join/K4MqVuWe",
+      badge: "Apple-approved beta",
     },
     waitlist: {
       eyebrow: "Early access",

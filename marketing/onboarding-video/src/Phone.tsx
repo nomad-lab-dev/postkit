@@ -1,5 +1,6 @@
 import { AbsoluteFill, useVideoConfig } from "remotion";
 import { COLORS, FONTS } from "./tokens";
+import { IPad, IPAD_BASE_H } from "./IPad";
 
 /**
  * Frame-height fraction the phone occupies, depending on layout.
@@ -16,11 +17,12 @@ export const phoneHeightFraction = (hasBottomHeadline: boolean) =>
  * proportional to the smaller split-layout phone.
  */
 export const usePhoneScale = (hasBottomHeadline = false) => {
-  const { height } = useVideoConfig();
-  // Mockup phone-screen display is ~195px wide; our base logical phone is
-  // 390 wide. Visual parity factor = 390 / 195 ≈ 2. Times the actual phone
-  // render scale (phoneHeight / 844) gives the final multiplier.
-  return ((height * phoneHeightFraction(hasBottomHeadline)) / 844) * 2;
+  const { height, width } = useVideoConfig();
+  const isWide = width / height > 0.6;
+  const frac = hasBottomHeadline
+    ? (isWide ? 0.72 : 0.52)
+    : (isWide ? 0.76 : 0.65);
+  return ((height * frac) / 844) * 2;
 };
 
 interface PhoneProps {
@@ -170,16 +172,23 @@ export const Stage: React.FC<StageProps> = ({
   statusBarDark,
   phoneHeight: phoneHeightProp,
 }) => {
-  const { height: frameH } = useVideoConfig();
+  const { height: frameH, width: frameW } = useVideoConfig();
   const hasBottomHeadline = !!(marketingBottom && marketingBottomEm);
 
-  // Single marketing headline → phone takes 65%; split (Scene 1) → phone 52%.
+  // On wide canvases (iPad, aspect > 0.6) scale the phone to fill ~58% of the width
+  // so it doesn't float as a tiny element in the center. On narrow iPhone canvases
+  // keep the original height-fraction logic unchanged.
+  const isWide = frameW / frameH > 0.6;
+  const heightFrac = hasBottomHeadline
+    ? (isWide ? 0.72 : 0.52)
+    : (isWide ? 0.76 : 0.65);
+
   const phoneHeight =
-    phoneHeightProp ?? frameH * phoneHeightFraction(hasBottomHeadline);
+    phoneHeightProp ?? frameH * heightFrac;
   const scale = phoneHeight / 844;
 
-  const topPos = frameH * 0.06;
-  const bottomPos = frameH * 0.06;
+  const topPos = frameH * (isWide ? 0.05 : 0.06);
+  const bottomPos = frameH * (isWide ? 0.04 : 0.06);
   const phonePadBottom = frameH * 0.05;
   const headlineFs = frameH * 0.044;
   const eyebrowFs = frameH * 0.013;
@@ -241,9 +250,15 @@ export const Stage: React.FC<StageProps> = ({
           paddingBottom: hasBottomHeadline ? 0 : phonePadBottom,
         }}
       >
-        <Phone scale={scale} screenBg={screenBg} statusBarDark={statusBarDark}>
-          {children}
-        </Phone>
+        {isWide ? (
+          <IPad scale={phoneHeight / IPAD_BASE_H} screenBg={screenBg} statusBarDark={statusBarDark}>
+            {children}
+          </IPad>
+        ) : (
+          <Phone scale={scale} screenBg={screenBg} statusBarDark={statusBarDark}>
+            {children}
+          </Phone>
+        )}
       </AbsoluteFill>
 
       {/* Bottom marketing headline (Scene 1 split layout) */}

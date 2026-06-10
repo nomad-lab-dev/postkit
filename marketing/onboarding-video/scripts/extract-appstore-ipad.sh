@@ -4,6 +4,16 @@
 
 set -eu
 
+# Locate node from Homebrew if not in PATH
+if ! command -v node &>/dev/null; then
+  for candidate in /opt/homebrew/opt/node/bin /opt/homebrew/opt/node@20/bin /opt/homebrew/bin; do
+    if [ -x "$candidate/node" ]; then
+      export PATH="$candidate:$PATH"
+      break
+    fi
+  done
+fi
+
 cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 FRAMES="16:01-hook-begin
@@ -25,7 +35,7 @@ render_locale () {
   echo "▶︎ [$locale] · composition $comp · output $outdir/"
   echo "$FRAMES" | while IFS=':' read -r frame name; do
     echo "  · frame $frame → $name.jpg"
-    npx remotion still "$comp" "$outdir/$name.jpg" --frame="$frame" 2>&1 | tail -1
+    ./node_modules/.bin/remotion still "$comp" "$outdir/$name.jpg" --frame="$frame" 2>&1 | tail -1
   done
 }
 

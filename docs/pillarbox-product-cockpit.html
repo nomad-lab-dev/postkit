@@ -45,6 +45,7 @@
   .card-backlog .tag{background:var(--green-bg);color:var(--green);}
   .card-brainstorm .tag{background:var(--purple-bg);color:var(--purple);}
   .card-asc .tag{background:var(--orange-bg);color:var(--orange);}
+  .card-engine .tag{background:rgba(50,173,230,0.1);color:#32ade6;}
 
   .footer{text-align:center;margin-top:2rem;font-size:.75rem;color:var(--text-3);}
 </style>
@@ -70,11 +71,11 @@
 
     <a href="pillarbox-backlog.html" class="card card-backlog">
       <div class="icon">📋</div>
-      <h2>Product Backlog</h2>
-      <p>User stories, acceptance criteria, version tracking, changelog. Filterable by epic and phase.</p>
+      <h2>Sprint Kanban</h2>
+      <p>Live state: En cours · À merger · À tester (TestFlight) · Done. Full v0.1 backlog archived at the bottom.</p>
       <div class="meta">
-        <span class="tag">38 stories</span>
-        <span class="tag">24 MVP</span>
+        <span class="tag">4 columns</span>
+        <span class="tag">v0.2 sprint</span>
       </div>
     </a>
 
@@ -90,74 +91,60 @@
 
     <a href="brainstorm-variants.html" class="card card-brainstorm">
       <div class="icon">🧠</div>
-      <h2>Brainstorm Variants</h2>
-      <p>3 UI options for the brand persona Q&A flow. Stacked cards, chat bubbles, typeform step.</p>
+      <h2>BRAINSTORM: Pillar Setting UX Variant</h2>
+      <p>3 UX approaches explored for the pillar-definition flow during onboarding (stacked cards, chat bubbles, typeform step).</p>
       <div class="meta">
         <span class="tag">3 variants</span>
         <span class="tag">Chosen: A</span>
       </div>
     </a>
 
-    <a href="pillarbox-backlog.html#asc" class="card card-asc" onclick="sessionStorage.setItem('tab','asc')">
+    <a href="pillarbox-asc.html" class="card card-asc">
       <div class="icon">🚀</div>
       <h2>App Store Connect</h2>
-      <p>Metadata EN/FR, keywords, descriptions, categories. TestFlight ready. 10 icon prompts.</p>
+      <p>Live ASO metadata, keywords, category, TestFlight beta link, app icon + marketing screenshots.</p>
       <div class="meta">
-        <span class="tag">EN + FR</span>
-        <span class="tag">10 icon prompts</span>
+        <span class="tag">TestFlight live</span>
+        <span class="tag">ASO ready</span>
+      </div>
+    </a>
+
+    <a href="postkit-core-engine.html" class="card card-engine" style="border-left:3px solid #32ade6;">
+      <div class="icon">⚙️</div>
+      <h2>Core Engine — Photos → Pillars</h2>
+      <p>Anatomie technique de la pipeline de classification : architecture en couches, algorithme Vision + Gemini, patterns réutilisables pour une future app.</p>
+      <div class="meta">
+        <span class="tag">6 briques</span>
+        <span class="tag">v0.1</span>
       </div>
     </a>
   </div>
 
-  <!-- SPRINT WEEKLY VIEW -->
-  <div style="margin-top:2rem;background:var(--glass-strong);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:20px;box-shadow:var(--glass-shadow);padding:1.5rem;max-width:720px;width:100%;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-      <div style="font-size:1.05rem;font-weight:700;">🗓️ Sprint — Jeu 17 → Mer 23 avril</div>
-      <span style="font-size:.65rem;padding:.2rem .5rem;background:var(--accent-bg);color:var(--accent);border-radius:100px;font-weight:500;">7 jours</span>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:.4rem;">
-      <div style="background:var(--accent-bg);border:1px solid rgba(0,122,255,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:var(--accent);font-weight:600;">JEU 17</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🏗️</div>
-        <div style="font-size:.55rem;font-weight:600;">Fondations</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">Xcode + Models</div>
-      </div>
-      <div style="background:rgba(50,173,230,.06);border:1px solid rgba(50,173,230,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:#32ade6;font-weight:600;">VEN 18</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🤖</div>
-        <div style="font-size:.55rem;font-weight:600;">Scan</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">Core ML + PhotoKit</div>
-      </div>
-      <div style="background:var(--green-bg);border:1px solid rgba(52,199,89,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:var(--green);font-weight:600;">SAM 19</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🚀</div>
-        <div style="font-size:.55rem;font-weight:600;">Onboarding</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">Welcome + Pillars</div>
-      </div>
-      <div style="background:var(--orange-bg);border:1px solid rgba(255,149,0,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:var(--orange);font-weight:600;">DIM 20</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🏠</div>
-        <div style="font-size:.55rem;font-weight:600;">Dashboard</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">+ Classification</div>
-      </div>
-      <div style="background:var(--purple-bg);border:1px solid rgba(175,82,222,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:var(--purple);font-weight:600;">LUN 21</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🔍</div>
-        <div style="font-size:.55rem;font-weight:600;">Explore</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">+ Posts</div>
-      </div>
-      <div style="background:rgba(255,45,85,.06);border:1px solid rgba(255,45,85,.12);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:#ff2d55;font-weight:600;">MAR 22</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🎰</div>
-        <div style="font-size:.55rem;font-weight:600;">Slot Machine</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">Templates + IA</div>
-      </div>
-      <div style="background:rgba(52,199,89,.08);border:2px solid rgba(52,199,89,.2);border-radius:12px;padding:.6rem .4rem;text-align:center;">
-        <div style="font-size:.55rem;color:var(--green);font-weight:600;">MER 23</div>
-        <div style="font-size:1rem;margin:.15rem 0;">🚢</div>
-        <div style="font-size:.55rem;font-weight:600;">Ship Day</div>
-        <div style="font-size:.42rem;color:var(--text-3);margin-top:.1rem;">TestFlight 🎉</div>
-      </div>
+  <!-- EXTERNAL LINKS — Landing + TestFlight -->
+  <div style="margin-top:2rem;width:100%;max-width:920px;">
+    <div style="font-size:.7rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-bottom:.65rem;padding-left:.25rem;">Live links</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;">
+
+      <a href="/" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:.85rem;padding:1rem 1.15rem;background:var(--glass-strong);backdrop-filter:blur(16px);border:1px solid var(--glass-border);border-radius:14px;box-shadow:var(--glass-shadow);text-decoration:none;color:inherit;transition:all .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(0,122,255,.25)';" onmouseout="this.style.transform='';this.style.borderColor='var(--glass-border)';">
+        <div style="width:42px;height:42px;border-radius:10px;background:linear-gradient(135deg,#fff,#fafafa);border:1px solid var(--glass-border);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem;">🌐</div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.92rem;font-weight:700;margin-bottom:.1rem;">Landing page</div>
+          <div style="font-size:.7rem;color:var(--text-3);font-family:'SF Mono',monospace;">postkit-vision.vercel.app</div>
+        </div>
+        <span style="font-size:1rem;color:var(--text-3);">↗</span>
+      </a>
+
+      <a href="pillarbox-testflight.html" style="display:flex;align-items:center;gap:.85rem;padding:1rem 1.15rem;background:linear-gradient(135deg,rgba(0,122,255,.06),rgba(52,199,89,.05));border:1px solid rgba(0,122,255,.2);border-radius:14px;box-shadow:var(--glass-shadow);text-decoration:none;color:inherit;transition:all .15s;" onmouseover="this.style.transform='translateY(-2px)';this.style.borderColor='rgba(0,122,255,.35)';" onmouseout="this.style.transform='';this.style.borderColor='rgba(0,122,255,.2)';">
+        <div style="width:42px;height:42px;border-radius:10px;background:#007aff;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(0,122,255,.3);">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round"/></svg>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:.92rem;font-weight:700;margin-bottom:.1rem;display:flex;align-items:center;gap:.4rem;">TestFlight builds <span style="font-size:.55rem;padding:.1rem .42rem;background:var(--green-bg);color:var(--green);border-radius:100px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center;gap:.25rem;"><span style="display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--green);"></span>live</span></div>
+          <div style="font-size:.7rem;color:var(--text-3);font-family:'SF Mono',monospace;">v0.1 · Apple-approved · public link</div>
+        </div>
+        <span style="font-size:1rem;color:var(--accent);">→</span>
+      </a>
+
     </div>
   </div>
 

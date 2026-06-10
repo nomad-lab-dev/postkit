@@ -63,9 +63,10 @@ launch_and_shoot() {
   echo "📸 ipad-$name.png"
 }
 
-launch_and_shoot "01-dashboard"       "home"
-launch_and_shoot "03a-smartpost-chat" "smartPost"
-launch_and_shoot "04-pillars-bento"   "home"
+launch_and_shoot "01-dashboard"        "home"
+launch_and_shoot "03a-smartpost-chat"  "smartPost"
+launch_and_shoot "03b-italian-template" "italianTemplate"
+launch_and_shoot "04-pillars-bento"    "home"
 
 echo "✅ Done. Files in $CAPTURE_DIR:"
 ls -lh "$CAPTURE_DIR"/ipad-*.png 2>/dev/null

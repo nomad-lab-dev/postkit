@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PillarBox — Product Backlog v0.2</title>
+<title>PostKit — Sprint Kanban v0.2</title>
 <style>
   :root {
     --bg: #f2f2f7; --surface: rgba(255,255,255,0.72); --glass: rgba(255,255,255,0.55);
@@ -11,809 +11,756 @@
     --glass-shadow: 0 2px 12px rgba(0,0,0,0.06);
     --text: #1c1c1e; --text-2: #3c3c43; --text-3: #8e8e93; --text-4: #aeaeb2;
     --accent: #007aff; --accent-bg: rgba(0,122,255,0.08);
-    --green: #34c759; --green-bg: rgba(52,199,89,0.1);
-    --yellow: #ff9f0a; --yellow-bg: rgba(255,159,10,0.1);
-    --orange: #ff9500; --orange-bg: rgba(255,149,0,0.1);
+    --green: #34c759; --green-bg: rgba(52,199,89,0.10);
+    --yellow: #ff9f0a; --yellow-bg: rgba(255,159,10,0.10);
+    --orange: #ff9500; --orange-bg: rgba(255,149,0,0.10);
     --red: #ff3b30; --red-bg: rgba(255,59,48,0.08);
-    --purple: #af52de; --purple-bg: rgba(175,82,222,0.08);
-    --pink: #ff2d55; --cyan: #32ade6; --cyan-bg: rgba(50,173,230,0.1);
+    --purple: #af52de; --purple-bg: rgba(175,82,222,0.10);
+    --pink: #ff2d55; --cyan: #32ade6; --cyan-bg: rgba(50,173,230,0.10);
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif; background:var(--bg); color:var(--text); line-height:1.5; -webkit-font-smoothing:antialiased; }
-  .container { max-width:1200px; margin:0 auto; padding:1.5rem; }
+  .container { max-width:1400px; margin:0 auto; padding:1.5rem; }
 
-  .header { text-align:center; padding:2rem; background:var(--surface); backdrop-filter:blur(20px) saturate(180%); border:1px solid var(--glass-border); border-radius:20px; box-shadow:var(--glass-shadow); margin-bottom:1.5rem; }
-  .header h1 { font-size:2rem; font-weight:700; }
-  .header p { color:var(--text-3); font-size:.9rem; }
-  .header .version-badge { display:inline-block; margin-top:.5rem; padding:.25rem .75rem; background:var(--accent-bg); color:var(--accent); border-radius:100px; font-size:.8rem; font-weight:600; }
+  .back { display:inline-flex; align-items:center; gap:.4rem; font-size:.78rem; color:var(--text-3); text-decoration:none; padding:.4rem .75rem; background:var(--glass); border:1px solid var(--glass-border); border-radius:100px; margin-bottom:1rem; }
+  .back:hover { color:var(--accent); border-color:rgba(0,122,255,.2); }
 
-  /* Stats */
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:.75rem; margin-bottom:1.5rem; }
-  .stat { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1rem; text-align:center; box-shadow:var(--glass-shadow); }
-  .stat-num { font-size:1.8rem; font-weight:700; color:var(--accent); }
-  .stat-label { font-size:.72rem; color:var(--text-3); }
+  .header { padding:1.75rem 2rem; background:var(--surface); backdrop-filter:blur(20px) saturate(180%); border:1px solid var(--glass-border); border-radius:20px; box-shadow:var(--glass-shadow); margin-bottom:1.25rem; }
+  .header-top { display:flex; justify-content:space-between; align-items:flex-start; gap:1rem; flex-wrap:wrap; }
+  .header h1 { font-size:1.85rem; font-weight:700; margin-bottom:.2rem; }
+  .header p { color:var(--text-3); font-size:.88rem; }
+  .header .meta-strip { display:flex; flex-direction:column; gap:.35rem; align-items:flex-end; font-size:.7rem; color:var(--text-3); font-family:'SF Mono',ui-monospace,monospace; }
+  .header .meta-strip strong { color:var(--text); }
 
-  /* Tabs */
-  .tabs { display:flex; gap:0; background:rgba(0,0,0,0.04); border-radius:10px; padding:3px; margin-bottom:1.5rem; }
-  .tab { flex:1; padding:.55rem; text-align:center; border-radius:8px; font-size:.8rem; font-weight:500; color:var(--text-3); cursor:pointer; transition:all .2s; border:none; background:none; font-family:inherit; }
-  .tab:hover { color:var(--text); }
-  .tab.active { background:var(--glass-strong); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.06); font-weight:600; }
+  /* Stats row */
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:.75rem; margin-bottom:1.25rem; }
+  .stat { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:.9rem 1rem; box-shadow:var(--glass-shadow); }
+  .stat .num { font-size:1.55rem; font-weight:700; line-height:1; }
+  .stat .label { font-size:.65rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.06em; margin-top:.3rem; font-weight:600; }
+  .stat.green .num { color:var(--green); }
+  .stat.purple .num { color:var(--purple); }
+  .stat.cyan .num { color:var(--cyan); }
+  .stat.orange .num { color:var(--orange); }
 
-  .section { display:none; }
-  .section.active { display:block; }
+  /* Progress vs initial backlog */
+  .progress-block { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1rem 1.25rem; margin-bottom:1.25rem; box-shadow:var(--glass-shadow); }
+  .progress-block .row { display:flex; align-items:center; gap:.85rem; font-size:.82rem; }
+  .progress-block .label { font-size:.7rem; color:var(--text-3); text-transform:uppercase; letter-spacing:.07em; font-weight:600; min-width:160px; }
+  .progress-bar { flex:1; height:10px; background:var(--bg); border-radius:100px; overflow:hidden; position:relative; }
+  .progress-bar .fill { height:100%; background:linear-gradient(90deg,var(--green) 0%,var(--accent) 100%); border-radius:100px; }
+  .progress-bar .fill.partial { background:linear-gradient(90deg,var(--accent) 0%,var(--purple) 100%); }
+  .progress-block .pct { font-family:'SF Mono',monospace; font-weight:700; min-width:54px; text-align:right; }
 
-  /* Filters */
-  .filters { display:flex; gap:.35rem; flex-wrap:wrap; margin-bottom:1rem; }
-  .fbtn { padding:.3rem .7rem; border-radius:100px; font-size:.72rem; border:1px solid var(--glass-border); background:var(--glass); color:var(--text-3); cursor:pointer; font-family:inherit; transition:all .15s; }
-  .fbtn:hover,.fbtn.active { border-color:rgba(0,122,255,.2); color:var(--accent); background:var(--accent-bg); }
+  /* View toggle */
+  .view-toggle { display:inline-flex; gap:0; background:rgba(0,0,0,0.04); border-radius:10px; padding:3px; margin-bottom:1.25rem; }
+  .view-toggle button { padding:.5rem 1.1rem; text-align:center; border-radius:8px; font-size:.82rem; font-weight:500; color:var(--text-3); cursor:pointer; transition:all .2s; border:none; background:none; font-family:inherit; display:inline-flex; align-items:center; gap:.45rem; }
+  .view-toggle button:hover { color:var(--text); }
+  .view-toggle button.active { background:var(--glass-strong); color:var(--text); box-shadow:0 1px 3px rgba(0,0,0,0.06); font-weight:600; }
+  .view-toggle button .count { font-size:.6rem; padding:.12rem .42rem; border-radius:100px; background:var(--accent-bg); color:var(--accent); font-family:'SF Mono',monospace; font-weight:600; }
 
-  /* Story Cards */
-  .story { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1rem 1.25rem; margin-bottom:.5rem; cursor:pointer; transition:all .15s; box-shadow:var(--glass-shadow); }
-  .story:hover { border-color:rgba(0,122,255,.15); transform:translateY(-1px); }
-  .story.expanded .story-expand { display:block; }
-  .story-top { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; }
-  .story-id { font-size:.7rem; color:var(--text-3); font-family:'SF Mono',monospace; min-width:52px; }
-  .story-title { flex:1; font-weight:500; font-size:.88rem; }
-  .story-badges { display:flex; gap:.3rem; flex-wrap:wrap; flex-shrink:0; }
-  .badge { padding:.15rem .5rem; border-radius:100px; font-size:.62rem; font-weight:500; }
-  .badge-mvp { background:var(--green-bg); color:var(--green); }
-  .badge-post { background:var(--yellow-bg); color:var(--yellow); }
-  .badge-new { background:var(--purple-bg); color:var(--purple); }
-  .badge-v { background:rgba(0,0,0,0.04); color:var(--text-3); font-family:'SF Mono',monospace; font-size:.6rem; }
+  .view { display:none; }
+  .view.active { display:block; }
 
-  .story-expand { display:none; margin-top:.75rem; padding-top:.75rem; border-top:1px solid rgba(0,0,0,0.06); font-size:.82rem; color:var(--text-2); }
-  .story-expand strong { color:var(--text); }
+  /* Backlog view */
+  .backlog-section { margin-bottom:1.5rem; }
+  .backlog-section h2 { font-size:1.05rem; font-weight:700; margin-bottom:.2rem; display:flex; align-items:center; gap:.5rem; }
+  .backlog-section .sec-desc { font-size:.78rem; color:var(--text-3); margin-bottom:.85rem; line-height:1.5; }
+  .backlog-section .sec-meta { font-size:.65rem; color:var(--text-4); font-family:'SF Mono',monospace; padding:.18rem .55rem; background:rgba(0,0,0,.04); border-radius:100px; }
 
-  /* Version history */
-  .version-history { margin-top:.75rem; padding:.6rem; background:var(--bg); border-radius:8px; }
-  .version-history h4 { font-size:.65rem; text-transform:uppercase; letter-spacing:.04em; color:var(--accent); margin-bottom:.4rem; }
-  .vh-entry { display:flex; gap:.5rem; font-size:.72rem; padding:.2rem 0; border-bottom:1px solid rgba(0,0,0,0.04); }
-  .vh-entry:last-child { border:none; }
-  .vh-ver { font-family:'SF Mono',monospace; color:var(--accent); font-weight:600; min-width:32px; }
-  .vh-date { color:var(--text-4); min-width:70px; }
-  .vh-desc { color:var(--text-2); flex:1; }
+  .backlog-list { display:flex; flex-direction:column; gap:.5rem; }
+  .blc { background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:12px; padding:.85rem 1.1rem; display:grid; grid-template-columns:60px 60px 1fr auto auto; gap:.85rem; align-items:center; box-shadow:var(--glass-shadow); transition:all .15s; }
+  .blc:hover { border-color:rgba(0,122,255,.15); transform:translateY(-1px); }
+  .blc-prio { font-size:.65rem; font-weight:700; font-family:'SF Mono',monospace; padding:.22rem .42rem; border-radius:6px; text-align:center; }
+  .blc-prio.p1 { background:var(--red-bg); color:var(--red); }
+  .blc-prio.p2 { background:var(--orange-bg); color:var(--orange); }
+  .blc-prio.p3 { background:var(--yellow-bg); color:var(--yellow); }
+  .blc-prio.p4 { background:var(--glass); color:var(--text-3); }
+  .blc-id { font-size:.65rem; color:var(--text-3); font-family:'SF Mono',monospace; font-weight:600; }
+  .blc-main { min-width:0; }
+  .blc-title { font-size:.86rem; font-weight:600; margin-bottom:.18rem; }
+  .blc-desc { font-size:.72rem; color:var(--text-3); line-height:1.45; }
+  .blc-type { font-size:.55rem; padding:.15rem .5rem; border-radius:100px; font-weight:700; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; }
+  .blc-type.feat   { background:var(--accent-bg); color:var(--accent); }
+  .blc-type.fix    { background:var(--red-bg); color:var(--red); }
+  .blc-type.refac  { background:var(--purple-bg); color:var(--purple); }
+  .blc-type.perf   { background:var(--yellow-bg); color:var(--yellow); }
+  .blc-type.docs   { background:var(--glass); color:var(--text-3); }
+  .blc-size { font-size:.68rem; font-family:'SF Mono',monospace; color:var(--text-3); padding:.18rem .5rem; background:var(--bg); border-radius:6px; white-space:nowrap; }
+  @media (max-width:800px) {
+    .blc { grid-template-columns:50px 1fr auto; gap:.6rem; }
+    .blc-id, .blc-size { display:none; }
+  }
 
-  /* ASC & Icons sections */
-  .meta-block { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:14px; padding:1.25rem; margin-bottom:.75rem; box-shadow:var(--glass-shadow); position:relative; }
-  .meta-block h3 { font-size:.75rem; color:var(--accent); text-transform:uppercase; letter-spacing:.04em; margin-bottom:.5rem; }
-  .meta-block .val { background:var(--bg); padding:.6rem .75rem; border-radius:8px; font-size:.85rem; line-height:1.6; }
-  .meta-block .cc { font-size:.65rem; color:var(--text-4); text-align:right; margin-top:.15rem; }
-  .copy-btn { position:absolute; top:.75rem; right:.75rem; background:var(--glass); border:1px solid var(--glass-border); color:var(--text-3); padding:.2rem .5rem; border-radius:6px; font-size:.65rem; cursor:pointer; font-family:inherit; }
-  .copy-btn:hover { border-color:rgba(0,122,255,.2); color:var(--accent); }
+  /* Sprint header card */
+  .sprint-header { background:linear-gradient(135deg,var(--accent-bg),var(--purple-bg)); border:1px solid rgba(0,122,255,.18); border-radius:14px; padding:1.1rem 1.25rem; margin-bottom:1.25rem; display:flex; justify-content:space-between; gap:1rem; flex-wrap:wrap; align-items:flex-end; }
+  .sprint-header h3 { font-size:1.15rem; font-weight:700; margin-bottom:.2rem; }
+  .sprint-header .sub { font-size:.78rem; color:var(--text-2); line-height:1.5; max-width:560px; }
+  .sprint-header .dates { font-size:.7rem; color:var(--text-3); font-family:'SF Mono',monospace; text-align:right; }
+  .sprint-header .dates strong { color:var(--text); }
 
-  .prompt-card { background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:14px; padding:1rem; margin-bottom:.5rem; box-shadow:var(--glass-shadow); counter-increment:p; }
-  .prompt-card::before { content:"#" counter(p); font-size:.65rem; color:var(--accent); font-family:'SF Mono',monospace; }
-  .prompt-card h4 { font-size:.88rem; margin:.3rem 0; }
-  .prompt-card p { font-size:.8rem; color:var(--text-2); background:var(--bg); padding:.6rem; border-radius:8px; line-height:1.5; }
-  .prompts-section { counter-reset:p; }
+  /* Kanban */
+  .kanban { display:grid; grid-template-columns:repeat(4,1fr); gap:.85rem; }
+  @media (max-width:1100px) { .kanban { grid-template-columns:repeat(2,1fr); } }
+  @media (max-width:700px) { .kanban { grid-template-columns:1fr; } }
+
+  .col { background:var(--glass-strong); backdrop-filter:blur(16px); border:1px solid var(--glass-border); border-radius:16px; padding:1rem .95rem; box-shadow:var(--glass-shadow); display:flex; flex-direction:column; gap:.5rem; min-height:200px; }
+  .col-head { display:flex; justify-content:space-between; align-items:center; padding:0 .15rem .55rem; border-bottom:1px solid rgba(0,0,0,0.06); margin-bottom:.4rem; }
+  .col-title { font-size:.85rem; font-weight:700; display:flex; align-items:center; gap:.45rem; }
+  .col-count { font-size:.62rem; padding:.18rem .5rem; border-radius:100px; font-weight:700; font-family:'SF Mono',monospace; }
+
+  .col-encours .col-title { color:var(--orange); }
+  .col-encours .col-count { background:var(--orange-bg); color:var(--orange); }
+  .col-encours .col-head { border-bottom-color:rgba(255,149,0,.18); }
+
+  .col-merger .col-title { color:var(--purple); }
+  .col-merger .col-count { background:var(--purple-bg); color:var(--purple); }
+  .col-merger .col-head { border-bottom-color:rgba(175,82,222,.18); }
+
+  .col-tester .col-title { color:var(--cyan); }
+  .col-tester .col-count { background:var(--cyan-bg); color:var(--cyan); }
+  .col-tester .col-head { border-bottom-color:rgba(50,173,230,.18); }
+
+  .col-done .col-title { color:var(--green); }
+  .col-done .col-count { background:var(--green-bg); color:var(--green); }
+  .col-done .col-head { border-bottom-color:rgba(52,199,89,.18); }
+
+  /* Card in Kanban */
+  .kc { background:var(--bg); border:1px solid var(--glass-border); border-radius:11px; padding:.7rem .85rem; box-shadow:0 1px 2px rgba(0,0,0,.03); transition:all .15s; }
+  .kc:hover { border-color:rgba(0,122,255,.18); transform:translateY(-1px); }
+  .kc-top { display:flex; gap:.45rem; align-items:center; margin-bottom:.3rem; }
+  .kc-id { font-size:.58rem; color:var(--text-4); font-family:'SF Mono',monospace; font-weight:600; }
+  .kc-tag { font-size:.55rem; padding:.12rem .42rem; border-radius:100px; font-weight:600; text-transform:uppercase; letter-spacing:.03em; }
+  .kc-tag.feat   { background:var(--accent-bg); color:var(--accent); }
+  .kc-tag.fix    { background:var(--red-bg); color:var(--red); }
+  .kc-tag.refac  { background:var(--purple-bg); color:var(--purple); }
+  .kc-tag.perf   { background:var(--yellow-bg); color:var(--yellow); }
+  .kc-tag.docs   { background:var(--glass); color:var(--text-3); }
+  .kc-title { font-size:.82rem; font-weight:600; line-height:1.35; margin-bottom:.3rem; }
+  .kc-meta { font-size:.66rem; color:var(--text-3); font-family:'SF Mono',monospace; word-break:break-all; }
+  .kc-link { color:var(--accent); text-decoration:none; }
+  .kc-link:hover { text-decoration:underline; }
+  .kc-foot { display:flex; justify-content:space-between; align-items:center; margin-top:.35rem; font-size:.65rem; color:var(--text-4); }
+
+  /* Section: full backlog (archived) */
+  details.archive { margin-top:1.5rem; background:var(--glass-strong); border:1px solid var(--glass-border); border-radius:16px; padding:1rem 1.25rem; box-shadow:var(--glass-shadow); }
+  details.archive summary { font-size:.95rem; font-weight:600; cursor:pointer; padding:.4rem 0; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+  details.archive summary::-webkit-details-marker { display:none; }
+  details.archive summary::after { content:'▾'; color:var(--text-3); transition:transform .2s; }
+  details.archive[open] summary::after { transform:rotate(180deg); }
+  details.archive[open] summary { margin-bottom:.85rem; padding-bottom:.6rem; border-bottom:1px solid rgba(0,0,0,.06); }
+  details.archive .archive-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:.55rem; }
+  .epic-block h4 { font-size:.7rem; text-transform:uppercase; letter-spacing:.07em; color:var(--text-3); margin-bottom:.35rem; font-weight:600; }
+  .epic-block ul { list-style:none; }
+  .epic-block li { padding:.22rem 0; font-size:.78rem; color:var(--text-2); display:flex; gap:.45rem; align-items:flex-start; }
+  .epic-block li::before { content:'✓'; color:var(--green); font-weight:700; flex-shrink:0; }
+  .epic-block li.partial::before { content:'◐'; color:var(--orange); }
 </style>
 </head>
 <body>
 <div class="container">
 
+  <a href="pillarbox-product-cockpit.html" class="back">← Cockpit</a>
+
   <div class="header">
-    <h1>PillarBox</h1>
-    <p>Product Backlog — Personal Branding Asset Manager</p>
-    <div class="version-badge">v0.2 — Post-Challenge Round 2</div>
+    <div class="header-top">
+      <div>
+        <h1>Sprint Kanban</h1>
+        <p>Live state of the v0.2 sprint — En cours · À merger · À tester · Done.</p>
+      </div>
+      <div class="meta-strip">
+        <span>Sprint <strong>v0.2 · May 22 → 28</strong></span>
+        <span>TestFlight build <strong>a0f4c09</strong> (PR #3)</span>
+        <span>Last commit <strong>8d351ec</strong> on feat/storekit</span>
+      </div>
+    </div>
   </div>
 
   <div class="stats">
-    <div class="stat"><div class="stat-num">38</div><div class="stat-label">User Stories</div></div>
-    <div class="stat"><div class="stat-num">24</div><div class="stat-label">MVP (v0.x)</div></div>
-    <div class="stat"><div class="stat-num">14</div><div class="stat-label">Post-MVP</div></div>
-    <div class="stat"><div class="stat-num">8</div><div class="stat-label">New in v0.1</div></div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" data-tab="stories">User Stories</button>
-    <button class="tab" data-tab="changelog">Changelog</button>
-    <button class="tab" data-tab="asc">App Store Connect</button>
-    <button class="tab" data-tab="icons">Icon Prompts</button>
-  </div>
-
-  <!-- ======================== STORIES ======================== -->
-  <div class="section active" id="stories">
-    <div class="filters">
-      <button class="fbtn active" data-filter="all">All (38)</button>
-      <button class="fbtn" data-filter="mvp">MVP (24)</button>
-      <button class="fbtn" data-filter="post">Post-MVP (14)</button>
-      <button class="fbtn" data-filter="new">New in v0.1 (8)</button>
-      <button class="fbtn" data-filter="epic-onboard">Onboarding</button>
-      <button class="fbtn" data-filter="epic-scan">Scan</button>
-      <button class="fbtn" data-filter="epic-ui">Core UI</button>
-      <button class="fbtn" data-filter="epic-swipe">Swipe</button>
-      <button class="fbtn" data-filter="epic-post">Posts</button>
-      <button class="fbtn" data-filter="epic-explore">Explore</button>
-      <button class="fbtn" data-filter="epic-arch">Architecture</button>
+    <div class="stat green">
+      <div class="num">32 / 38</div>
+      <div class="label">Initial backlog · done</div>
     </div>
-
-    <div id="storyList">
-
-      <!-- ===== ARCHITECTURE ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-001</span>
-          <span class="story-title">Setup SwiftUI multiplatform project (macOS + iOS)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> developer, <strong>I want</strong> a clean Xcode project with shared SwiftUI codebase, <strong>so that</strong> I have a solid MVVM foundation.<br><br>
-          <strong>AC:</strong> Compiles on both platforms. MVVM folder structure. No warnings.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec — project scaffold</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-002</span>
-          <span class="story-title">PersistenceService protocol + SwiftData implementation</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> developer, <strong>I want</strong> an abstract PersistenceService protocol with SwiftData impl, <strong>so that</strong> persistence is swappable and testable via DI.<br><br>
-          <strong>AC:</strong> Protocol with CRUD for all models. SwiftData impl passes tests. MockPersistenceService for previews.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-003</span>
-          <span class="story-title">SwiftData models (Pillar, Tag, Asset, Post, Persona)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> developer, <strong>I want</strong> all data models with proper relationships, <strong>so that</strong> data integrity is enforced.<br><br>
-          <strong>AC:</strong> All @Model classes. Asset has 3 states: active, non-pertinent, used. Persona stores onboardingAnswers + synthesized fields. PostTemplate model added.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial models: Pillar, Tag, Asset, Post, Persona</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added Asset.state (active/non-pertinent/used), PostTemplate model, Persona.synthesizedProfile fields, Platform-to-Tone mapping</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-004</span>
-          <span class="story-title">ImageClassifier protocol + Gemini Flash implementation</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>AC:</strong> Protocol defined. Gemini Flash calls working. MockClassifier for tests. Error handling.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-005</span>
-          <span class="story-title">PhotoLibraryService protocol + PhotoKit implementation</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>AC:</strong> Permission flow. Fetch by date. Read EXIF. Create album. Mock for simulator.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial spec</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== SCAN PIPELINE ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-006</span>
-          <span class="story-title">Core ML on-device pre-classification (objects, scene, framing)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>AC:</strong> Vision framework detects objects/scenes. Framing heuristic (POV/detail/wide/portrait). ~50ms/photo. Also suggests emoji for custom pillars.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Initial: objects, scenes, framing detection</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added emoji auto-suggest for custom pillars at textfield exit</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-007</span>
-          <span class="story-title">Gemini Flash cloud classification (pillars, semantic tags, mood)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Deep prompt with persona context. Multi-pillar. Confidence score. Batch calls.</div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-008</span>
-          <span class="story-title">Batch scan pipeline (30-day windows, incremental, recent-first)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Recent 30 days first. Tracks classified vs unclassified. Resumes. 15K in 15-30 min.</div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-009</span>
-          <span class="story-title">Auto-detect new unclassified assets on app launch</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Compare last scan date. Show count. Offer scan. Non-blocking.</div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-010</span>
-          <span class="story-title">EXIF metadata extraction (date, location, time of day)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Location reverse-geocoded to city. Time from capture hour. Auto-tagged without API.</div>
-      </div>
-
-      <!-- ===== ONBOARDING (REORDERED v0.1) ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-022</span>
-          <span class="story-title">Onboarding flow: 5-step guided setup</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Flow:</strong> 1.Welcome (before/after) → 2.Pillars (bento on/off) → 3.Platforms+Tone (multi-step) → 4.Bio/Brainstorm (dual path) → 5.First Scan (recap inline)<br><br>
-          <strong>AC:</strong> 5 steps. Nav buttons fixed position on all steps. Step dots consistent. All optional except Pillars. Skip available.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">7-step flow: Welcome, Pillars, Bio, Tone, Platforms, Summary, Scan</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Reordered to 5 steps. Removed Summary. Merged Platforms+Tone. Bio moved before scan. All optional except Pillars. Fixed nav position. Before/after on Welcome.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-033</span>
-          <span class="story-title">Brand Brainstorming Q&A (stacked cards, ~30 questions)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> an AI-guided brainstorming that asks me ~30 questions to deeply define my persona, <strong>so that</strong> classification and content generation match my brand perfectly.<br><br>
-          <strong>UI:</strong> Stacked cards (variant A). MC options + expandable free text on each card. 6 categories (Identity/Audience/Voice/Values/Content/Goals). "That's enough" after q10. AI synthesizes persona doc.<br><br>
-          <strong>AC:</strong> Stacked cards with peek animation. Mix of MC + free text. Expandable input on tap. Answers persist across kills. Fallback to hardcoded questions. Synthesis editable. Skips tone step (already covered).
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — dual path Bio screen with brainstorming option</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Chosen variant A (stacked cards). Added MC + free text expandable. AI reaction/rebond between questions.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-034</span>
-          <span class="story-title">Persona Synthesis result screen (editable before save)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> to review and edit the AI-generated persona before saving, <strong>so that</strong> I stay in control of my brand identity.<br><br>
-          <strong>Sections:</strong> Bio, Voice guidelines, Audience profile, Content themes, Brand values — all editable. "Regenerate" button available.<br><br>
-          <strong>AC:</strong> All fields inline editable. Regenerate calls Gemini again. Save persists to SwiftData.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — synthesis review screen</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-035</span>
-          <span class="story-title">Platforms + Tone multi-step (tone per platform with examples)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> to assign 1-3 tones per platform with real examples of the same phrase in each tone, <strong>so that</strong> my content voice matches each platform's culture.<br><br>
-          <strong>Flow:</strong> 3.1 Select platforms (bento grid) → 3.2 Instagram tones → 3.3 LinkedIn tones → etc. Multi-select 2-3 max per platform. "Mix" removed. Tooltip on 3rd: "A strong brand speaks in 2-3 voices max."<br><br>
-          <strong>AC:</strong> Bento platform selector. Sub-progress dots. Same phrase shown in 5 tones per platform. 2-3 max enforced. Back/Next fixed position.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Was separate Tone (radio single) + Platforms screens</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Merged into multi-step. Tone per platform. Removed "Mix". Multi-select 2-3 max. Real phrase examples.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-023</span>
-          <span class="story-title">Photo library permission request flow</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Pre-permission explanation. Handles denied/limited. Re-request from settings.</div>
-      </div>
-
-      <!-- ===== CORE UI ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-011</span>
-          <span class="story-title">TabBar navigation (Home, Explore, Swipe, Posts, Profile)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> 5 tabs SF Symbols. Sidebar on Mac, tab bar on iPhone. Liquid Glass.</div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-012</span>
-          <span class="story-title">Home dashboard (smart scan status, pillar grids, quick actions)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Sections:</strong><br>
-          1. <strong>Scan status</strong> — 4 states: scanning (progress), idle (last scan time), new items to classify, items to review<br>
-          2. <strong>Pillars</strong> — bento cards: icon + title + count tag + mini thumbnail grid underneath<br>
-          3. <strong>Quick actions</strong> — "Review classifications", "Compose a post", "Create template"<br><br>
-          <strong>AC:</strong> Scan card shows correct state. Pillar cards show real thumbnails. Quick actions navigate correctly. Vertical scroll, no horizontal lists.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Horizontal scroll pillars, basic quick actions (Swipe/New Post/Rescan/Stats)</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Bento grids (no h-scroll). Smart scan status (4 states). Pillars with mini thumbnail grids. Quick actions rephrased (Review/Compose/Template). Removed Stats. Rescan integrated in status card.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-015</span>
-          <span class="story-title">Scan progress + background indicator</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Progress bar, count, estimated time. Pill indicator on other tabs. Pause/resume.</div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-016</span>
-          <span class="story-title">Pillar management (CRUD, color, emoji, reorder)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>AC:</strong> Add/edit/delete. Emoji auto-suggest on textfield exit (micro-animation slide-in). Tap emoji to open native picker. Color picker. Drag reorder. Nudge >10.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Basic CRUD with SF Symbol + color picker</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Emoji auto-suggest via AI on textfield exit. Native emoji picker on tap. Micro-animation slide-in. Bento grid layout in onboarding.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== EXPLORE ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-013</span>
-          <span class="story-title">Explore: asset grid with rich filters</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Filters:</strong> Pillars (chips), Cadrage (POV/Detail/Wide/Portrait), Location (picker from gallery cities), Moment (Morning/Afternoon/Evening/Night), Media (Photo/Video), Status (Active/Non-pertinent)<br><br>
-          <strong>AC:</strong> Flat grid, LazyVGrid. All filter types. Location picker populated from EXIF data. Multi-select → 2 action buttons. 3-second rule.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Grid with pillar chips + basic filters</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Added cadrage filter, location picker menu, moment filter. Multi-select → 2 action buttons (post + TBD).</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-036</span>
-          <span class="story-title">Asset detail: slide-up sheet, fully editable, "non pertinent" marking</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> to view and edit all metadata inline (pillars, tags, loc, cadrage) and mark irrelevant assets, <strong>so that</strong> I curate my library without leaving the explorer.<br><br>
-          <strong>UI:</strong> Sheet (not full push). Dismiss by swipe down. All fields editable. 3 asset states: active, non-pertinent, used.<br><br>
-          <strong>AC:</strong> Sheet slide-up. Tap tag to remove. + to add. Loc editable. Cadrage editable. "Mark non-pertinent" action. Auto-save.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Full-screen push. Tags editable. Actions: Add to Post, Reclassify, Share.</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Changed to sheet. All metadata editable. Added "non-pertinent" state. 3 asset states (active/non-pertinent/used).</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-014</span>
-          <span class="story-title">Multi-select assets → Create Post + second action</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>AC:</strong> Long press enters multi-select. Two action buttons at bottom. "Create Post" opens post sheet. Second action TBD.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Single "Create Post" action</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Duo buttons: Create Post + second action (TBD)</span></div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ===== SWIPE ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-swipe" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-017</span>
-          <span class="story-title">Swipe mode: bento selector with mini-grids + card editor</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Selector:</strong> Bento grid per pillar: icon + name + mini thumbnail grid + overlay quantity to review. Tap → enter swipe.<br>
-          <strong>Card:</strong> Full-screen photo + AI score + tags overlay (editable) + loc editable + cadrage editable + add/remove tags. Swipe right = validate for pillar. Swipe left = reject. Each card is a micro-editor.<br><br>
-          <strong>AC:</strong> Bento selector with thumbnails. Card shows photo + score + all tags. Tags tappable to remove. + to add. Loc/cadrage editable. Undo. Batch save every 10 swipes.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">List selector with counters. Card = photo + AI badge only.</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Selector → bento grid with mini thumbnail grids. Card → full editor (tags/loc/cadrage editable). Each swipe is also an edit session.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-swipe" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-019</span>
-          <span class="story-title">Manual retrigger scan</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Button in settings + integrated in Home scan status card. Scan all or unclassified only.</div>
-      </div>
-
-      <!-- ===== POSTS ===== -->
-      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-020</span>
-          <span class="story-title">Posts list with visual slots per post</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Card:</strong> Shows 4 visual slots (filled or empty) + post name + status badge + asset count.<br>
-          <strong>Interactions:</strong> Tap → post detail. Long press → context menu (duplicate, delete, etc.). No swipe status change.<br><br>
-          <strong>AC:</strong> Slots visible on card. Tap opens detail. Long press context menu. Cancel action returns assets to "non-utilise".
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Thumbnail strip. Swipe right to advance status. Filter tabs.</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Visual slots per post. Removed swipe status. Long press context menu. Cancel returns assets to non-utilise.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-021</span>
-          <span class="story-title">Post editor with slot-based assembly + contextual explorer</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>Slots:</strong> Named slots showing requirements from template. Filled slots show asset + tags/loc overlay. Empty slots show requirements.<br>
-          <strong>Tap empty slot:</strong> Opens contextual asset explorer pre-filtered by slot requirements. Filters editable. Search bar available.<br>
-          <strong>Actions:</strong> Publish, Cancel (assets → non-utilise), Export to Album, Suggest Hook.<br><br>
-          <strong>AC:</strong> Slots show requirements or filled asset. Contextual explorer opens pre-filtered. Filters editable in explorer. Publish/Cancel work correctly.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">Name + description + reorderable asset grid + status picker + export album</span></div>
-            <div class="vh-entry"><span class="vh-ver">v0.1</span><span class="vh-date">Apr 12</span><span class="vh-desc">Slot-based assembly. Slots show template requirements. Contextual explorer pre-filtered by slot requirements. Filters editable.</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-037</span>
-          <span class="story-title">Post Template Builder (define format, slots, requirements)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> to create reusable post templates that define how many assets, what cadrages, what tags/pillars are needed, <strong>so that</strong> assembling content is guided and consistent.<br><br>
-          <strong>Fields:</strong> Template name. Number of slots. Per slot: cadrage type, required pillar(s), required tags, description.<br><br>
-          <strong>AC:</strong> CRUD for templates. Each slot configurable. Templates available in "Create Post" flow. Templates shown in Home quick actions.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — template system for post assembly</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-explore" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-038</span>
-          <span class="story-title">Contextual asset explorer (from post slots, pre-filtered)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> the asset explorer to open pre-filtered when I tap an empty post slot, <strong>so that</strong> I see matching assets immediately but can still browse freely.<br><br>
-          <strong>AC:</strong> Opens with slot requirements as active filters. Filters editable/removable. Search bar available. Tap asset → fills slot. Back → return to post editor.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — contextual explorer from post editor slots</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="mvp" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-039</span>
-          <span class="story-title">Export post as native Photos album</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Creates album with post name. Updates if exists. Handles broken refs. Permission flow.</div>
-      </div>
-
-      <!-- ===== POST-MVP ===== -->
-      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-024</span>
-          <span class="story-title">Post builder: AI "Suggest" button (hook + caption)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Button triggers Gemini with persona + assets. Pre-fills hook + caption. Editable.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-explore" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-025</span>
-          <span class="story-title">Advanced search: natural language + structured filters</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Free text parsed into tag queries. "morning + car + Bangkok". Results live.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-arch" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-027</span>
-          <span class="story-title">iCloud sync via CloudKit</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> SwiftData CloudKit container. Conflict resolution. Offline-first.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-028</span>
-          <span class="story-title">Multiple post templates (carousel, story, thread)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Template CRUD. Each defines required assets/types. Post builder adapts per template.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-029</span>
-          <span class="story-title">Advice/tips bank (curated + AI-generated)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> CRUD for advice. Pillar association. AI generation. Used/unused tracking.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-post" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-030</span>
-          <span class="story-title">Instagram/TikTok API export</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> OAuth. Push photos+caption. API limitations handled. Fallback Share Sheet.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-scan" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-031</span>
-          <span class="story-title">Gemma on Hetzner as classification backend</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> GemmaClassifier conforming to protocol. Server endpoint. Toggle in settings. Fallback to Gemini.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-ui" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-032</span>
-          <span class="story-title">Asset usage tracking (don't re-suggest used assets)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> "Used" badge. Filter to hide. Suggestion engine excludes.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-onboard" data-new="false" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-026</span>
-          <span class="story-title">Apple Notes integration (read + classify by pillar)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-v">v0.0</span></div>
-        </div>
-        <div class="story-expand"><strong>AC:</strong> Read notes via native API. Text classification. Notes in search alongside photos.</div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-explore" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-040</span>
-          <span class="story-title">Non-pertinent assets gallery (excluded but accessible)</span>
-          <div class="story-badges"><span class="badge badge-post">Post-MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> user, <strong>I want</strong> a dedicated view for assets I marked non-pertinent, <strong>so that</strong> I can still find random/off-brand content if I need it for something unexpected.<br><br>
-          <strong>AC:</strong> Accessible from Explore filter or Profile. Grid view. Can restore to active. Can bulk delete.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — non-pertinent gallery concept</span></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="story" data-phase="post" data-epic="epic-ui" data-new="true" onclick="this.classList.toggle('expanded')">
-        <div class="story-top">
-          <span class="story-id">PB-041</span>
-          <span class="story-title">BrainstormService protocol (question generation + synthesis)</span>
-          <div class="story-badges"><span class="badge badge-mvp">MVP</span><span class="badge badge-new">NEW v0.1</span></div>
-        </div>
-        <div class="story-expand">
-          <strong>As a</strong> developer, <strong>I want</strong> a BrainstormService protocol abstracting AI question generation and persona synthesis, <strong>so that</strong> the brainstorm flow is testable and the AI provider swappable.<br><br>
-          <strong>AC:</strong> Protocol with generateNextQuestion() and synthesizePersona(). GeminiBrainstormService implementation. MockBrainstormService. Fallback to hardcoded questions on failure.
-          <div class="version-history"><h4>Iteration History</h4>
-            <div class="vh-entry"><span class="vh-ver">v0.0</span><span class="vh-date">Apr 12</span><span class="vh-desc">New story — brainstorm service architecture</span></div>
-          </div>
-        </div>
-      </div>
-
+    <div class="stat cyan">
+      <div class="num">6</div>
+      <div class="label">In TestFlight (à tester)</div>
+    </div>
+    <div class="stat purple">
+      <div class="num">2</div>
+      <div class="label">Awaiting PR/merge</div>
+    </div>
+    <div class="stat orange">
+      <div class="num">4</div>
+      <div class="label">Current sprint focus</div>
     </div>
   </div>
 
-  <!-- ======================== CHANGELOG ======================== -->
-  <div class="section" id="changelog">
-    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">Version History</div>
+  <div class="progress-block">
+    <div class="row">
+      <div class="label">v0.1 initial backlog</div>
+      <div class="progress-bar"><div class="fill" style="width:84%;"></div></div>
+      <div class="pct">84%</div>
+    </div>
+    <div class="row" style="margin-top:.55rem;">
+      <div class="label">v0.2 monetization arc</div>
+      <div class="progress-bar"><div class="fill partial" style="width:62%;"></div></div>
+      <div class="pct">62%</div>
+    </div>
+  </div>
 
-    <div class="meta-block">
-      <h3>v0.2 — Post-Challenge Round 2 <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 13, 2026</span></h3>
-      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
-        <strong>Onboarding:</strong><br>
-        - Pillars: custom pillar creation via partial sheet (was inline textfield)<br>
-        - Bio/Brainstorm: more fun and didactic presentation, illustrations, playful copy<br>
-        - First Scan: redesigned as progressive permission checklist (each permission activates one by one)<br><br>
+  <!-- ═══════════════════════════ VIEW TOGGLE ═══════════════════════════ -->
+  <div class="view-toggle" role="tablist">
+    <button class="active" data-view="kanban" role="tab"><span>🗂️ Kanban</span> <span class="count">v0.2</span></button>
+    <button data-view="backlog" role="tab"><span>📥 Backlog</span> <span class="count">v0.3+</span></button>
+  </div>
 
-        <strong>Home Dashboard:</strong><br>
-        - Pillar cards redesigned: mini thumbnail grid + count overlay + "to review" badge<br>
-        - Inspired by category/course card UI pattern<br><br>
+  <!-- ═══════════════════════════ KANBAN VIEW ═══════════════════════════ -->
+  <div class="view active" id="view-kanban">
+  <div class="kanban">
 
-        <strong>Explore:</strong><br>
-        - Added discrete "Select" button top-right for explicit multi-select entry<br><br>
+    <!-- ─────── EN COURS ─────── -->
+    <div class="col col-encours">
+      <div class="col-head">
+        <div class="col-title">🚧 En cours</div>
+        <div class="col-count">4</div>
+      </div>
 
-        <strong>Swipe → Review:</strong><br>
-        - Renamed SwipeView to ReviewQueueView — screen is about reviewing AI classifications<br><br>
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">SP-001</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">App Store screenshots — Bold Stack variant, slides 02 + 04</div>
+        <div class="kc-meta">marketing/app-store-screenshots/variants/</div>
+      </div>
 
-        <strong>Posts:</strong><br>
-        - Template Builder: added description field + "Validate & Share" button for social sharing<br><br>
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">SP-002</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Upload 5 marketing slides to App Store Connect — iPhone 6.7"</div>
+        <div class="kc-meta">PNG export pipeline · chrome --headless --screenshot</div>
+      </div>
 
-        <strong>Profile:</strong><br>
-        - Persona Editor: removed global tone. Tone now per-platform (each platform card shows its tones, tap to edit)<br><br>
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">SP-003</span>
+          <span class="kc-tag refac">refactor</span>
+        </div>
+        <div class="kc-title">PR feat/storekit-subscription → main</div>
+        <div class="kc-meta">2 commits ready: StoreKit 2 + Settings Pro paywall</div>
+      </div>
 
-        <strong>8 screens updated</strong>
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">SP-004</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">TestFlight v0.2 — submit build with monetization</div>
+        <div class="kc-meta">After PR #3 + StoreKit merge → archive + upload</div>
       </div>
     </div>
 
-    <div class="meta-block">
-      <h3>v0.1 — Post-Challenge Round 1 <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 12, 2026</span></h3>
-      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
-        <strong>Onboarding redesign:</strong><br>
-        - Reordered from 7 to 5 steps. Removed Summary screen.<br>
-        - Merged Platforms + Tone into multi-step (tone per platform, 2-3 max, "Mix" removed)<br>
-        - Bio moved to step 4 (before scan) with dual-path: Quick Bio or Brand Brainstorming<br>
-        - Brand Brainstorming: stacked cards UI with MC + expandable free text<br>
-        - Welcome: added before/after value preview<br>
-        - Pillars: bento grid on/off, emoji auto-suggest, native picker<br>
-        - Fixed nav button position across all steps<br><br>
+    <!-- ─────── À MERGER ─────── -->
+    <div class="col col-merger">
+      <div class="col-head">
+        <div class="col-title">🔀 À merger</div>
+        <div class="col-count">2</div>
+      </div>
 
-        <strong>Home Dashboard:</strong><br>
-        - Bento grids replace horizontal scrolls<br>
-        - Smart scan status card (4 states)<br>
-        - Pillars show mini thumbnail grids<br>
-        - Quick actions rephrased: Review / Compose / Template<br><br>
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">PR-3</span>
+          <span class="kc-tag perf">perf</span>
+        </div>
+        <div class="kc-title">Scan pipeline v2 + Vision crash-proof + Explorer UX</div>
+        <div class="kc-meta">
+          branch <a class="kc-link" href="https://github.com/nomad-lab-dev/postkit/pull/3" target="_blank">perf/scan-pipeline-v2</a> · 3 commits<br>
+          f5a39bc · e937b1d · a0f4c09 (HEAD)
+        </div>
+        <div class="kc-foot"><span>📦 Currently powers TestFlight build</span><span>OPEN</span></div>
+      </div>
 
-        <strong>Explore:</strong><br>
-        - Enriched filters: cadrage, location picker, moment, media<br>
-        - Asset detail → slide-up sheet (was full push)<br>
-        - All metadata editable inline<br>
-        - "Non pertinent" asset state added<br>
-        - Multi-select → 2 action buttons<br><br>
-
-        <strong>Swipe Mode:</strong><br>
-        - Selector → bento grid with mini thumbnails + quantity overlay<br>
-        - Swipe card = full micro-editor (tags, loc, cadrage editable)<br><br>
-
-        <strong>Posts:</strong><br>
-        - Visual slots per post card (filled/empty)<br>
-        - Slot-based assembly with template requirements<br>
-        - Contextual explorer pre-filtered by slot<br>
-        - Post Template Builder (new screen)<br>
-        - Removed swipe-to-advance status<br>
-        - Cancel returns assets to non-utilise<br><br>
-
-        <strong>New stories:</strong> PB-033 to PB-041 (8 stories)
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">PR-?</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">StoreKit 2 subscription + Settings Pro upgrade paywall</div>
+        <div class="kc-meta">
+          branch <strong>feat/storekit-subscription</strong> · 2 commits<br>
+          7b8f159 · 8d351ec (HEAD)
+        </div>
+        <div class="kc-foot"><span>🆕 Not yet PR'd</span><span>DRAFT</span></div>
       </div>
     </div>
 
-    <div class="meta-block">
-      <h3>v0.0 — Initial Spec <span style="font-size:.65rem;color:var(--text-3);text-transform:none;letter-spacing:0;">Apr 12, 2026</span></h3>
-      <div style="font-size:.85rem;color:var(--text-2);line-height:1.7;">
-        Initial product spec from 30-question brainstorming session.<br>
-        32 user stories. 7-step onboarding. Basic grid explore. Simple swipe mode.<br>
-        App Store Connect metadata (EN/FR). 10 icon prompts.
+    <!-- ─────── À TESTER ─────── -->
+    <div class="col col-tester">
+      <div class="col-head">
+        <div class="col-title">🧪 À tester (TestFlight)</div>
+        <div class="col-count">6</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-01</span>
+          <span class="kc-tag perf">perf</span>
+        </div>
+        <div class="kc-title">Scan pipeline v2 — 30-day batch, background friendly</div>
+        <div class="kc-meta">Verify: large libraries (5K+), pause/resume, memory pressure</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-02</span>
+          <span class="kc-tag fix">fix</span>
+        </div>
+        <div class="kc-title">Vision pipeline crash-proof on edge-case photos</div>
+        <div class="kc-meta">Verify: 0-byte assets, HEIC LivePhoto, ProRAW, screenshots</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-03</span>
+          <span class="kc-tag fix">fix</span>
+        </div>
+        <div class="kc-title">Onboarding resilience — interrupted scan recovery</div>
+        <div class="kc-meta">Verify: kill-during-scan resumes cleanly on relaunch</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-04</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Explorer UX — filters, scroll perf, thumb staleness</div>
+        <div class="kc-meta">Verify: filter combos (pillar × cadrage × location), 1K+ scroll</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-05</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Smart Post AI chat → Post Editor handoff</div>
+        <div class="kc-meta">Verify: prompt → 6 slots filled with right pillar/location/cadrage</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">QA-06</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Template scheduled posts surface on Dashboard</div>
+        <div class="kc-meta">Verify: weekday match, "Planned today" section, last-posted-at</div>
+      </div>
+    </div>
+
+    <!-- ─────── DONE ─────── -->
+    <div class="col col-done">
+      <div class="col-head">
+        <div class="col-title">✅ Done · shipped</div>
+        <div class="col-count">8 epics</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">PR-1</span>
+          <span class="kc-tag refac">refactor</span>
+        </div>
+        <div class="kc-title">Slice 0 — TCA foundation + design system</div>
+        <div class="kc-meta">MERGED May 17 · scaffolding, models, deps, features, tests</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">PR-2</span>
+          <span class="kc-tag refac">refactor</span>
+        </div>
+        <div class="kc-title">GalleryClient actor — centralized data reads + cache</div>
+        <div class="kc-meta">MERGED May 21 · unified Dashboard/Explore/Smart Post data path</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-01</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Splash + Onboarding 3 steps</div>
+        <div class="kc-meta">Welcome → Quick Scan → Pillars setup · liquid glass animation</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-02</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Photo classification — Core ML + Gemini Flash fallback</div>
+        <div class="kc-meta">On-device first, cloud only when conf &lt; 0.55</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-03</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Pillar CRUD + bento Dashboard</div>
+        <div class="kc-meta">4-photo preview, status banner, pull-to-refresh, skeleton</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-04</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">Smart Post AI chat + Post Editor + Slot Filler</div>
+        <div class="kc-meta">Gemini intent parsing → template gen → slot machine reveal</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-05</span>
+          <span class="kc-tag feat">feat</span>
+        </div>
+        <div class="kc-title">TestFlight v0.1 — Apple approved (May 21)</div>
+        <div class="kc-meta">Public link active · testflight.apple.com/join/K4MqVuWe</div>
+      </div>
+
+      <div class="kc">
+        <div class="kc-top">
+          <span class="kc-id">EP-06</span>
+          <span class="kc-tag docs">docs</span>
+        </div>
+        <div class="kc-title">Landing + Remotion onboarding video + ASO copy</div>
+        <div class="kc-meta">postkit-vision.vercel.app · 6-scene 38s video · EN/FR landing</div>
       </div>
     </div>
   </div>
 
-  <!-- ======================== ASC ======================== -->
-  <div class="section" id="asc">
-    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">App Store Connect Metadata</div>
-    <div class="meta-block">
-      <h3>App Name</h3>
-      <div class="val">PillarBox - Brand Asset Manager</div>
-      <button class="copy-btn" onclick="copyText(this)">Copy</button>
-    </div>
-    <div class="meta-block">
-      <h3>Subtitle</h3>
-      <div class="val">Organize Photos by Brand Pillar</div>
-      <button class="copy-btn" onclick="copyText(this)">Copy</button>
-    </div>
-    <div class="meta-block">
-      <h3>Promotional Text</h3>
-      <div class="val">Classify your photo library by content pillars using AI. Swipe to organize, search by theme, and assemble ready-to-publish posts. Your personal branding command center.</div>
-      <button class="copy-btn" onclick="copyText(this)">Copy</button>
-    </div>
-    <div class="meta-block">
-      <h3>Keywords (100 chars)</h3>
-      <div class="val">personal branding,content pillars,photo organizer,creator tools,AI classify,social media,asset manager</div>
-      <button class="copy-btn" onclick="copyText(this)">Copy</button>
-    </div>
-    <div class="meta-block">
-      <h3>Category</h3>
-      <div class="val">Primary: Photo & Video — Secondary: Productivity</div>
-    </div>
-  </div>
+  </div><!-- /#view-kanban -->
 
-  <!-- ======================== ICONS ======================== -->
-  <div class="section" id="icons">
-    <div style="font-size:1.1rem;font-weight:600;margin-bottom:1rem;">App Icon — 10 AI Prompts</div>
-    <div class="prompts-section">
-      <div class="prompt-card"><h4>Minimal Pillar Columns</h4><p>Three vertical columns (pillars) in gradient indigo to purple, arranged like a building facade, on clean dark background. Middle pillar taller. Glass reflection. No text. 1024x1024 iOS icon.</p></div>
-      <div class="prompt-card"><h4>Open Box with Pillars</h4><p>Sleek open box from above, colorful vertical pillars rising from inside (indigo, cyan, green, orange, pink). Metallic finish. Dark bg. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Grid of Categorized Photos</h4><p>2x2 grid of abstract photo thumbnails, each with different colored tag overlay (indigo, green, orange, pink). Rounded corners. Dark charcoal bg. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Prism Light Split</h4><p>White light beam entering geometric prism, splitting into 5 colorful beams (indigo, cyan, green, orange, pink). Black bg. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Compass Rose</h4><p>Modern compass rose, 7 points in different colors. Center has camera lens motif. Indigo-purple gradient bg. Flat with depth. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Stacked Cards with Tags</h4><p>Three overlapping photo cards fanned out, colored dot badges (indigo, orange, green). Top card shows abstract landscape. Frosted glass. Dark bg. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Letter P as Pillar</h4><p>Bold geometric "P" designed as classical pillar. Vertical stroke = fluted column, curve = modern arch. Indigo gradient on dark bg. Premium. No other text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Neural Network Nodes</h4><p>Abstract neural network: 7 glowing nodes (different colors = pillars) connected by luminous lines. Constellation pattern. Deep dark bg. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Liquid Glass Pillars</h4><p>Apple Liquid Glass style: three translucent vertical pillars with glass morphism, light refracting through. Soft white/silver bg. iOS 26 feel. No text. 1024x1024.</p></div>
-      <div class="prompt-card"><h4>Pillar Box Hybrid</h4><p>British "pillar box" (mailbox) concept: modern mailbox shape, slot replaced by camera aperture. Indigo instead of red. Metallic. Dark bg. Clever, memorable. No text. 1024x1024.</p></div>
+  <!-- ═══════════════════════════ BACKLOG VIEW ═══════════════════════════ -->
+  <div class="view" id="view-backlog">
+
+    <!-- v0.3 sprint header -->
+    <div class="sprint-header">
+      <div>
+        <h3>🚀 Sprint v0.3 — Growth &amp; App Store Launch</h3>
+        <p class="sub">Once v0.2 ships (StoreKit + scan v2 merged, TestFlight v0.2 live), the focus shifts to <strong>public launch</strong>: App Store v1.0 submission, onboarding paywall conversion, daily-ritual notifications, and the first growth lever (multi-platform tone).</p>
+      </div>
+      <div class="dates">
+        Window <strong>May 29 → Jun 4</strong><br>
+        Theme <strong>Launch + activation</strong><br>
+        Capacity <strong>~7 tickets</strong>
+      </div>
     </div>
-  </div>
+
+    <!-- v0.3 tickets -->
+    <div class="backlog-section">
+      <h2>Next sprint <span class="sec-meta">7 tickets · ordered by priority</span></h2>
+      <p class="sec-desc">Each ticket below is ready to pick up the moment the v0.2 merge train lands. P1 = must-ship for App Store v1.0; P2 = high-impact polish; P3 = nice-to-have.</p>
+
+      <div class="backlog-list">
+        <div class="blc">
+          <div class="blc-prio p1">P1</div>
+          <div class="blc-id">PK-301</div>
+          <div class="blc-main">
+            <div class="blc-title">App Store v1.0 submission — final assets + binary</div>
+            <div class="blc-desc">5 screenshots (Bold Stack) uploaded · review checklist passed · "Sign in not required" toggled · TestFlight build promoted. Target review pass in 48h.</div>
+          </div>
+          <span class="blc-type docs">release</span>
+          <div class="blc-size">M · ~1d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p1">P1</div>
+          <div class="blc-id">PK-302</div>
+          <div class="blc-main">
+            <div class="blc-title">Onboarding paywall — Pro pitch on step 4</div>
+            <div class="blc-desc">Insert StoreKit paywall before pillar setup with 7-day free trial. Native PaymentSheet · skip-link visible · "What's free vs Pro" comparison. Hooks Free→Pro conversion funnel.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">L · ~2d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p1">P1</div>
+          <div class="blc-id">PK-303</div>
+          <div class="blc-main">
+            <div class="blc-title">Local push notifications — morning ritual reminder</div>
+            <div class="blc-desc">Daily 7AM local notif: "Your next post is ready 📸". Settings toggle · time picker · UNUserNotificationCenter (no APNs). Powers the "30 seconds every morning" promise.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">M · ~1d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p2">P2</div>
+          <div class="blc-id">PK-304</div>
+          <div class="blc-main">
+            <div class="blc-title">Multi-platform tone — Instagram vs LinkedIn vs X</div>
+            <div class="blc-desc">In PostEditor, segmented control toggles caption rewriting per platform. Gemini prompt-engineered per voice. Pro-gated. First real Pro differentiator beyond unlimited generations.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">L · ~2d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p2">P2</div>
+          <div class="blc-id">PK-305</div>
+          <div class="blc-main">
+            <div class="blc-title">Analytics funnel — Free → Trial → Pro conversion</div>
+            <div class="blc-desc">Track: install · onboarding complete · paywall view · trial start · trial → paid · churn. RevenueCat OR raw StoreKit + analytics dependency. Dashboard in Mission Control.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">M · ~1d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p2">P2</div>
+          <div class="blc-id">PK-306</div>
+          <div class="blc-main">
+            <div class="blc-title">Incremental scan — only new photos since last run</div>
+            <div class="blc-desc">Store last scanned asset's <code>creationDate</code> · PHFetchOptions predicate filters anything newer. Drops re-scan time on relaunch from minutes to seconds.</div>
+          </div>
+          <span class="blc-type perf">perf</span>
+          <div class="blc-size">S · ~0.5d</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p3">P3</div>
+          <div class="blc-id">PK-307</div>
+          <div class="blc-main">
+            <div class="blc-title">Accessibility audit — VoiceOver + Dynamic Type pass</div>
+            <div class="blc-desc">Sweep all screens with VoiceOver. Verify Dynamic Type clamps. Add missing accessibility labels on the bento + Smart Post chat. Reduce Motion fallbacks reviewed.</div>
+          </div>
+          <span class="blc-type fix">fix</span>
+          <div class="blc-size">M · ~1d</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post-v0.3 (longer-term backlog) -->
+    <div class="backlog-section">
+      <h2>Post-v0.3 backlog <span class="sec-meta">parking lot · prioritize later</span></h2>
+      <p class="sec-desc">Items pulled out of the original backlog or born from v0.1/v0.2 learnings — not yet sized, not committed to a sprint.</p>
+
+      <div class="backlog-list">
+        <div class="blc">
+          <div class="blc-prio p3">P3</div>
+          <div class="blc-id">PK-401</div>
+          <div class="blc-main">
+            <div class="blc-title">iCloud sync — pillars + templates across devices</div>
+            <div class="blc-desc">SwiftData CloudKit integration. Photo references stay local; only pillar/template metadata syncs. Phase-2 milestone from CLAUDE.md.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">XL</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p3">P3</div>
+          <div class="blc-id">PK-402</div>
+          <div class="blc-main">
+            <div class="blc-title">LinkedIn direct posting via OAuth</div>
+            <div class="blc-desc">Native LinkedIn API integration. User authorizes once, PostKit posts on their behalf. Schedules respected. Phase-3 from CLAUDE.md.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">XL</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p3">P3</div>
+          <div class="blc-id">PK-403</div>
+          <div class="blc-main">
+            <div class="blc-title">Gemma on Hetzner — zero-cost AI fallback</div>
+            <div class="blc-desc">Self-hosted Gemma model behind a thin API on the existing Hetzner box. Replaces Gemini Flash for ambiguous photos. Cost: €0 marginal.</div>
+          </div>
+          <span class="blc-type refac">refactor</span>
+          <div class="blc-size">L</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p3">P3</div>
+          <div class="blc-id">PK-404</div>
+          <div class="blc-main">
+            <div class="blc-title">Brand brainstorming flow — 30-question persona</div>
+            <div class="blc-desc">Optional in-onboarding wizard that derives content pillars from a 30-question voice/audience/intent Q&amp;A. Designed but not built (see "Pillar Setting UX Variant").</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">L</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p4">P4</div>
+          <div class="blc-id">PK-405</div>
+          <div class="blc-main">
+            <div class="blc-title">Apple Watch companion — pillar count + post reminder</div>
+            <div class="blc-desc">Complications + glanceable widget. Daily streak ("X days posted in a row"). WatchKit target stub.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">L</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p4">P4</div>
+          <div class="blc-id">PK-406</div>
+          <div class="blc-main">
+            <div class="blc-title">Localization — ES, DE, PT, JA</div>
+            <div class="blc-desc">Add 4 more locales to Localizable.xcstrings. Re-shoot App Store screenshots per locale (skill: ios-marketing-capture loop).</div>
+          </div>
+          <span class="blc-type docs">i18n</span>
+          <div class="blc-size">M</div>
+        </div>
+
+        <div class="blc">
+          <div class="blc-prio p4">P4</div>
+          <div class="blc-id">PK-407</div>
+          <div class="blc-main">
+            <div class="blc-title">Apple Notes integration — paste a note → get a post</div>
+            <div class="blc-desc">Read shared Apple Note content via App Intent. Smart Post uses the note as the prompt. Demoable at WWDC.</div>
+          </div>
+          <span class="blc-type feat">feat</span>
+          <div class="blc-size">M</div>
+        </div>
+      </div>
+    </div>
+
+  <!-- ═══════════════════════════ FULL v0.1 BACKLOG (ARCHIVED) ═══════════════════════════ -->
+  <details class="archive">
+    <summary>Full v0.1 backlog — 38 user stories archived</summary>
+    <p style="font-size:.78rem;color:var(--text-3);margin-bottom:1rem;line-height:1.55;">Original product backlog drafted Apr 12, 2026. 32 of 38 stories shipped via v0.1; the remaining 6 are folded into the v0.2 sprint above or post-MVP.</p>
+    <div class="archive-grid">
+      <div class="epic-block">
+        <h4>Architecture (4/4)</h4>
+        <ul>
+          <li>SwiftUI project · iOS 18 + iPad 18</li>
+          <li>MVVM → TCA migration (Slice 0)</li>
+          <li>SwiftData @Model + value snapshots</li>
+          <li>Protocol-driven dependency injection</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Onboarding (3/3)</h4>
+        <ul>
+          <li>Welcome + paywall preview</li>
+          <li>Quick Scan (20 photos, 5 sec)</li>
+          <li>Pillars setup (Setting UX Variant A)</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Scan pipeline (5/5)</h4>
+        <ul>
+          <li>PhotoKit batch fetch (30-day windows)</li>
+          <li>Core ML classification on-device</li>
+          <li>Gemini Flash fallback (conf &lt; 0.55)</li>
+          <li>Cadrage detection</li>
+          <li>CLLocation reverse geocoding</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Core UI (6/6)</h4>
+        <ul>
+          <li>Liquid Glass design system</li>
+          <li>Dashboard bento 2×2 + hero stat</li>
+          <li>Status banner (4 derived states)</li>
+          <li>Skeleton loader + pull-to-refresh</li>
+          <li>Splash animation (4 tiles drop-in)</li>
+          <li>Dark mode + Reduce Motion + Reduce Transparency</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Classification Queue (4/4)</h4>
+        <ul>
+          <li>Pending review (low-confidence)</li>
+          <li>Tap-to-classify · manual override</li>
+          <li>Confidence badge per photo</li>
+          <li>Batch save · context background</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Explore + Filters (4/4)</h4>
+        <ul>
+          <li>Multi-filter (pillar × cadrage × loc × moment)</li>
+          <li>Lazy grid · 1K+ assets</li>
+          <li>Photo detail sheet</li>
+          <li>Search by location</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Posts (5/5)</h4>
+        <ul>
+          <li>Post Editor with slot grid</li>
+          <li>Slot Filler · AI auto-fill</li>
+          <li>Slot machine reveal animation</li>
+          <li>Caption + hashtag generation (Gemini)</li>
+          <li>Multi-platform export (IG / LinkedIn)</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Templates (5/5)</h4>
+        <ul>
+          <li>Template builder · slot schema</li>
+          <li>Schedule (weekdays + reminder)</li>
+          <li>Planned today section · Dashboard</li>
+          <li>last-posted-at tracking</li>
+          <li>Reusable formats (Italian Summer, etc.)</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Smart Post (3/3)</h4>
+        <ul>
+          <li>AI chat thread · Gemini</li>
+          <li>Intent → template generation</li>
+          <li>Quick reply suggestions</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Monetization (v0.2 in flight)</h4>
+        <ul>
+          <li>StoreKit 2 subscription (Pro)</li>
+          <li>Paywall flow · Settings</li>
+          <li class="partial">AI share token system (in QA)</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Polish + accessibility (post-MVP)</h4>
+        <ul>
+          <li class="partial">Multi-platform tone (Pro)</li>
+          <li class="partial">iCloud sync (Phase 2)</li>
+          <li class="partial">LinkedIn direct posting (Phase 3)</li>
+        </ul>
+      </div>
+      <div class="epic-block">
+        <h4>Marketing &amp; assets (v0.2)</h4>
+        <ul>
+          <li>Landing page + Resend waitlist API</li>
+          <li>Remotion onboarding video · 6 scenes 38s</li>
+          <li>App icon (Liquid Glass 4-tile)</li>
+          <li class="partial">App Store screenshots — Bold Stack (in progress)</li>
+        </ul>
+      </div>
+    </div>
+  </details>
+
+  </div><!-- /#view-backlog -->
 
 </div>
 
 <script>
-  // Tabs
-  document.querySelectorAll('.tab').forEach(t => {
-    t.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
-      document.querySelectorAll('.section').forEach(x => x.classList.remove('active'));
-      t.classList.add('active');
-      document.getElementById(t.dataset.tab).classList.add('active');
-    });
-  });
-
-  // Filters
-  document.querySelectorAll('.fbtn').forEach(b => {
-    b.addEventListener('click', () => {
-      const f = b.dataset.filter;
-      document.querySelectorAll('.fbtn').forEach(x => x.classList.remove('active'));
-      b.classList.add('active');
-      document.querySelectorAll('.story').forEach(s => {
-        if (f === 'all') s.style.display = '';
-        else if (f === 'mvp') s.style.display = s.dataset.phase === 'mvp' ? '' : 'none';
-        else if (f === 'post') s.style.display = s.dataset.phase === 'post' ? '' : 'none';
-        else if (f === 'new') s.style.display = s.dataset.new === 'true' ? '' : 'none';
-        else s.style.display = s.dataset.epic === f ? '' : 'none';
-      });
-    });
-  });
-
-  function copyText(btn) {
-    const v = btn.parentElement.querySelector('.val').innerText;
-    navigator.clipboard.writeText(v).then(() => { btn.textContent = 'Copied!'; setTimeout(() => btn.textContent = 'Copy', 1500); });
+  // View toggle (Kanban ↔ Backlog) — persists choice in sessionStorage
+  const buttons = document.querySelectorAll('.view-toggle button');
+  const views = document.querySelectorAll('.view');
+  function setView(name) {
+    buttons.forEach(b => b.classList.toggle('active', b.dataset.view === name));
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
+    sessionStorage.setItem('backlogView', name);
   }
+  buttons.forEach(b => b.addEventListener('click', () => setView(b.dataset.view)));
+  // Restore last view
+  const saved = sessionStorage.getItem('backlogView');
+  if (saved === 'backlog') setView('backlog');
 </script>
+
 </body>
 </html>
