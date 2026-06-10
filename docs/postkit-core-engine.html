@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostKit — Core Engine</title>
+<style>
+  :root {
+    --bg:#f2f2f7;--surface:rgba(255,255,255,0.72);--glass:rgba(255,255,255,0.55);
+    --glass-strong:rgba(255,255,255,0.78);--glass-border:rgba(0,0,0,0.08);
+    --glass-shadow:0 2px 16px rgba(0,0,0,0.06);
+    --text:#1c1c1e;--text-2:#3c3c43;--text-3:#8e8e93;
+    --accent:#007aff;--accent-bg:rgba(0,122,255,0.08);
+    --green:#34c759;--green-bg:rgba(52,199,89,0.1);
+    --purple:#af52de;--purple-bg:rgba(175,82,222,0.08);
+    --orange:#ff9500;--orange-bg:rgba(255,149,0,0.1);
+    --pink:#ff2d55;--pink-bg:rgba(255,45,85,0.08);
+    --cyan:#32ade6;--cyan-bg:rgba(50,173,230,0.08);
+    --code-bg:#1c1c1e;--code-text:#f2f2f7;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{font-family:-apple-system,BlinkMacSystemFont,'SF Pro Display',system-ui,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;line-height:1.5;}
+  .page{max-width:920px;margin:0 auto;padding:3rem 1.5rem 5rem;}
+
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;font-size:.78rem;color:var(--text-3);}
+  .top a{color:var(--accent);text-decoration:none;}
+  .top a:hover{text-decoration:underline;}
+
+  .hero{margin-bottom:3rem;}
+  .hero .tag{display:inline-block;padding:.25rem .75rem;background:var(--accent-bg);color:var(--accent);border-radius:100px;font-size:.72rem;font-weight:600;letter-spacing:.04em;text-transform:uppercase;margin-bottom:1rem;}
+  .hero h1{font-size:2.4rem;font-weight:700;letter-spacing:-0.03em;line-height:1.1;margin-bottom:.6rem;}
+  .hero p.lede{font-size:1.05rem;color:var(--text-2);max-width:640px;}
+  .hero .meta{margin-top:1rem;display:flex;gap:.5rem;flex-wrap:wrap;font-size:.7rem;color:var(--text-3);}
+  .hero .meta span{padding:.2rem .55rem;background:var(--glass-strong);border:1px solid var(--glass-border);border-radius:6px;font-family:'SF Mono',ui-monospace,monospace;}
+
+  .toc{display:flex;flex-wrap:wrap;gap:.5rem;margin:2rem 0 3rem;padding:1rem;background:var(--glass-strong);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:14px;box-shadow:var(--glass-shadow);}
+  .toc a{flex:1;min-width:140px;text-align:center;padding:.5rem .75rem;text-decoration:none;color:var(--text);font-size:.78rem;font-weight:500;border-radius:8px;transition:all .15s;}
+  .toc a:hover{background:var(--accent-bg);color:var(--accent);}
+  .toc a .n{display:inline-block;font-family:'SF Mono',monospace;font-size:.65rem;color:var(--text-3);margin-right:.25rem;}
+
+  section{margin-bottom:3.5rem;scroll-margin-top:1.5rem;}
+  section > h2{font-size:1.6rem;font-weight:700;letter-spacing:-0.02em;margin-bottom:.4rem;display:flex;align-items:baseline;gap:.6rem;}
+  section > h2 .n{font-family:'SF Mono',monospace;font-size:.85rem;color:var(--text-3);font-weight:600;}
+  section > p.intro{color:var(--text-2);font-size:.95rem;margin-bottom:1.5rem;max-width:680px;}
+
+  h3{font-size:1.08rem;font-weight:600;margin:1.75rem 0 .6rem;letter-spacing:-0.01em;}
+  h4{font-size:.85rem;font-weight:600;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:1.25rem 0 .5rem;}
+  p{font-size:.92rem;color:var(--text-2);margin-bottom:.85rem;}
+  p strong{color:var(--text);font-weight:600;}
+  ul{margin:.6rem 0 1rem 1.25rem;}
+  ul li{font-size:.9rem;color:var(--text-2);margin-bottom:.35rem;}
+  ul li strong{color:var(--text);font-weight:600;}
+  code{font-family:'SF Mono',ui-monospace,monospace;font-size:.82em;padding:.1rem .35rem;background:rgba(0,0,0,0.05);border-radius:4px;color:var(--text);}
+
+  pre{background:var(--code-bg);color:var(--code-text);padding:1rem 1.15rem;border-radius:10px;overflow-x:auto;font-family:'SF Mono',ui-monospace,monospace;font-size:.78rem;line-height:1.55;margin:.75rem 0 1rem;}
+  pre code{background:none;padding:0;color:inherit;font-size:inherit;}
+  .ascii{background:var(--glass-strong);border:1px solid var(--glass-border);color:var(--text);padding:1.25rem;border-radius:14px;font-family:'SF Mono',ui-monospace,monospace;font-size:.72rem;line-height:1.55;overflow-x:auto;box-shadow:var(--glass-shadow);}
+
+  .card{background:var(--glass-strong);backdrop-filter:blur(20px) saturate(180%);border:1px solid var(--glass-border);border-radius:16px;padding:1.4rem 1.5rem;margin-bottom:1.1rem;box-shadow:var(--glass-shadow);}
+  .card .head{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;margin-bottom:.8rem;}
+  .card .head .left{flex:1;min-width:0;}
+  .card .head h3{margin:0;font-size:1.1rem;}
+  .card .head .file{display:block;margin-top:.2rem;font-family:'SF Mono',monospace;font-size:.7rem;color:var(--text-3);}
+  .card .head .role{font-size:.65rem;padding:.2rem .55rem;border-radius:100px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap;}
+  .role-io{background:var(--cyan-bg);color:var(--cyan);}
+  .role-brain{background:var(--purple-bg);color:var(--purple);}
+  .role-flow{background:var(--accent-bg);color:var(--accent);}
+  .role-store{background:var(--green-bg);color:var(--green);}
+  .role-cache{background:var(--orange-bg);color:var(--orange);}
+  .role-reducer{background:var(--pink-bg);color:var(--pink);}
+
+  .card .body p{font-size:.88rem;margin-bottom:.5rem;}
+  .card .body p:last-child{margin-bottom:0;}
+  .card .pattern{margin-top:.9rem;padding:.7rem .9rem;background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;font-size:.82rem;color:var(--text-2);}
+  .card .pattern strong{color:var(--accent);font-weight:600;}
+
+  .reuse-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;margin-top:1rem;}
+  @media(max-width:600px){.reuse-grid{grid-template-columns:1fr;}}
+  .reuse-grid .item{padding:1rem 1.15rem;background:var(--glass-strong);border:1px solid var(--glass-border);border-radius:12px;}
+  .reuse-grid .item .lbl{font-size:.65rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:.4rem;}
+  .reuse-grid .item.keep .lbl{color:var(--green);}
+  .reuse-grid .item.swap .lbl{color:var(--orange);}
+  .reuse-grid .item h4{font-size:.95rem;font-weight:600;color:var(--text);text-transform:none;letter-spacing:0;margin:0 0 .35rem;}
+  .reuse-grid .item p{font-size:.82rem;color:var(--text-2);margin:0;line-height:1.45;}
+
+  .table{width:100%;border-collapse:collapse;margin-top:.6rem;font-size:.82rem;}
+  .table th,.table td{padding:.55rem .75rem;text-align:left;border-bottom:1px solid var(--glass-border);}
+  .table th{font-weight:600;color:var(--text-3);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;}
+  .table td code{font-size:.75rem;}
+
+  .footer{margin-top:4rem;padding-top:1.5rem;border-top:1px solid var(--glass-border);font-size:.78rem;color:var(--text-3);text-align:center;}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="top">
+    <a href="pillarbox-product-cockpit.html">← Cockpit</a>
+    <span>PostKit · Technical doc</span>
+  </div>
+
+  <div class="hero">
+    <span class="tag">Core engine · réutilisable</span>
+    <h1>De la galerie aux piliers&nbsp;: anatomie du moteur PostKit</h1>
+    <p class="lede">Comment 5&nbsp;000 photos non triées deviennent une bibliothèque rangée par sujet, en silence et de manière reprenable. Cette doc explique la <strong>pipeline de classification</strong> de la galerie&nbsp;: ses briques, l'algorithme, et ce qui se réutilise tel-quel dans une future app.</p>
+    <div class="meta">
+      <span>v0.1 · 2026-06-02</span>
+      <span>iOS 18+ · SwiftUI · TCA</span>
+      <span>Vision · Core ML · Gemini Flash</span>
+    </div>
+  </div>
+
+  <nav class="toc">
+    <a href="#mission"><span class="n">01</span>Mission</a>
+    <a href="#architecture"><span class="n">02</span>Architecture</a>
+    <a href="#blocs"><span class="n">03</span>Briques</a>
+    <a href="#algorithm"><span class="n">04</span>Algorithme</a>
+    <a href="#reuse"><span class="n">05</span>Réutilisation</a>
+    <a href="#files"><span class="n">06</span>Files map</a>
+  </nav>
+
+  <!-- ───────────── 01 · Mission ───────────── -->
+  <section id="mission">
+    <h2><span class="n">01.</span> Mission du moteur</h2>
+    <p class="intro">L'utilisateur arrive avec une pellicule remplie au hasard sur plusieurs années. Le moteur a deux jobs&nbsp;: <strong>scanner toute la galerie sans bloquer l'UI ni vider la batterie</strong>, et <strong>classer chaque photo dans un ou plusieurs «&nbsp;piliers&nbsp;»</strong> (sujets de contenu définis par l'utilisateur) avec un score de confiance.</p>
+
+    <h3>Contraintes qui ont guidé le design</h3>
+    <ul>
+      <li><strong>Idempotence.</strong> Le scan complet peut être interrompu (kill, low-battery, perte d'accès photo) et doit reprendre exactement où il s'est arrêté, sans reclasser ce qui est déjà fait.</li>
+      <li><strong>Gratuité par défaut.</strong> 99% du travail est on-device via Core ML / Vision. La cloud AI (Gemini) n'est appelée que sur les cas ambigus, opt-in, et derrière un signal minimum.</li>
+      <li><strong>Backpressure naturelle.</strong> Pas de buffer mémoire qui grossit&nbsp;: la galerie alimente le pipeline à la vitesse où le ML peut digérer.</li>
+      <li><strong>UI jamais bloquée.</strong> Le ModelContext principal sert à la lecture UI&nbsp;; toutes les écritures lourdes se font sur un background context.</li>
+      <li><strong>Snapshot first.</strong> Les <code>@Model</code> SwiftData ne traversent jamais les frontières d'actor — on convertit en structs <code>Equatable/Sendable</code> dès qu'on quitte le contexte du store.</li>
+    </ul>
+  </section>
+
+  <!-- ───────────── 02 · Architecture ───────────── -->
+  <section id="architecture">
+    <h2><span class="n">02.</span> Architecture en couches</h2>
+    <p class="intro">Cinq dépendances injectables (TCA <code>@DependencyClient</code>), orchestrées depuis un feature reducer. Chaque couche a une responsabilité claire et peut être remplacée en preview/test.</p>
+
+    <pre class="ascii">┌──────────────────────────────────────────────────────────┐
+│  Feature Reducer  (DashboardFeature.runFullScan)         │
+│  · récupère la liste des piliers + les IDs déjà classés  │
+│  · délègue tout le reste                                  │
+└────────────────────────┬─────────────────────────────────┘
+                         │
+        ┌────────────────┴──────────────────┐
+        ▼                                    ▼
+┌──────────────────────┐         ┌──────────────────────────┐
+│ PhotoLibraryClient   │         │ PersistenceClient        │
+│ · fetchAllPhotos     │         │ · fetchClassifiedAssetIDs│
+│ · image (thumb/full) │         │   (Set&lt;String&gt;, dedup)   │
+└──────────┬───────────┘         └──────────────────────────┘
+           │ PhotoBatchSequence (30 / batch, pull-based)
+           ▼
+┌──────────────────────────────────────────────────────────┐
+│  for try await batch in fetchAllPhotos(30) {              │
+│    TaskGroup · maxConcurrent = 2                          │
+│      └─► fetchImage → classifyWithCadrage → snapshot      │
+│    batchSavePhotos (background ModelContext)              │
+│  }                                                        │
+└────────────────────────┬─────────────────────────────────┘
+                         │ (per-photo)
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│ ImageClassifierClient · classifyWithCadrage              │
+│ ┌──────────────────────────────────────────────────────┐ │
+│ │ Vision (Core ML on-device)                           │ │
+│ │   identifiers tokenisés → score par pilier            │ │
+│ │   si max ≥ 0.70 → return                              │ │
+│ └────────────────────┬─────────────────────────────────┘ │
+│                       │ confiance basse                   │
+│                       ▼                                   │
+│ ┌──────────────────────────────────────────────────────┐ │
+│ │ Gemini Flash (cloud, opt-in)                         │ │
+│ │   prompt JSON · 1 retry · validate pillarName        │ │
+│ └──────────────────────────────────────────────────────┘ │
+│ + CadrageDetector (portrait/wide/detail/pov/screenshot)  │
+└──────────────────────────────────────────────────────────┘
+                         │ ClassifiedPhotoSnapshot
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│ PersistenceClient.batchSavePhotos (background context)   │
+└────────────────────────┬─────────────────────────────────┘
+                         │ invalidate
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│ GalleryClient (actor cache) · pillars/photos/posts read  │
+│ utilisé par toutes les vues — un seul DB hit par session │
+└──────────────────────────────────────────────────────────┘</pre>
+  </section>
+
+  <!-- ───────────── 03 · Building blocks ───────────── -->
+  <section id="blocs">
+    <h2><span class="n">03.</span> Les six briques</h2>
+    <p class="intro">Chaque brique est un <code>@DependencyClient</code> injectable (live / preview / test). Le contrat est l'interface&nbsp;; l'implémentation se swap sans toucher au reducer.</p>
+
+    <!-- 1. PhotoLibraryClient -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>PhotoLibraryClient</h3>
+          <span class="file">Dependencies/PhotoLibraryClient.swift</span>
+        </div>
+        <span class="role role-io">I/O · PhotoKit</span>
+      </div>
+      <div class="body">
+        <p>Wrap minimal sur PhotoKit. Expose la galerie comme&nbsp;: un comptage, un <code>Set&lt;String&gt;</code> de tous les <code>localIdentifier</code> (pour dédupliquer le scan), un fetch des N plus récentes, le streaming complet via <code>PhotoBatchSequence</code>, et la résolution d'une image (thumb ou full).</p>
+        <p>La méthode <code>image(identifier, size)</code> bascule entre <code>fastFormat / highQuality</code> selon la taille demandée — on ne paie le coût d'une décompression haute-déf que pour la classification.</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> exposer PhotoKit via une interface <code>@Sendable</code> au lieu de propager <code>PHAsset</code> dans le code métier. <code>PhotoAsset</code> (le DTO) ne porte que <code>localIdentifier · creationDate · location</code>.</div>
+      </div>
+    </div>
+
+    <!-- 2. PhotoBatchSequence -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>PhotoBatchSequence</h3>
+          <span class="file">Dependencies/PhotoBatchSequence.swift</span>
+        </div>
+        <span class="role role-flow">Streaming · backpressure</span>
+      </div>
+      <div class="body">
+        <p>Une <code>AsyncSequence</code> qui yield des batches de N <code>PhotoAsset</code> à la demande. Remplace un <code>AsyncStream</code> bufferisé — qui chargeait toute la galerie en RAM pendant que le ML rattrapait.</p>
+        <p>Chaque appel à <code>next()</code> énumère le batch suivant depuis <code>PHFetchResult</code>, fait un <code>Task.yield()</code> pour redonner du CPU aux tâches ML concurrentes, et propage <code>CancellationError</code> immédiatement.</p>
+        <p>Trois modes&nbsp;: <code>.live(batchSize)</code> pour la prod, <code>.static(batches)</code> pour les tests, <code>.pending</code> qui ne yield jamais (utile en preview).</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> dès qu'un producteur peut être plus rapide que le consommateur, préférer une <code>AsyncSequence</code> pull-based à un <code>AsyncStream</code> buffer. La backpressure est automatique.</div>
+      </div>
+    </div>
+
+    <!-- 3. ImageClassifierClient -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>ImageClassifierClient</h3>
+          <span class="file">Dependencies/ImageClassifierClient.swift</span>
+        </div>
+        <span class="role role-brain">Brain · ML hybride</span>
+      </div>
+      <div class="body">
+        <p>Le cœur. Trois méthodes&nbsp;: <code>classify</code>, <code>detectCadrage</code>, et <code>classifyWithCadrage</code> qui fait les deux en réutilisant la même passe Vision.</p>
+        <p>L'implémentation interne est divisée en trois enums privés&nbsp;: <code>VisionClassifier</code> (on-device), <code>GeminiClassifier</code> (cloud), et <code>CadrageDetector</code> (orientation/style).</p>
+        <p>Seuils&nbsp;: <code>highConfidence = 0.70</code> (Vision suffit), <code>minConfidence = 0.55</code> (gardé en résultat), <code>geminiFloor = 0.30</code> (signal Vision minimum avant d'appeler le cloud).</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> ne jamais appeler le cloud par défaut. On-device first, fallback derrière un flag utilisateur (<code>cloudAIEnabled</code>) ET derrière un signal minimum de l'on-device. Économise quota API et préserve la vie privée.</div>
+      </div>
+    </div>
+
+    <!-- 4. PersistenceClient -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>PersistenceClient</h3>
+          <span class="file">Dependencies/PersistenceClient.swift</span>
+        </div>
+        <span class="role role-store">Storage · SwiftData</span>
+      </div>
+      <div class="body">
+        <p>Wrap sur SwiftData. Sépare un <strong>mainContext</strong> (lecture UI) d'un <strong>backgroundContext</strong> (écritures lourdes). Aucune view ne touche au context directement — tout passe par cette interface.</p>
+        <p>API expose surtout des <code>fetch...</code> qui renvoient des <strong>Snapshots</strong> (<code>PillarSnapshot</code>, <code>ClassifiedPhotoSnapshot</code>, etc.) — des structs <code>Equatable/Sendable</code> qui peuvent traverser les frontières async sans risque.</p>
+        <p>Méthodes critiques pour le scan&nbsp;: <code>fetchClassifiedAssetIDs() → Set&lt;String&gt;</code> (idempotence), <code>batchSavePhotos([Snapshot])</code> (un seul save par batch).</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> snapshot pattern obligatoire avec SwiftData. <code>@Model</code> n'est ni <code>Sendable</code> ni <code>Equatable</code> — ne jamais le stocker dans un State TCA ou le passer entre actors.</div>
+      </div>
+    </div>
+
+    <!-- 5. GalleryClient -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>GalleryClient</h3>
+          <span class="file">Dependencies/GalleryClient.swift</span>
+        </div>
+        <span class="role role-cache">Cache · actor</span>
+      </div>
+      <div class="body">
+        <p>Couche de lecture cachée par-dessus <code>PersistenceClient</code>. Les vues (Dashboard, Explore, Post Assembly) lisent des dizaines de fois&nbsp;; on évite des dizaines de hits DB en mettant un <code>actor</code> en cache.</p>
+        <p>Quatre caches&nbsp;: <code>pillars</code>, <code>photos</code>, <code>templates</code>, <code>posts</code>. Chacun avec son <code>invalidate</code> appelé par les reducers qui écrivent (e.g. <code>acceptAllTapped</code> → <code>invalidatePhotos</code>).</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> un <code>actor</code> entre la DB et les reducers — invalidation explicite côté écriture, jamais d'invalidation automatique. Le contrôle reste lisible.</div>
+      </div>
+    </div>
+
+    <!-- 6. ClassificationQueueFeature (orchestration) -->
+    <div class="card">
+      <div class="head">
+        <div class="left">
+          <h3>Reducers d'orchestration</h3>
+          <span class="file">Features/Dashboard/DashboardFeature.swift · Features/Classification/ClassificationQueueFeature.swift</span>
+        </div>
+        <span class="role role-reducer">TCA · effects</span>
+      </div>
+      <div class="body">
+        <p>Aucune brique ne s'orchestre toute seule. Le <strong>full scan</strong> vit dans <code>DashboardFeature.runFullScan</code> et le <strong>review queue</strong> (photos à valider manuellement) dans <code>ClassificationQueueFeature</code>.</p>
+        <p>Le run effect est marqué <code>.cancellable(id: CancelID.fullScan)</code>. Quitter l'app, basculer l'utilisateur ou rappuyer "Scan" annule proprement la TaskGroup et tous les <code>await</code> en cours.</p>
+        <div class="pattern"><strong>Pattern réutilisable&nbsp;:</strong> tout effect long doit avoir un <code>.cancellable(id:)</code>. Et <code>CancellationError</code> doit toujours être re-throw — jamais <code>catch {}</code> qui l'avale silencieusement.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ───────────── 04 · Algorithm ───────────── -->
+  <section id="algorithm">
+    <h2><span class="n">04.</span> L'algorithme de classification</h2>
+    <p class="intro">Le matching photo → pilier ne fait pas d'embeddings, ne fait pas de fine-tuning. C'est un token-matcher Vision&nbsp;: simple, déterministe, gratuit, et étonnamment robuste sur les catégories larges.</p>
+
+    <h3>Étape 1 — Vision sort des identifiers</h3>
+    <p>Le request <code>VNClassifyImageRequest</code> renvoie ~1&nbsp;000 observations comme <code>{ identifier: "sports_car", confidence: 0.82 }</code>, <code>{ identifier: "espresso", confidence: 0.71 }</code>, etc. La plupart sont du bruit&nbsp;; on filtre <code>confidence &gt; 0.01</code> pour garder ce qui est utilisable.</p>
+
+    <h3>Étape 2 — Construction du vocabulaire de chaque pilier</h3>
+    <p>Pour chaque pilier défini par l'utilisateur, on construit un <code>Set&lt;String&gt;</code> de termes&nbsp;:</p>
+    <ul>
+      <li><strong>Reference tags</strong> — les tags des photos d'exemple que l'utilisateur a uploadées au setup (signal le plus fort).</li>
+      <li><strong>Mots de la description</strong> — l'utilisateur a écrit "<em>cars, motorsport, garage builds</em>". On tokenise, on garde les mots de plus de 3 caractères.</li>
+      <li><strong>Fallback keywords</strong> — une table hardcodée pour les catégories génériques ("automotive" → car/vehicle/auto/truck/motor/road/wheel/race/drive…). Sert de filet quand l'utilisateur ne donne ni description ni tags.</li>
+      <li><strong>Le nom du pilier</strong> — toujours inclus, splité sur l'espace.</li>
+    </ul>
+
+    <h3>Étape 3 — Matching tokenisé</h3>
+    <p>L'identifier Vision <code>"sports_car"</code> est splité sur <code>_</code> → <code>{"sports", "car"}</code>. Pour chaque pilier on regarde si un token Vision matche un terme du vocabulaire (égalité OU préfixe si le terme fait ≥ 4 caractères).</p>
+    <p>Quand ça match, on ajoute la <code>confidence</code> de l'observation au score du pilier. <strong>Plusieurs piliers peuvent matcher la même photo</strong> — une photo de café près d'une voiture peut être classée à la fois en "Cars" et en "Food".</p>
+
+    <pre><code>// Pseudo-code de matching (vrai code dans VisionClassifier.mapToAllPillars)
+for obs in observations where obs.confidence &gt; 0.01 {
+    let tokens = obs.identifier.lowercased().split(separator: "_")
+    for pillar in pillars {
+        let matched = pillar.terms.contains { term in
+            tokens.contains { token in
+                token == term || (term.count &gt;= 4 &amp;&amp; token.hasPrefix(term))
+            }
+        }
+        if matched { scores[pillar.name] += obs.confidence }
+    }
+}</code></pre>
+
+    <h3>Étape 4 — Décision Vision vs cloud</h3>
+    <p>On regarde le meilleur score Vision&nbsp;:</p>
+    <ul>
+      <li>Si <code>max ≥ 0.70</code> → <strong>on garde Vision</strong>, on renvoie tous les piliers au-dessus du seuil. Pas de cloud.</li>
+      <li>Si <code>max &lt; 0.70</code> et <code>cloudAIEnabled == false</code> → on garde les piliers Vision ≥ 0.55, on accepte une confiance basse.</li>
+      <li>Si <code>max &lt; 0.70</code> et <code>max ≥ 0.30</code> et <code>cloudAIEnabled == true</code> → <strong>fallback Gemini Flash</strong>. Le seuil 0.30 évite de payer un appel API pour des photos qui n'ont aucun signal sur les piliers.</li>
+    </ul>
+
+    <h3>Étape 5 — Gemini (cas limites)</h3>
+    <p>Quand on appelle Gemini, on lui envoie&nbsp;: l'image, et un prompt qui liste chaque pilier avec son <em>about</em> + ses <em>reference tags</em>. Il renvoie un tableau JSON <code>[{pillarName, confidence, tags}, …]</code>.</p>
+    <p>Validation stricte côté Swift&nbsp;: on filtre les <code>pillarName</code> qui ne sont pas dans le <code>Set</code> des piliers connus — Gemini hallucine des catégories de temps en temps, on les jette.</p>
+    <p>Un seul retry après 500&nbsp;ms si l'appel échoue. Au-delà, on retombe sur le résultat Vision même s'il est sous le seuil.</p>
+
+    <h3>Étape 6 — Cadrage (passe séparée)</h3>
+    <p>En parallèle de la classification thématique, on tag chaque photo d'un cadrage&nbsp;: <code>portrait · wide · detail · pov · screenshot</code>. Sert plus tard à choisir les bons slots dans les templates de post.</p>
+    <p>Détection screenshot par aspect-ratio + largeur exacte (iPhone modernes <code>2.1…2.25</code> et <code>1242 / 1284 / 1290 / 1320 px</code>). Sinon, mêmes observations Vision mais matchées contre une autre table de termes pondérés par <code>weight</code>.</p>
+  </section>
+
+  <!-- ───────────── 05 · Reuse ───────────── -->
+  <section id="reuse">
+    <h2><span class="n">05.</span> Réutilisation pour une autre app</h2>
+    <p class="intro">Ce que tu peux copier-coller tel quel vs. ce qu'il faut adapter au nouveau domaine.</p>
+
+    <h3>À reprendre tel quel</h3>
+    <div class="reuse-grid">
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>PhotoBatchSequence</h4>
+        <p>Streaming pull-based générique. Aucune dépendance domaine.</p>
+      </div>
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>Snapshot pattern</h4>
+        <p>Convention SwiftData → struct. S'applique à n'importe quel <code>@Model</code>.</p>
+      </div>
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>GalleryClient (actor cache)</h4>
+        <p>Lire/invalider. Renommer mais garder le pattern d'actor avec invalidations explicites.</p>
+      </div>
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>Vision request + deepCopyCGImage</h4>
+        <p>Le <code>deepCopyCGImage</code> évite des crashes PhotoKit où le CGImage backing devient invalide pendant l'analyse async. Garder.</p>
+      </div>
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>Orchestration TaskGroup + cancellation</h4>
+        <p><code>maxConcurrent</code>, <code>.cancellable(id:)</code>, propagation de <code>CancellationError</code>. Pattern indépendant du domaine.</p>
+      </div>
+      <div class="item keep">
+        <div class="lbl">✓ Keep · 100%</div>
+        <h4>Cloud fallback seuil-gated</h4>
+        <p>L'idée «&nbsp;on-device first, cloud derrière flag + signal minimum&nbsp;» se réapplique à toute feature ML hybride.</p>
+      </div>
+    </div>
+
+    <h3>À adapter au nouveau domaine</h3>
+    <div class="reuse-grid">
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>VisionClassifier.fallbackKeywords</h4>
+        <p>Table de mots-clés par catégorie. Hardcodée PostKit (cars/food/travel/business/fitness/bts). À redéfinir pour le nouveau domaine ou rendre data-driven via Remote Config.</p>
+      </div>
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>PillarDefinition</h4>
+        <p>Le DTO du domaine. Remplacer par <code>TopicDefinition</code> / <code>CategoryDefinition</code> selon l'app. Garder la structure&nbsp;: <code>name · about · referenceTags</code>.</p>
+      </div>
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>CadrageDetector.cadrageTerms</h4>
+        <p>Pondération portrait/wide/detail/pov est spécifique à PostKit (alimente les templates de post). Une app de tri photo classique n'en a pas besoin.</p>
+      </div>
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>Prompt Gemini</h4>
+        <p>Le prompt JSON inclut le mot "pillar" partout. Renommer en "topic" / "category" selon le domaine pour ne pas biaiser le modèle.</p>
+      </div>
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>Seuils 0.70 / 0.55 / 0.30</h4>
+        <p>Calibrés pour des piliers larges (catégories grand public). Une app avec catégories techniques pointues voudra des seuils plus élevés.</p>
+      </div>
+      <div class="item swap">
+        <div class="lbl">⚠ Swap</div>
+        <h4>Screenshot detection (widths)</h4>
+        <p>Liste de largeurs exactes iPhone à mettre à jour pour les nouveaux devices. À refresh chaque génération.</p>
+      </div>
+    </div>
+
+    <h3>Checklist d'extraction</h3>
+    <ul>
+      <li>Copier <code>Dependencies/</code> en entier, renommer <code>Pillar*</code> → <code>YourTopic*</code>.</li>
+      <li>Garder <code>PhotoBatchSequence.swift</code> sans modif.</li>
+      <li>Dans <code>ImageClassifierClient.swift</code>&nbsp;: remplacer la table <code>fallbackKeywords</code>, ajuster les seuils, ré-écrire le prompt Gemini, supprimer <code>CadrageDetector</code> si non pertinent.</li>
+      <li>Renommer <code>GalleryClient</code> → quelque chose qui colle au domaine (<code>LibraryClient</code>, <code>CollectionClient</code>).</li>
+      <li>Reprendre le scaffold d'orchestration depuis <code>DashboardFeature.runFullScan</code> (lignes 260-400 environ) — c'est le code-modèle.</li>
+    </ul>
+  </section>
+
+  <!-- ───────────── 06 · Files map ───────────── -->
+  <section id="files">
+    <h2><span class="n">06.</span> Files map</h2>
+    <p class="intro">Les fichiers à lire dans l'ordre pour comprendre le moteur, du plus simple au plus orchestré.</p>
+
+    <table class="table">
+      <thead>
+        <tr><th style="width:32%">Fichier</th><th style="width:14%">Lignes</th><th>Rôle</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Dependencies/PhotoLibraryClient.swift</code></td><td>125</td><td>Wrap PhotoKit · DTO PhotoAsset</td></tr>
+        <tr><td><code>Dependencies/PhotoBatchSequence.swift</code></td><td>106</td><td>AsyncSequence pull-based avec backpressure</td></tr>
+        <tr><td><code>Dependencies/ImageClassifierClient.swift</code></td><td>438</td><td>Vision + Gemini + Cadrage · le cœur ML</td></tr>
+        <tr><td><code>Dependencies/PersistenceClient.swift</code></td><td>467</td><td>SwiftData wrap · main vs background context</td></tr>
+        <tr><td><code>Dependencies/GalleryClient.swift</code></td><td>156</td><td>Actor cache de lecture</td></tr>
+        <tr><td><code>Models/Snapshots.swift</code></td><td>—</td><td>Structs <code>Equatable/Sendable</code> qui traversent les frontières</td></tr>
+        <tr><td><code>Features/Dashboard/DashboardFeature.swift</code></td><td>~500</td><td>Orchestration du full scan (chercher <code>runFullScan</code>)</td></tr>
+        <tr><td><code>Features/Classification/ClassificationQueueFeature.swift</code></td><td>119</td><td>Review queue · accept-all · cadrage backfill</td></tr>
+        <tr><td><code>Features/Onboarding/OnboardingFeature.swift</code></td><td>~500</td><td>Quick scan (20 photos · suggestions de piliers)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div class="footer">
+    PostKit · Core engine doc · <a href="pillarbox-product-cockpit.html" style="color:var(--accent);text-decoration:none;">retour cockpit</a><br>
+    Nicolas Lucchetta · SwiftUI + TCA + Vision + Gemini Flash
+  </div>
+
+</div>
+</body>
+</html>

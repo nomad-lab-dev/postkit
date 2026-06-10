@@ -8,26 +8,46 @@ import SwiftUI
 
 struct PillarsBentoSection: View {
     let pillars: IdentifiedArrayOf<PillarSnapshot>
+    var columns: Int = 2
     let onTap: (PillarSnapshot) -> Void
-
-    private let columns = [
-        GridItem(.flexible(), spacing: Spacing.sm),
-        GridItem(.flexible(), spacing: Spacing.sm),
-    ]
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             Text("Your topics").eyebrow()
 
-            LazyVGrid(columns: columns, spacing: Spacing.sm) {
-                ForEach(pillars) { pillar in
-                    Button { onTap(pillar) } label: {
-                        PillarBentoCard(snapshot: pillar)
+            if columns == 2 {
+                // Non-lazy layout avoids rendering glitches when nested inside LazyVStack
+                let items = pillars.elements
+                VStack(spacing: Spacing.sm) {
+                    ForEach(Array(stride(from: 0, to: items.count, by: 2)), id: \.self) { i in
+                        HStack(spacing: Spacing.sm) {
+                            pillarButton(items[i])
+                            if i + 1 < items.count {
+                                pillarButton(items[i + 1])
+                            } else {
+                                Color.clear
+                            }
+                        }
                     }
-                    .buttonStyle(.scaling)
+                }
+            } else {
+                LazyVGrid(
+                    columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.sm), count: columns),
+                    spacing: Spacing.sm
+                ) {
+                    ForEach(pillars) { pillar in
+                        pillarButton(pillar)
+                    }
                 }
             }
         }
+    }
+
+    private func pillarButton(_ pillar: PillarSnapshot) -> some View {
+        Button { onTap(pillar) } label: {
+            PillarBentoCard(snapshot: pillar)
+        }
+        .buttonStyle(.scaling)
     }
 }
 

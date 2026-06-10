@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Onboarding V5 — 3 concept variants</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ─── SHARED V5 LAYOUT ─── */
+  .v5 .variant { max-width: 1380px; }
+  .v5 .flow {
+    grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr;
+  }
+
+  /* Per-variant identity stripe in the header */
+  .concept-stripe {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .concept-cell {
+    padding: 14px 16px;
+    background: var(--panel-2);
+    border-radius: 12px;
+    border-top: 3px solid;
+  }
+  .concept-cell .lab {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+  .concept-cell .ti {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .concept-cell .desc {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .concept-cell em {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    color: #FF9500;
+  }
+
+  .pillar-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 100px;
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  /* ─── V1 MIRROR — identity-discovery palette ─── */
+  .v1-bg-1 {
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(255, 214, 130, 0.18) 0%, transparent 55%),
+      linear-gradient(160deg, #0A0A14 0%, #1A1A29 60%, #2A2A45 100%);
+    color: #FFFFFF;
+  }
+  .v1-bg-2 {
+    background:
+      radial-gradient(ellipse at 50% 30%, rgba(255, 214, 130, 0.24) 0%, transparent 60%),
+      linear-gradient(180deg, #14141F 0%, #1F1F2E 100%);
+    color: #FFFFFF;
+  }
+  .v1-bg-3 {
+    background: linear-gradient(180deg, #1A1A29 0%, #2A2A45 100%);
+    color: #FFFFFF;
+  }
+  .v1-bg-4 {
+    background: linear-gradient(180deg, #FFFBF0 0%, #FFE4B5 100%);
+    color: #1C1C1E;
+  }
+  .v1 em.accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic; color: #FFD68A;
+  }
+
+  /* V1 MIRROR – archetype card */
+  .archetype-card {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 214, 138, 0.18);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+  }
+  .archetype-card .row {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .archetype-card .em { font-size: 14px; }
+  .archetype-card .nm { flex: 1; font-size: 11px; font-weight: 700; color: #FFFFFF; }
+  .archetype-card .conf {
+    font-family: 'Geist Mono', monospace;
+    font-size: 8.5px;
+    color: #FFD68A;
+    font-weight: 600;
+  }
+  .archetype-card .photos {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+    margin-top: 5px;
+  }
+  .archetype-card .photos img {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    border-radius: 3px;
+    display: block;
+    min-width: 0;
+  }
+  .archetype-card .cnt {
+    font-size: 8.5px; color: rgba(255, 255, 255, 0.55); margin-top: 3px;
+    font-family: 'Geist Mono', monospace;
+  }
+
+  /* ─── V2 GOLDMINE — value/inventory palette ─── */
+  .v2-bg-1 {
+    background:
+      radial-gradient(ellipse at 60% 25%, rgba(255, 214, 10, 0.35) 0%, transparent 55%),
+      linear-gradient(165deg, #FFF8E1 0%, #FFE08A 50%, #FFC107 100%);
+    color: #1C1C1E;
+  }
+  .v2-bg-2 {
+    background: linear-gradient(180deg, #FFF8E1 0%, #FFEEB5 100%);
+    color: #1C1C1E;
+  }
+  .v2-bg-3 {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255, 255, 255, 0.40) 0%, transparent 55%),
+      linear-gradient(165deg, #FF9500 0%, #FF6D00 60%, #E64A19 100%);
+    color: #FFFFFF;
+  }
+  .v2-bg-4 {
+    background: linear-gradient(180deg, #FFFBF0 0%, #FFF4D6 100%);
+    color: #1C1C1E;
+  }
+  .v2 em.accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic; color: #FF9500;
+  }
+
+  /* V2 GOLDMINE — counter row */
+  .counter-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 5px 0; font-size: 11px; color: #1C1C1E;
+    border-bottom: 1px dashed rgba(0, 0, 0, 0.10);
+  }
+  .counter-row:last-child { border: none; }
+  .counter-row .lab { display: flex; align-items: center; gap: 6px; }
+  .counter-row .em { font-size: 13px; }
+  .counter-row .num {
+    font-family: 'Geist Mono', monospace; font-weight: 700; font-size: 13px;
+    color: #FF9500;
+  }
+  .equiv-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 9px;
+    background: rgba(255, 255, 255, 0.22);
+    backdrop-filter: blur(8px);
+    border-radius: 100px;
+    font-size: 10px; font-weight: 600;
+    color: #FFFFFF;
+  }
+
+  /* ─── V3 DEMO FIRST — brand vivid palette ─── */
+  .v3-bg-1 {
+    background: linear-gradient(165deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+    color: #FFFFFF;
+  }
+  .v3-bg-2 {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(175, 82, 222, 0.25) 0%, transparent 55%),
+      linear-gradient(180deg, #FFFFFF 0%, #F0F0FF 100%);
+    color: #1C1C1E;
+  }
+  .v3-bg-3 {
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(175, 82, 222, 0.18) 0%, transparent 55%),
+      linear-gradient(180deg, #FFFFFF 0%, #F8F0FF 100%);
+    color: #1C1C1E;
+  }
+  .v3-bg-4 {
+    background: linear-gradient(165deg, #AF52DE 0%, #5856D6 60%, #007AFF 100%);
+    color: #FFFFFF;
+  }
+  .v3 em.accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic; color: #FFAE42;
+  }
+
+  /* V3 — interactive prompt chips */
+  .prompt-tab {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 100px;
+    padding: 5px 11px;
+    font-size: 10px; font-weight: 600;
+    color: rgba(255, 255, 255, 0.85);
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+  }
+  .prompt-tab.active {
+    background: #FFFFFF;
+    color: #007AFF;
+    border-color: #FFFFFF;
+  }
+
+  /* Shared IG post mockup base — used in V1 and V3 step04 */
+  .ig-mock {
+    background: #FFFFFF; border-radius: 10px; overflow: hidden;
+    color: #1C1C1E; max-width: 158px; margin: 0 auto;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  }
+  .ig-mock .head {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 7px; border-bottom: 1px solid rgba(0, 0, 0, .06);
+  }
+  .ig-mock .avatar {
+    width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+  }
+  .ig-mock .handle { font-size: 9px; font-weight: 700; color: #1C1C1E; }
+  .ig-mock .badge {
+    margin-left: auto; font-size: 7px;
+    font-family: 'Geist Mono', monospace; font-weight: 700; letter-spacing: .1em;
+  }
+  .ig-mock .photo {
+    width: 100%; aspect-ratio: 1/1; background: #000;
+  }
+  .ig-mock .photo img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .ig-mock .dots {
+    display: flex; justify-content: center; gap: 4px; padding: 5px 0 3px;
+  }
+  .ig-mock .dot {
+    width: 5px; height: 5px; border-radius: 50%; background: rgba(0,0,0,.15);
+  }
+  .ig-mock .dot.active { /* color set per variant inline */ }
+  .ig-mock .body { padding: 0 7px 6px; }
+  .ig-mock .cap { font-size: 8.5px; line-height: 1.35; color: #1C1C1E; margin-bottom: 3px; }
+  .ig-mock .eng {
+    display: flex; gap: 7px; font-size: 8px;
+    color: #8E8E93; align-items: center;
+  }
+</style>
+</head>
+<body class="v3">
+
+<header class="page-header">
+  <div class="eyebrow">Onboarding V5 · 3 concept variants · different psychology angles</div>
+  <h1>Same product. <em>Three onboarding philosophies.</em></h1>
+  <p>
+    Round 4 (V4) gave you 3 visual personalities of the same flow. This round shifts the question:
+    <b>what transformation do we put center-stage?</b> Each variant below is a <strong>different
+    psychological angle</strong> on the same product. Mirror puts <em style="font-family:'Instrument Serif';font-style:italic;color:#FFD68A;">identity discovery</em> at the center. Goldmine puts
+    <em style="font-family:'Instrument Serif';font-style:italic;color:#FF9500;">hidden value</em> at the center. Demo First puts <em style="font-family:'Instrument Serif';font-style:italic;color:#AF52DE;">instant proof</em> at the center. Step counts and flows differ — pick the angle that hits your target user hardest.
+  </p>
+</header>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     VARIANT 1 — MIRROR (Identity Discovery)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-c v1">
+  <div class="variant-header">
+    <span class="variant-letter">M</span>
+    <div class="variant-title">
+      <h2>Mirror</h2>
+      <div class="codename">Identity discovery · "we'll show you who you are"</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Lever</span><span class="val">Identity congruence + endowment</span></div>
+      <div class="row"><span class="lab">Wow moment</span><span class="val">Step 03 · archetype reveal</span></div>
+      <div class="row"><span class="lab">Audience</span><span class="val">Creators searching for clarity ("who am I online?")</span></div>
+    </div>
+  </div>
+
+  <div class="concept-stripe">
+    <div class="concept-cell" style="border-top-color:#FFD68A;">
+      <div class="lab">Transformation</div>
+      <div class="ti">Unconscious → conscious <em style="color:#FFD68A;">brand owner</em></div>
+      <div class="desc">"You've been a brand without realizing it. Here are your 3 lanes — proven by your own photos."</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#FFD68A;">
+      <div class="lab">Benefit emphasized</div>
+      <div class="ti"><em style="color:#FFD68A;">Personal branding</em> clarity</div>
+      <div class="desc">The user leaves onboarding with a sentence they could put on a CV: "I'm a Wanderer + Builder + Coffee enthusiast." Confidence locked.</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#FFD68A;">
+      <div class="lab">Why it works</div>
+      <div class="ti">"This <em style="color:#FFD68A;">describes me</em>."</div>
+      <div class="desc">Psychology: self-perception (Bem) — when shown a coherent identity inferred from real data, the user accepts and commits faster than if asked to define it.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- M · Step 1 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v1-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,214,138,.18);color:#FFD68A;">01 · Invitation</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:24px;line-height:1.05;margin-bottom:8px;">Tell us nothing.<br>We'll show you<br><span class="accent">who you are.</span></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:auto;">From the 5,847 photos you've already taken. Takes 90 sec, stays on-device.</div>
+
+            <!-- Mirror reflection chip -->
+            <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,214,138,.20);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+              <div style="font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.45);letter-spacing:.18em;text-transform:uppercase;">Like a mirror, but for</div>
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:14px;color:#FFD68A;">your content identity.</div>
+            </div>
+
+            <div class="cta" style="background:#FFD68A;color:#1C1C1E;">Show me who I am →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.45);">photo access · stays on-device</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Mystery invitation</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- M · Step 2 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v1-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;align-items:center;text-align:center;">
+            <div class="pillar-tag" style="background:rgba(255,214,138,.18);color:#FFD68A;align-self:flex-start;">02 · Listening</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-top:20px;margin-bottom:14px;">Reading what you've<br><span class="accent">already lived.</span></div>
+            <!-- Ring/orb visual -->
+            <div style="width:90px;height:90px;border-radius:50%;border:3px solid rgba(255,214,138,.25);position:relative;display:flex;align-items:center;justify-content:center;margin:8px 0;">
+              <div style="width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,#FFD68A 0%,#FF9500 100%);box-shadow:0 0 30px rgba(255,214,138,.4);"></div>
+            </div>
+            <div style="font-size:10px;color:rgba(255,255,255,.7);margin-top:8px;font-family:'Geist Mono',monospace;letter-spacing:.04em;">Listening to 5,847 moments…</div>
+            <div class="progress-bar" style="width:80%;margin-top:auto;background:rgba(255,255,255,.12);"><div class="fill" style="background:#FFD68A;width:62%;"></div></div>
+            <div style="font-size:9px;color:rgba(255,255,255,.6);margin-top:6px;font-family:'Geist Mono',monospace;letter-spacing:.04em;">3,621 / 5,847</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Meditative read</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- M · Step 3 — THE WOW: Identity Reveal -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v1-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:22px 12px 12px;">
+            <div class="pillar-tag" style="background:rgba(255,214,138,.20);color:#FFD68A;">03 · Reveal · the wow</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:18px;line-height:1.05;margin-bottom:3px;">Hi Nicolas.</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:18px;line-height:1.05;margin-bottom:10px;">Here's the <span class="accent">brand you are.</span></div>
+
+            <div class="archetype-card">
+              <div class="row">
+                <span class="em">🌍</span>
+                <span class="nm">The Wanderer</span>
+                <span class="conf">94% match</span>
+              </div>
+              <div class="photos">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=120&h=120&fit=crop&auto=format&q=70">
+              </div>
+              <div class="cnt">89 moments</div>
+            </div>
+
+            <div class="archetype-card">
+              <div class="row">
+                <span class="em">🚗</span>
+                <span class="nm">The Driver</span>
+                <span class="conf">88% match</span>
+              </div>
+              <div class="photos">
+                <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?w=120&h=120&fit=crop&auto=format&q=70">
+              </div>
+              <div class="cnt">47 moments</div>
+            </div>
+
+            <div class="archetype-card">
+              <div class="row">
+                <span class="em">☕</span>
+                <span class="nm">The Coffee Enthusiast</span>
+                <span class="conf">81% match</span>
+              </div>
+              <div class="photos">
+                <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=120&h=120&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=120&h=120&fit=crop&auto=format&q=70">
+              </div>
+              <div class="cnt">32 moments</div>
+            </div>
+
+            <div class="cta" style="background:#FFD68A;color:#1C1C1E;margin-top:auto;">That's me · keep going →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.45);">tap a lane to edit</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">★ Identity reveal</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- M · Step 4 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v1-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:22px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.16);color:#FF9500;">04 · First statement</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:10px;">Your first post<br>as <span style="color:#FF9500;">the Wanderer.</span></div>
+
+            <div class="ig-mock">
+              <div class="head">
+                <div class="avatar" style="background:linear-gradient(135deg,#FFD68A,#FF9500);"></div>
+                <div class="handle">@nicolas</div>
+                <div class="badge" style="color:#FF9500;">DRAFT</div>
+              </div>
+              <div class="photo">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75">
+              </div>
+              <div class="dots">
+                <div class="dot" style="background:#FF9500;"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+              </div>
+              <div class="body">
+                <div class="cap">Three days, two cities, one road. Naples → Capri.</div>
+                <div class="eng"><span>♥ 47</span><span>💬 3</span><span>↗ 2</span></div>
+              </div>
+            </div>
+
+            <div class="cta orange" style="margin-top:auto;">Publish · start the brand →</div>
+            <div class="cta-sub">change archetypes anytime in Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Brand ignition</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     VARIANT 2 — GOLDMINE (Hidden ROI)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-d v2">
+  <div class="variant-header">
+    <span class="variant-letter">G</span>
+    <div class="variant-title">
+      <h2>Goldmine</h2>
+      <div class="codename">Hidden ROI · "calculate what you already own"</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Lever</span><span class="val">Loss aversion + anchoring + mental accounting</span></div>
+      <div class="row"><span class="lab">Wow moment</span><span class="val">Step 03 · big number with $ + time equivalence</span></div>
+      <div class="row"><span class="lab">Audience</span><span class="val">Freelancers, indie founders, ROI-driven hustlers</span></div>
+    </div>
+  </div>
+
+  <div class="concept-stripe">
+    <div class="concept-cell" style="border-top-color:#FF9500;">
+      <div class="lab">Transformation</div>
+      <div class="ti">Photos dormantes → <em>inventaire activable</em></div>
+      <div class="desc">"You're sitting on 6 months of daily content. We'll show you the exact ROI in 90 seconds."</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#FF9500;">
+      <div class="lab">Benefit emphasized</div>
+      <div class="ti">Surface <em>hidden value</em></div>
+      <div class="desc">Each photo gets quantified: # of posts it can produce, hours saved vs manual posting, $ value at agency rates.</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#FF9500;">
+      <div class="lab">Why it works</div>
+      <div class="ti">"I'm <em>already losing</em> this every day."</div>
+      <div class="desc">Psychology: loss aversion (Kahneman) — once you've shown someone a hidden asset, NOT activating it feels like throwing money away.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- G · Step 1 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v2-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.16);color:#FF6D00;">01 · The question</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:6px;">How much <span class="accent">content</span><br>is in your camera roll?</div>
+            <div style="font-size:11px;color:#3C3C43;line-height:1.5;margin-bottom:12px;">Most people guess "a few posts". The answer is usually <strong>231</strong>.</div>
+
+            <!-- The bait: a $$$ icon -->
+            <div style="background:rgba(0,0,0,.05);border:1px dashed rgba(0,0,0,.20);border-radius:14px;padding:14px;text-align:center;margin-bottom:14px;">
+              <div style="font-family:'Instrument Serif';font-style:italic;font-size:38px;color:#FF9500;line-height:1;">$?</div>
+              <div style="font-size:10px;color:#3C3C43;margin-top:6px;line-height:1.4;">Worth of content sleeping<br>in your gallery.</div>
+            </div>
+
+            <div style="font-size:10px;color:#3C3C43;margin-bottom:auto;line-height:1.5;text-align:center;font-style:italic;">Find out in 90 seconds. Free.</div>
+            <div class="cta orange">Calculate my goldmine →</div>
+            <div class="cta-sub">photo access · stays on-device</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Curiosity bait</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- G · Step 2 — counting inventory -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v2-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.14);color:#FF6D00;">02 · Counting inventory</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:4px;">Reading your <span class="accent">inventory</span>.</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#8E8E93;letter-spacing:.04em;margin-bottom:12px;">on-device · private</div>
+
+            <div style="margin-top:6px;">
+              <div class="counter-row">
+                <div class="lab"><span class="em">🚗</span>Cars</div>
+                <div class="num">47</div>
+              </div>
+              <div class="counter-row">
+                <div class="lab"><span class="em">☕</span>Food &amp; coffee</div>
+                <div class="num">32</div>
+              </div>
+              <div class="counter-row">
+                <div class="lab"><span class="em">🌍</span>Travel</div>
+                <div class="num">89</div>
+              </div>
+              <div class="counter-row">
+                <div class="lab"><span class="em">💼</span>Build</div>
+                <div class="num">23</div>
+              </div>
+              <div class="counter-row">
+                <div class="lab" style="font-weight:700;font-size:12px;">Total potential</div>
+                <div class="num" style="font-size:16px;">191<span style="font-size:10px;color:#8E8E93;font-weight:500;"> · still counting</span></div>
+              </div>
+            </div>
+
+            <div class="progress-bar" style="margin-top:auto;background:rgba(0,0,0,.08);"><div class="fill" style="background:#FF9500;width:62%;"></div></div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#8E8E93;text-align:center;margin-top:6px;letter-spacing:.04em;">3,621 / 5,847 photos read</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Counter ticks live</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- G · Step 3 — THE WOW: Big number reveal -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v2-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;align-items:center;text-align:center;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">03 · The reveal · ★ wow</div>
+
+            <div style="font-family:'Geist Mono',monospace;font-size:9.5px;color:rgba(255,255,255,.7);letter-spacing:.18em;text-transform:uppercase;margin-top:6px;margin-bottom:2px;">You have</div>
+            <div style="font-family:'Instrument Serif';font-weight:400;font-size:74px;color:#FFFFFF;line-height:1;letter-spacing:-.04em;margin:0;">231</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:16px;color:rgba(255,255,255,.95);line-height:1.1;margin-top:2px;margin-bottom:12px;">posts hidden in your gallery.</div>
+
+            <!-- Equivalence chips -->
+            <div style="display:flex;flex-direction:column;gap:5px;width:100%;">
+              <div class="equiv-chip" style="justify-content:center;background:rgba(255,255,255,.18);">= 6 months daily content</div>
+              <div class="equiv-chip" style="justify-content:center;background:rgba(255,255,255,.18);">= 23 h saved each week</div>
+              <div class="equiv-chip" style="justify-content:center;background:rgba(255,255,255,.18);">= €2,310 agency value*</div>
+            </div>
+
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:rgba(255,255,255,.55);margin-top:6px;margin-bottom:auto;letter-spacing:.04em;">* at €10/post agency baseline</div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;">Activate the cadence →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">★ Big number wow</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- G · Step 4 — Pick pace -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v2-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.16);color:#FF6D00;">04 · Pick the cadence</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:4px;">Cash out how <span class="accent">often?</span></div>
+            <div style="font-size:11px;color:#3C3C43;margin-bottom:12px;">Higher cadence = more visibility. Lower = more sustainable.</div>
+
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <div style="padding:9px 11px;border:2px solid #FF9500;background:rgba(255,149,0,.10);border-radius:11px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <span style="font-weight:700;font-size:12px;">Daily</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#FF6D00;font-weight:700;7 posts/wk</span>
+                </div>
+                <div style="font-size:9.5px;color:#3C3C43;margin-top:3px;">Lasts ~33 weeks · €70/wk value</div>
+              </div>
+              <div style="padding:9px 11px;border:1px solid rgba(0,0,0,.08);border-radius:11px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <span style="font-weight:600;font-size:12px;">3x / week</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#8E8E93;">3 posts/wk</span>
+                </div>
+                <div style="font-size:9.5px;color:#8E8E93;margin-top:3px;">Lasts ~77 weeks · €30/wk value</div>
+              </div>
+              <div style="padding:9px 11px;border:1px solid rgba(0,0,0,.08);border-radius:11px;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <span style="font-weight:600;font-size:12px;">Weekly</span>
+                  <span style="font-family:'Geist Mono',monospace;font-size:10px;color:#8E8E93;">1 post/wk</span>
+                </div>
+                <div style="font-size:9.5px;color:#8E8E93;margin-top:3px;">Lasts ~4 years · €10/wk value</div>
+              </div>
+            </div>
+
+            <div class="cta orange" style="margin-top:auto;">Activate daily · start tomorrow 7AM</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Pick frequency</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     VARIANT 3 — DEMO FIRST (Instant proof)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-c v3">
+  <div class="variant-header">
+    <span class="variant-letter">D</span>
+    <div class="variant-title">
+      <h2>Demo First</h2>
+      <div class="codename">Instant proof · "try before you commit"</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Lever</span><span class="val">Foot-in-door + demonstration effect</span></div>
+      <div class="row"><span class="lab">Wow moment</span><span class="val">Step 01 · live demo before any permission</span></div>
+      <div class="row"><span class="lab">Audience</span><span class="val">Skeptics · "I won't grant photo access until I see it work"</span></div>
+    </div>
+  </div>
+
+  <div class="concept-stripe">
+    <div class="concept-cell" style="border-top-color:#AF52DE;">
+      <div class="lab">Transformation</div>
+      <div class="ti">Sceptique → utilisateur <em style="color:#AF52DE;">convaincu</em></div>
+      <div class="desc">"Don't trust an app you haven't seen work. Tap a prompt, watch the post assemble — no signup, no permission, no commit."</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#AF52DE;">
+      <div class="lab">Benefit emphasized</div>
+      <div class="ti">Proof <em style="color:#AF52DE;">of the magic</em></div>
+      <div class="desc">The user sees the sentence → post transformation BEFORE they grant photo access. Then sees it again with their own gallery, sealing belief.</div>
+    </div>
+    <div class="concept-cell" style="border-top-color:#AF52DE;">
+      <div class="lab">Why it works</div>
+      <div class="ti">"It just <em style="color:#AF52DE;">worked</em>."</div>
+      <div class="desc">Psychology: foot-in-door — once committed to a small action (tapping a sample prompt), the user accepts larger requests (photo permission, daily ritual).</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- D · Step 1 — INTERACTIVE DEMO (wow moment) -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:22px 12px 12px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">01 · Try it · ★ wow</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:8px;">Try Smart Post.<br><span class="accent">No signup.</span></div>
+
+            <!-- Interactive prompt tabs -->
+            <div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap;">
+              <div class="prompt-tab active">Italy 🌍</div>
+              <div class="prompt-tab">Coffee ☕</div>
+              <div class="prompt-tab">Build 💼</div>
+            </div>
+
+            <!-- IG output mockup -->
+            <div class="ig-mock" style="max-width:158px;">
+              <div class="head">
+                <div class="avatar" style="background:linear-gradient(135deg,#AF52DE,#007AFF);"></div>
+                <div class="handle">@demo</div>
+                <div class="badge" style="color:#AF52DE;">DEMO</div>
+              </div>
+              <div class="photo">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75">
+              </div>
+              <div class="dots">
+                <div class="dot" style="background:#AF52DE;"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+              </div>
+              <div class="body">
+                <div class="cap">Three days, two cities, one road.</div>
+                <div class="eng"><span>♥ 47</span><span>💬 3</span><span>↗ 2</span></div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#AF52DE;margin-top:auto;">Now with my photos →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.6);">tap tabs above to swap demos</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">★ Live demo</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- D · Step 2 — convert: bring your gallery -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(175,82,222,.16);color:#AF52DE;">02 · Convert</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:6px;">Cool, right?<br>Now do it with <span class="accent" style="color:#AF52DE;">yours.</span></div>
+            <div style="font-size:11px;color:#3C3C43;margin-bottom:12px;line-height:1.5;">Bring your camera roll in. Same magic, with your actual photos.</div>
+
+            <!-- "What we'll do" reassurance -->
+            <div style="background:#F8F0FF;border:1px solid rgba(175,82,222,.18);border-radius:12px;padding:10px 12px;margin-bottom:auto;">
+              <div style="font-family:'Geist Mono',monospace;font-size:8.5px;color:#AF52DE;letter-spacing:.16em;text-transform:uppercase;font-weight:700;margin-bottom:6px;">What we'll do</div>
+              <div style="font-size:10px;color:#1C1C1E;line-height:1.55;">
+                ✓ Read photos on-device<br>
+                ✓ Sort into 3-5 topics<br>
+                ✓ Hand you 3 posts ready<br>
+                <span style="color:#8E8E93;">~90 sec · nothing uploaded</span>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#AF52DE;color:#FFFFFF;">Bring my photos in →</div>
+            <div class="cta-sub">photo access · on-device only</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Now your turn</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- D · Step 3 — first REAL post -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:22px 12px 12px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(175,82,222,.16);color:#AF52DE;">03 · Your first real one</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:10px;">Type your <span class="accent" style="color:#AF52DE;">sentence.</span></div>
+
+            <!-- Input bubble (their actual prompt) -->
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+              <div style="background:#AF52DE;color:#FFFFFF;padding:5px 10px;border-radius:11px;border-bottom-right-radius:4px;font-size:10.5px;font-weight:600;">"Italy weekend"</div>
+            </div>
+            <div style="text-align:center;font-family:'Geist Mono',monospace;font-size:8px;color:#AF52DE;letter-spacing:.16em;font-weight:700;margin-bottom:6px;">↓ 2.1S · with YOUR photos</div>
+
+            <!-- IG output -->
+            <div class="ig-mock">
+              <div class="head">
+                <div class="avatar" style="background:linear-gradient(135deg,#AF52DE,#FFAE42);"></div>
+                <div class="handle">@nicolas</div>
+                <div class="badge" style="color:#AF52DE;">DRAFT</div>
+              </div>
+              <div class="photo">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75">
+              </div>
+              <div class="dots">
+                <div class="dot" style="background:#AF52DE;"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+              </div>
+              <div class="body">
+                <div class="cap">Three days, two cities, one road. Naples → Capri.</div>
+                <div class="eng"><span>♥ 47</span><span>💬 3</span><span>↗ 2</span></div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#AF52DE;color:#FFFFFF;margin-top:auto;">It worked. Save →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Real proof</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- D · Step 4 — Lock the habit -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">04 · Lock the habit</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:4px;">One like that<br><span class="accent">every morning?</span></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.75);margin-bottom:14px;line-height:1.5;">You just proved it works. Want PostKit to draft one for you every day?</div>
+
+            <!-- Day picker -->
+            <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:12px;">
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">M</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">T</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">W</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">T</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">F</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">S</div>
+              <div style="aspect-ratio:1;background:rgba(255,255,255,.2);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:8.5px;font-weight:700;">S</div>
+            </div>
+
+            <!-- Notif preview -->
+            <div style="background:rgba(255,255,255,.92);backdrop-filter:blur(20px);border-radius:10px;padding:8px 9px;display:flex;gap:7px;align-items:center;">
+              <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:8.5px;color:#3C3C43;"><span style="font-weight:700;color:#1C1C1E;">PostKit</span><span>7:00 AM</span></div>
+                <div style="font-size:10px;color:#1C1C1E;margin-top:1px;">Your post is ready 📸</div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#AF52DE;margin-top:auto;">Lock it · 7:00 AM daily →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.55);">change time anytime · Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Habit anchor</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<div class="footer-note">
+  <strong style="color:#fff;font-family:'Instrument Serif';font-style:italic;font-size:16px;">How to pick between Mirror / Goldmine / Demo First —</strong><br><br>
+
+  <strong style="color:#fff;">→ Mirror</strong> wins if your hypothesis is "users struggle with content strategy more than with execution." The user says <em style="color:#FFD68A;">"I don't know what to post about"</em> → Mirror tells them. Great for Reddit / LinkedIn audiences searching for "personal brand clarity."<br><br>
+
+  <strong style="color:#fff;">→ Goldmine</strong> wins if your hypothesis is "users need proof of ROI before they commit a habit." The user says <em style="color:#FF9500;">"I'd post more if it was worth it"</em> → Goldmine quantifies the upside. Great for Twitter founders, freelance audiences, anyone tracking time-as-money.<br><br>
+
+  <strong style="color:#fff;">→ Demo First</strong> wins if your hypothesis is "users are tired of being asked to set up before seeing value." The user says <em style="color:#AF52DE;">"don't waste my time, show me"</em> → Demo First proves it in 5 seconds. Great for ProductHunt / IndieHackers / "I won't grant photo access to random apps" crowd.<br><br>
+
+  <em style="color:rgba(255,255,255,.55);">Reality check: you can A/B these in production. With React Native / SwiftUI, each variant is ~3 days of work. With the SwiftData seeder we already have, demo content is already wired up. Pick one to ship for v1.0 — the others become A/B candidates for the v0.3 paywall A/B you're prepping for App Store.</em>
+</div>
+
+</body>
+</html>

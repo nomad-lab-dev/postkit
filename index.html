@@ -870,9 +870,35 @@ function LandingBold({ tweaks }) {
         <PersonaSection lang={lang} copy={copy} density={density}/>
       </div>
 
-      {/* Big CTA / download */}
-      <section style={{ padding: "140px 48px", background: "#0a0a0c", position: "relative", overflow: "hidden" }}>
+      {/* Big CTA / TestFlight beta */}
+      <section id="download" style={{ padding: "140px 48px", background: "#0a0a0c", position: "relative", overflow: "hidden" }}>
+        <div style={{
+          position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+          width: 900, height: 900, borderRadius: "50%",
+          background: "radial-gradient(circle, rgba(0,122,255,.18) 0%, transparent 60%)",
+          pointerEvents: "none",
+        }}/>
+
         <div style={{ maxWidth: 1000, margin: "0 auto", textAlign: "center", position: "relative" }}>
+
+          <div style={{
+            display: "inline-flex", alignItems: "center", gap: 8,
+            padding: "8px 14px",
+            background: "rgba(52,199,89,.12)",
+            border: "1px solid rgba(52,199,89,.35)",
+            borderRadius: 100,
+            fontSize: 12, fontWeight: 600, letterSpacing: ".08em",
+            textTransform: "uppercase", color: "#34c759",
+            marginBottom: 28,
+          }}>
+            <span style={{
+              display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+              background: "#34c759",
+              animation: "pk-pulse 2s ease-out infinite",
+            }}/>
+            {copy.download.badge}
+          </div>
+
           <div style={{ fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase",
             color: "#ff9500", fontFamily: "'Geist Mono', ui-monospace, monospace", marginBottom: 24 }}>
             {copy.download.eyebrow}
@@ -882,17 +908,59 @@ function LandingBold({ tweaks }) {
             fontSize: "clamp(48px, 6vw, 96px)", fontWeight: 400,
             letterSpacing: "-0.035em", lineHeight: 1, margin: 0,
           }}>
-            {copy.download.title.split(".").slice(0, 2).join(".")}<br/>
-            <em style={{ fontStyle: "italic", color: "#ff9500" }}>{copy.download.title.split(".").slice(2).join(".").trim()}</em>
+            {copy.download.title.split(".")[0]}.<br/>
+            <em style={{ fontStyle: "italic", color: "#ff9500" }}>
+              {copy.download.title.split(".").slice(1).join(".").trim().replace(/\.$/, "")}
+            </em>.
           </h2>
           <p style={{ fontSize: 18, color: "rgba(255,255,255,.65)", marginTop: 24, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>
             {copy.download.sub}
           </p>
-          <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 40, flexWrap: "wrap" }}>
-            <AppStoreBadge/>
-            <AppStoreBadge mac/>
+
+          <a
+            href={copy.download.ctaUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: 12,
+              marginTop: 40,
+              padding: "20px 36px",
+              background: "#fff", color: "#0a0a0c",
+              borderRadius: 100,
+              fontSize: 18, fontWeight: 600, letterSpacing: "-.005em",
+              textDecoration: "none",
+              boxShadow: "0 16px 50px rgba(0,122,255,.35), 0 4px 14px rgba(0,0,0,.22)",
+              transition: "transform .2s ease",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#007aff" stroke="#007aff" strokeWidth="1.2" strokeLinejoin="round"/>
+              <path d="M21.5 2.5 L11 13" stroke="#fff" strokeWidth="1.2"/>
+            </svg>
+            {copy.download.cta}
+            <span aria-hidden="true" style={{ fontSize: 20 }}>↗</span>
+          </a>
+
+          <div style={{
+            marginTop: 16,
+            fontSize: 13, fontWeight: 500,
+            color: "rgba(255,255,255,.5)",
+            fontFamily: "'Geist Mono', ui-monospace, monospace",
+            letterSpacing: ".02em",
+          }}>
+            {copy.download.ctaSub}
           </div>
         </div>
+
+        <style>{`
+          @keyframes pk-pulse {
+            0%   { box-shadow: 0 0 0 0   rgba(52,199,89,.55); }
+            70%  { box-shadow: 0 0 0 10px rgba(52,199,89,0);   }
+            100% { box-shadow: 0 0 0 0   rgba(52,199,89,0);    }
+          }
+        `}</style>
       </section>
 
       <div id="waitlist-bold" style={{ background: "#fafafa", color: "#0a0a0c" }}>

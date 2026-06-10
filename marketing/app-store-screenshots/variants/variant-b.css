@@ -1,0 +1,99 @@
+/* VARIANT B — BOLD STACK
+ *
+ * Direction: Linear / CRED / NB Camera.
+ * Saturated brand gradient, HUGE horizontal Space Grotesk Black UPPERCASE
+ * headline with one italic serif emphasis word, dramatic phone, white pill cartouche.
+ *
+ * Vibe: confident, modern tech advertising.
+ */
+
+/* Per-slide gradient backgrounds */
+.slide-b.bg-hook {
+  background:
+    radial-gradient(ellipse at 70% 15%, rgba(255,255,255,.32) 0%, transparent 55%),
+    linear-gradient(160deg, #007AFF 0%, #5AC8FA 60%, #B7E4FF 100%);
+}
+.slide-b.bg-smartpost {
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.28) 0%, transparent 50%),
+    linear-gradient(150deg, #34C759 0%, #00B0FF 55%, #007AFF 100%);
+}
+.slide-b.bg-habit {
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(255,255,255,.25) 0%, transparent 55%),
+    linear-gradient(155deg, #007AFF 0%, #AF52DE 100%);
+}
+
+/* Top-right corner: black mono pill */
+.slide-b__chip {
+  position: absolute;
+  top: 60px;
+  right: 80px;
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 12px 22px;
+  border-radius: 100px;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.85), 0 8px 24px rgba(0,0,0,.22);
+  z-index: 4;
+}
+
+/* The big Space Grotesk headline — horizontal, stacked */
+.slide-b__headline {
+  position: absolute;
+  top: 160px;
+  left: 80px;
+  right: 80px;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 168px;
+  font-weight: 700;
+  line-height: 0.92;
+  letter-spacing: -0.04em;
+  text-transform: uppercase;
+  color: #FFFFFF;
+  z-index: 3;
+  text-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.slide-b__headline em {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: lowercase;
+  font-size: 192px;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  display: inline-block;
+  line-height: 0.85;
+}
+
+/* Cartouche — white pill, smaller, off-center */
+.slide-b__cartouche {
+  position: absolute;
+  bottom: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #FFFFFF;
+  color: #0A0A0A;
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 76px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  padding: 28px 56px;
+  border-radius: 100px;
+  text-align: center;
+  box-shadow: 0 16px 60px rgba(0, 0, 0, .25);
+  z-index: 5;
+}
+.slide-b__cartouche em {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  text-transform: lowercase;
+  color: #FF9500;
+}

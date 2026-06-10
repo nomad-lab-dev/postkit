@@ -195,7 +195,8 @@ struct ExploreFeature {
                 if photo.pillarIDs.isEmpty { photo.status = .pending }
                 return savePhotoUpdate(photo)
 
-            case var .addPhotoToPillar(photo, pillarID):
+            case let .addPhotoToPillar(photoArg, pillarID):
+                var photo = photoArg
                 if !photo.pillarIDs.contains(pillarID) {
                     photo.pillarIDs.append(pillarID)
                 }

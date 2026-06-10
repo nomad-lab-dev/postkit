@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · iPad Slide 3 — Smart Post</title>
+<link rel="stylesheet" href="styles-ipad.css">
+</head>
+<body>
+<div class="slide bg-smartpost">
+
+  <div class="glow" style="width:1120px;height:1120px;background:rgba(255,255,255,.4);top:-360px;left:-300px;"></div>
+  <div class="glow" style="width:960px;height:960px;background:rgba(52,199,89,.55);bottom:-300px;right:-260px;"></div>
+
+  <svg style="position:absolute;top:700px;right:0;width:2000px;height:160px;opacity:.18;" viewBox="0 0 2000 160">
+    <path d="M 0 80 Q 340 0 680 80 T 1360 80 T 2000 80" stroke="white" stroke-width="7" fill="none"/>
+  </svg>
+
+  <div class="arc-headline">
+    <svg viewBox="0 0 2064 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <path id="arc-3-top" d="M 80 540 A 1040 620 0 0 1 1984 540" fill="none"/>
+      </defs>
+      <text class="arc-text arc-text--solid" font-size="110">
+        <textPath href="#arc-3-top" startOffset="50%" text-anchor="middle">PROMPT A POST. GET A POST.</textPath>
+      </text>
+    </svg>
+  </div>
+
+  <div class="label-pill" style="top:820px;left:50%;transform:translateX(-50%);">
+    ✨ Smart Post · Italy edit
+  </div>
+
+  <!-- BACK phone (chat) — tilted left, behind -->
+  <div class="phone-mockup phone-mockup--tilt-l8" style="top:940px;left:-40px;width:900px;height:1620px;z-index:1;">
+    <div class="phone-mockup__screen" style="border-radius:88px;">
+      <div class="phone-mockup__notch" style="width:220px;"></div>
+      <div class="phone-mockup__statusbar"><span>15:47</span><span>● ●●●</span></div>
+      <div class="phone-mockup__prompt" style="background:#FFFFFF;">
+        <div class="phone-mockup__prompt-label">SCREENSHOT 1 — CHAT</div>
+        <div class="phone-mockup__prompt-title">Smart Post chat thread</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Top bar: "Smart Post" title + refresh icon</li>
+            <li>Blue user bubble (right-aligned, white text):<br><i>"J'aimerais un post avec 6 photos de mes vacances en Italie — mix portraits, food, paysages et la voiture de loc"</i></li>
+            <li>Grey AI bubble (left): <i>"Excellent choix ! J'ai créé un template avec 6 emplacements distincts, un par ville. Tour du monde italien 🇮🇹"</i></li>
+            <li>Numbered list: 1️⃣ Naples · 2️⃣ Rome · 3️⃣ Positano · 4️⃣ Florence · 5️⃣ Capri · 6️⃣ Milan</li>
+            <li>Bottom text input "Describe your post…" + tab bar</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRONT phone (template) — tilted right, overlapping -->
+  <div class="phone-mockup phone-mockup--tilt-r8" style="top:1140px;right:-60px;width:960px;height:1700px;z-index:2;">
+    <div class="phone-mockup__screen" style="border-radius:92px;">
+      <div class="phone-mockup__notch" style="width:236px;"></div>
+      <div class="phone-mockup__statusbar"><span>15:52</span><span>● ●●●</span></div>
+      <div class="phone-mockup__prompt" style="background:#F7F5F0;">
+        <div class="phone-mockup__prompt-label">SCREENSHOT 2 — TEMPLATE</div>
+        <div class="phone-mockup__prompt-title">"Italian Summer" template — 6 slots filled</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Header: <b>Close</b> · "Tour du Monde en Italie" · <b>Save</b></li>
+            <li>2-col grid of 6 photo slots, each filled with real Italy photo:</li>
+            <li><b>1.</b> Portrait Naples (golden hour) · 📍 Naples, IT</li>
+            <li><b>2.</b> Cacio e pepe close-up · 📍 Rome, IT</li>
+            <li><b>3.</b> Positano coastline · 📍 Positano, IT</li>
+            <li><b>4.</b> Fiat 500 yellow · 📍 Florence, IT</li>
+            <li><b>5.</b> Capri sunset (boat POV) · 📍 Capri, IT</li>
+            <li><b>6.</b> Espresso bar interior · 📍 Milan, IT</li>
+            <li>Bottom: Caption field + <b>Generate</b> button (accent)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cartouche" style="z-index:5;">
+    <span>Smart</span>
+    <span>post</span>
+  </div>
+
+</div>
+</body>
+</html>

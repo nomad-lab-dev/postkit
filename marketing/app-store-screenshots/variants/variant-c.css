@@ -1,0 +1,193 @@
+/* VARIANT C — DARK PREMIUM
+ *
+ * Direction: Arc Browser × Raycast × Vercel.
+ * Deep navy with subtle ambient glow + grid texture, Instrument Serif title
+ * in white with italic emphasis in brand color, phone on light stage.
+ *
+ * Vibe: premium, tech-forward, late-night creator.
+ */
+
+.slide-c {
+  background: #0A0A14;
+  color: #FFFFFF;
+}
+
+/* Grid texture overlay */
+.slide-c::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, .025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, .025) 1px, transparent 1px);
+  background-size: 80px 80px;
+  pointer-events: none;
+}
+
+/* Ambient glow — color varies per slide */
+.slide-c__glow {
+  position: absolute;
+  width: 1100px;
+  height: 1100px;
+  border-radius: 50%;
+  filter: blur(140px);
+  pointer-events: none;
+  opacity: 0.55;
+}
+.slide-c.glow-hook .slide-c__glow {
+  background: #007AFF;
+  top: -300px;
+  right: -200px;
+}
+.slide-c.glow-smartpost .slide-c__glow {
+  background: #34C759;
+  top: -300px;
+  left: -200px;
+}
+.slide-c.glow-habit .slide-c__glow {
+  background: #AF52DE;
+  bottom: -300px;
+  right: -250px;
+}
+
+/* Chapter strip — Geist Mono divider at top */
+.slide-c__chapter {
+  position: absolute;
+  top: 70px;
+  left: 80px;
+  right: 80px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .55);
+  z-index: 4;
+}
+.slide-c__chapter::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, .15);
+  margin-left: 8px;
+}
+.slide-c__chapter strong {
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Headline — Fraunces (variable serif) with italic accent */
+.slide-c__headline {
+  position: absolute;
+  top: 170px;
+  left: 80px;
+  right: 80px;
+  font-family: 'Fraunces', Georgia, serif;
+  font-variation-settings: "opsz" 144, "SOFT" 50;
+  font-size: 124px;
+  font-weight: 500;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
+  color: #FFFFFF;
+  z-index: 3;
+}
+.slide-c__headline em {
+  font-style: italic;
+}
+.slide-c.glow-hook .slide-c__headline em { color: #5AC8FA; }
+.slide-c.glow-smartpost .slide-c__headline em { color: #34C759; }
+.slide-c.glow-habit .slide-c__headline em { color: #BF5AF2; }
+
+/* Phone needs a different background to stand out on dark canvas — keep crisp white */
+.slide-c .phone {
+  box-shadow:
+    0 0 0 4px rgba(255, 255, 255, .18),
+    0 80px 160px rgba(0, 0, 0, .55),
+    0 0 0 1px rgba(255, 255, 255, .08);
+}
+
+/* Light "stage" platform halo under the phone */
+.slide-c__stage {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 80px;
+  bottom: 480px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(255,255,255,.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Bottom area — colored accent line + tagline + lockup */
+.slide-c__bottom {
+  position: absolute;
+  left: 80px;
+  right: 80px;
+  bottom: 110px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 4;
+}
+.slide-c__tagline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.slide-c__tagline-rule {
+  width: 96px;
+  height: 4px;
+  border-radius: 2px;
+}
+.slide-c.glow-hook .slide-c__tagline-rule { background: #5AC8FA; }
+.slide-c.glow-smartpost .slide-c__tagline-rule { background: #34C759; }
+.slide-c.glow-habit .slide-c__tagline-rule { background: #BF5AF2; }
+
+.slide-c__tagline-text {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 56px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #FFFFFF;
+}
+.slide-c__tagline-text em {
+  font-family: 'Fraunces', Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.slide-c__lockup {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.slide-c__lockup-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, #007AFF, #AF52DE);
+  border-radius: 16px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 4px;
+  padding: 6px;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.85), 0 6px 20px rgba(0,0,0,.4);
+}
+.slide-c__lockup-icon span { border-radius: 5px; }
+.slide-c__lockup-icon span:nth-child(1) { background: rgba(255,255,255,.95); }
+.slide-c__lockup-icon span:nth-child(2) { background: rgba(255,255,255,.62); }
+.slide-c__lockup-icon span:nth-child(3) { background: rgba(255,255,255,.72); }
+.slide-c__lockup-icon span:nth-child(4) { background: rgba(255,255,255,.95); }
+.slide-c__lockup-word {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #FFFFFF;
+  letter-spacing: -0.02em;
+}

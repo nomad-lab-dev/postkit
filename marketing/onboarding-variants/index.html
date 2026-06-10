@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Onboarding — 5 variants</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="page-header">
+  <div class="eyebrow">PostKit · Onboarding rework · 5 variants</div>
+  <h1>From dead to <em>alive</em>.</h1>
+  <p>
+    The current onboarding asks for input <b>before</b> showing value. These 5 variants reverse that: each one
+    leverages a different psychological lever (<b>reality check, future self, magic demo, hidden inventory,
+    daily ritual</b>) so the user feels the value <b>before</b> the work. Pick a direction — I'll wire it up
+    in SwiftUI + Remotion next.
+  </p>
+</header>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT A — MIRROR (Reality Check)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-a">
+  <div class="variant-header">
+    <span class="variant-letter">A</span>
+    <div class="variant-title">
+      <h2>Mirror</h2>
+      <div class="codename">Reality check · pain-first</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Confront the gap</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Stark · bold numbers · b&amp;w</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Could feel judgy</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Cognitive dissonance</em> — surface the gap between "I have X photos" and "I posted 0". The pain forces a decision.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Short, declarative, almost confrontational. Sentences as facts. Numbers as weapons.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Off-white background, oversized numerals, minimal chrome. Type-driven.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-cream">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:40px;">
+            <div class="h-eyebrow">Your camera roll</div>
+            <div class="h-mega" style="margin-bottom:14px;">5,847</div>
+            <div style="font-size:11.5px;color:#3C3C43;margin-bottom:18px;line-height:1.45;">photos. Posted this week: <strong style="color:#FF3B30;">0</strong>.</div>
+            <div class="divider"></div>
+            <div style="font-size:13px;font-weight:600;margin-top:14px;line-height:1.35;">Sound familiar?<br>Let's change that.</div>
+            <div class="cta dark">→ Change that</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Welcome</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Topic Setup -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:36px;">
+            <div class="h-title" style="font-size:18px;">3 things<br>you'll be known for.</div>
+            <div class="h-sub" style="margin-bottom:14px;">Type yours, or pick from common.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;">
+              <div class="chip accent" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">🚗 Cars</div>
+              <div class="chip orange" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">☕ Food &amp; Coffee</div>
+              <div class="chip purple" style="justify-content:flex-start;padding:8px 10px;font-size:11px;">💼 Build in public</div>
+              <div class="chip" style="justify-content:flex-start;padding:8px 10px;font-size:11px;border-style:dashed;color:#8E8E93;">+ Add yours</div>
+            </div>
+            <div class="cta dark">These are my lanes</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Declare lanes</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scanning -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-cream">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Mapping in real time</div>
+            <div class="h-mega" style="font-size:42px;margin-bottom:6px;">47</div>
+            <div style="font-size:10px;color:#3C3C43;margin-bottom:14px;">photos already sorted into <strong>Cars</strong></div>
+            <div class="progress-bar"><div class="fill" style="width:62%;"></div></div>
+            <div style="font-size:9px;color:#8E8E93;margin-top:8px;font-family:'Geist Mono',monospace;">3,621 / 5,847 · 1m 12s left</div>
+            <div class="mini-grid" style="margin-top:14px;">
+              <div class="mini-tile cars"></div>
+              <div class="mini-tile food"></div>
+              <div class="mini-tile build"></div>
+              <div class="mini-tile cars"></div>
+              <div class="mini-tile travel"></div>
+              <div class="mini-tile cars"></div>
+            </div>
+            <div style="font-size:9px;color:#8E8E93;margin-top:auto;text-align:center;">Tap anywhere to skip preview</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Live sort</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Done -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow">Done</div>
+            <div class="h-title" style="font-size:17px;">Your library is now <em style="font-family:'Instrument Serif';font-style:italic;color:#FF9500;">content</em>.</div>
+            <div style="font-size:10px;color:#3C3C43;line-height:1.45;margin-bottom:12px;">231 ready-to-publish posts hidden in there. Here's your first one.</div>
+            <div style="background:#F2F2F7;border-radius:10px;padding:10px;margin-bottom:8px;">
+              <div class="mini-grid" style="grid-template-columns:1fr 1fr;gap:3px;border-radius:6px;">
+                <div class="mini-tile cars"></div>
+                <div class="mini-tile cars"></div>
+              </div>
+              <div style="font-size:9px;color:#3C3C43;margin-top:6px;line-height:1.35;">"Two Porsches, one Italian sunset. The road trip that started everything."</div>
+            </div>
+            <div class="cta">→ Publish first post</div>
+            <div class="cta-sub">or skip to Dashboard</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">First post ready</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT B — FUTURE SELF (Aspirational)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-b">
+  <div class="variant-header">
+    <span class="variant-letter">B</span>
+    <div class="variant-title">
+      <h2>Future Self</h2>
+      <div class="codename">Aspirational · destination-first</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Show the end state</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Warm peach gradient · IG-feel</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Set expectations they can't hit</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Identity pull</em> — the user sees who they could be in 30 days, then chooses it. Selecting an archetype creates commitment.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Aspirational, future-tense. Frames the user as someone with a brand, not someone trying.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Mockup of a complete IG-style feed on the welcome screen. Warm palette. "After" visible first.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-dawn">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:30px 14px 14px;">
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:16px;color:#1C1C1E;margin-bottom:2px;text-align:center;">Your feed,</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;color:#1C1C1E;margin-bottom:14px;text-align:center;">30 days from now.</div>
+            <!-- Mock IG grid 3x4 -->
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;border-radius:10px;overflow:hidden;background:#000;">
+              <div class="mini-tile cars"></div>
+              <div class="mini-tile food"></div>
+              <div class="mini-tile travel"></div>
+              <div class="mini-tile travel"></div>
+              <div class="mini-tile build"></div>
+              <div class="mini-tile cars"></div>
+              <div class="mini-tile life"></div>
+              <div class="mini-tile food"></div>
+              <div class="mini-tile travel"></div>
+              <div class="mini-tile cars"></div>
+              <div class="mini-tile build"></div>
+              <div class="mini-tile food"></div>
+            </div>
+            <div class="cta dark" style="margin-top:14px;">Get this →</div>
+            <div class="cta-sub">30 sec/day · same gallery</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Show destination</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Topic — archetypes -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-title serif" style="font-size:22px;margin-bottom:4px;">What's your brand?</div>
+            <div class="h-sub" style="margin-bottom:14px;font-size:10.5px;">Pick a starting archetype. You can mix later.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <div style="border:1.5px solid #FF9500;background:rgba(255,149,0,.08);border-radius:10px;padding:9px 11px;">
+                <div style="font-size:11px;font-weight:700;color:#1C1C1E;">🌍 The Wanderer</div>
+                <div style="font-size:9.5px;color:#3C3C43;margin-top:2px;">Travel + lifestyle + place stories</div>
+              </div>
+              <div style="border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:9px 11px;">
+                <div style="font-size:11px;font-weight:700;color:#1C1C1E;">💼 The Builder</div>
+                <div style="font-size:9.5px;color:#8E8E93;margin-top:2px;">Code + craft + behind-the-scenes</div>
+              </div>
+              <div style="border:1px solid rgba(0,0,0,.08);border-radius:10px;padding:9px 11px;">
+                <div style="font-size:11px;font-weight:700;color:#1C1C1E;">☕ The Foodie</div>
+                <div style="font-size:9.5px;color:#8E8E93;margin-top:2px;">Food + drinks + market finds</div>
+              </div>
+              <div class="chip" style="justify-content:center;font-size:10px;color:#8E8E93;border-style:dashed;">+ Mix multiple</div>
+            </div>
+            <div class="cta orange">I am the Wanderer</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Pick archetype</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scan — building archive -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-dawn">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow" style="color:#1C1C1E;opacity:.6;">Building your archive</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;">
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#1C1C1E;"><span>🌍 Wanderer moments</span><span>89</span></div>
+                <div class="progress-bar" style="margin-top:4px;"><div class="fill" style="width:100%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#1C1C1E;"><span>☕ Foodie moments</span><span>32</span></div>
+                <div class="progress-bar" style="margin-top:4px;"><div class="fill" style="width:62%;"></div></div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:#1C1C1E;"><span>💼 Builder moments</span><span>14</span></div>
+                <div class="progress-bar" style="margin-top:4px;"><div class="fill" style="width:32%;"></div></div>
+              </div>
+            </div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:14px;color:#1C1C1E;margin-top:auto;margin-bottom:8px;text-align:center;line-height:1.3;">"Every photo<br>is a story you haven't told."</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Build archive</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Week plan -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-eyebrow">Your first week</div>
+            <div class="h-title serif" style="font-size:20px;margin-bottom:14px;">7 posts. Ready.</div>
+            <div style="display:flex;flex-direction:column;gap:5px;flex:1;">
+              <div style="display:flex;justify-content:space-between;padding:7px 9px;background:rgba(0,122,255,.06);border-radius:7px;font-size:10px;"><span style="font-weight:600;">MON · 🌍</span><span style="color:#8E8E93;">Capri sunset</span></div>
+              <div style="display:flex;justify-content:space-between;padding:7px 9px;background:rgba(255,149,0,.06);border-radius:7px;font-size:10px;"><span style="font-weight:600;">TUE · ☕</span><span style="color:#8E8E93;">Espresso bar Milan</span></div>
+              <div style="display:flex;justify-content:space-between;padding:7px 9px;background:rgba(0,122,255,.06);border-radius:7px;font-size:10px;"><span style="font-weight:600;">WED · 🌍</span><span style="color:#8E8E93;">Positano coast</span></div>
+              <div style="display:flex;justify-content:space-between;padding:7px 9px;background:rgba(175,82,222,.06);border-radius:7px;font-size:10px;"><span style="font-weight:600;">THU · 💼</span><span style="color:#8E8E93;">Desk Tuesday</span></div>
+              <div style="display:flex;justify-content:space-between;padding:7px 9px;background:rgba(0,122,255,.06);border-radius:7px;font-size:10px;"><span style="font-weight:600;">FRI · 🌍</span><span style="color:#8E8E93;">Naples portrait</span></div>
+            </div>
+            <div class="cta orange">Schedule the week</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Week 1 plan</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT C — MAGIC MOMENT (Show, don't tell)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-c">
+  <div class="variant-header">
+    <span class="variant-letter">C</span>
+    <div class="variant-title">
+      <h2>Magic Moment</h2>
+      <div class="codename">Show, don't tell · demo-first</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Interactive demo on screen 1</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Brand gradient · Smart Post forward</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Heavy on screen 1 — slower</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Demonstration effect</em> — the user TRIES the magic before any setup. Once they see what AI does with stock photos, they want it with their own.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Conversational, second-person. "Try it: '…'" → AI replies live. Then "Now with your photos?"</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Brand gradient (blue→purple). Smart Post chat is the hero. Other steps are deliberately quiet.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome — interactive demo -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-pillar-a">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding-top:28px;color:#FFFFFF;">
+            <div class="h-eyebrow" style="color:rgba(255,255,255,.7);">Try Smart Post</div>
+            <div style="font-family:'Instrument Serif';font-size:24px;font-style:italic;line-height:1.05;margin-bottom:14px;">Type a prompt.<br>Watch it work.</div>
+            <div style="background:rgba(255,255,255,.18);border-radius:10px;padding:9px 11px;font-size:11px;margin-bottom:8px;backdrop-filter:blur(6px);">
+              <div style="font-size:8.5px;color:rgba(255,255,255,.65);font-family:'Geist Mono',monospace;margin-bottom:3px;">YOU</div>
+              <div>"Make a post about coffee mornings"</div>
+            </div>
+            <div style="background:rgba(255,255,255,.95);border-radius:10px;padding:8px 10px;font-size:10.5px;color:#1C1C1E;margin-bottom:8px;">
+              <div style="font-size:8.5px;color:#8E8E93;font-family:'Geist Mono',monospace;margin-bottom:3px;">POSTKIT</div>
+              <div>Done. 4 photos · caption ready.</div>
+              <div class="mini-grid" style="grid-template-columns:1fr 1fr 1fr 1fr;gap:2px;margin-top:5px;border-radius:4px;">
+                <div class="mini-tile food"></div>
+                <div class="mini-tile food"></div>
+                <div class="mini-tile food"></div>
+                <div class="mini-tile food"></div>
+              </div>
+            </div>
+            <div class="cta dark" style="background:#FFF;color:#0A0A0C;">Now with my photos →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Live demo</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Topic — auto-detect -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:36px;">
+            <div class="h-title" style="font-size:18px;">Skip the form.</div>
+            <div class="h-sub" style="margin-bottom:14px;font-size:11px;">We'll detect your topics from your photos. You can tweak after.</div>
+            <div style="background:#F2F2F7;border-radius:14px;padding:14px;text-align:center;margin-bottom:8px;">
+              <div style="font-size:30px;margin-bottom:6px;">🔍</div>
+              <div style="font-size:11px;font-weight:600;color:#1C1C1E;">Auto-detect from gallery</div>
+              <div style="font-size:9.5px;color:#8E8E93;margin-top:2px;">~5 seconds</div>
+            </div>
+            <div style="text-align:center;font-size:10px;color:#8E8E93;margin:6px 0;">or</div>
+            <div class="cta outline">I'll type them myself</div>
+            <div class="cta">Scan my photos</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">No form</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scan -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-pillar-a">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding-top:50px;align-items:center;text-align:center;">
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:28px;color:#FFFFFF;margin-bottom:10px;line-height:1;">Reading<br>your story.</div>
+            <div style="display:flex;gap:6px;margin:18px 0;">
+              <div class="mini-tile cars" style="width:32px;height:32px;border-radius:6px;"></div>
+              <div class="mini-tile food" style="width:32px;height:32px;border-radius:6px;"></div>
+              <div class="mini-tile travel" style="width:32px;height:32px;border-radius:6px;"></div>
+              <div class="mini-tile build" style="width:32px;height:32px;border-radius:6px;"></div>
+            </div>
+            <div style="font-size:11px;color:rgba(255,255,255,.75);font-family:'Geist Mono',monospace;letter-spacing:.04em;">Finding your pillars · 12s</div>
+            <div class="progress-bar" style="width:60%;margin-top:14px;background:rgba(255,255,255,.18);"><div class="fill" style="background:#FFF;width:78%;"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Reading</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Done — 3 posts ready -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-eyebrow">Done. 3 posts ready.</div>
+            <div class="h-title serif" style="font-size:20px;margin-bottom:12px;">Swipe to preview.</div>
+            <div style="display:flex;gap:6px;overflow:hidden;margin-bottom:12px;">
+              <div style="min-width:78px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08);">
+                <div class="mini-grid" style="grid-template-columns:1fr 1fr;gap:1px;">
+                  <div class="mini-tile travel"></div><div class="mini-tile travel"></div>
+                  <div class="mini-tile food"></div><div class="mini-tile travel"></div>
+                </div>
+                <div style="font-size:8.5px;padding:5px;font-weight:600;color:#1C1C1E;">Italy trip</div>
+              </div>
+              <div style="min-width:78px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08);">
+                <div class="mini-grid" style="grid-template-columns:1fr 1fr;gap:1px;">
+                  <div class="mini-tile cars"></div><div class="mini-tile cars"></div>
+                  <div class="mini-tile cars"></div><div class="mini-tile cars"></div>
+                </div>
+                <div style="font-size:8.5px;padding:5px;font-weight:600;color:#1C1C1E;">Cars week</div>
+              </div>
+              <div style="min-width:78px;border-radius:8px;overflow:hidden;border:1px solid rgba(0,0,0,.08);">
+                <div class="mini-grid" style="grid-template-columns:1fr 1fr;gap:1px;">
+                  <div class="mini-tile build"></div><div class="mini-tile build"></div>
+                  <div class="mini-tile build"></div><div class="mini-tile build"></div>
+                </div>
+                <div style="font-size:8.5px;padding:5px;font-weight:600;color:#1C1C1E;">Build log</div>
+              </div>
+            </div>
+            <div class="cta">Publish "Italy trip" →</div>
+            <div class="cta-sub">3 posts queued · explore later</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">3 posts ready</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT D — INVENTORY (Hidden goldmine)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-d">
+  <div class="variant-header">
+    <span class="variant-letter">D</span>
+    <div class="variant-title">
+      <h2>Inventory</h2>
+      <div class="codename">Hidden goldmine · endowment</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Surface dormant value</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Gold · "you already have it"</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Numbers must feel real</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Endowment effect + loss aversion</em> — frame the user's existing photos as wasted value. They're already losing the upside daily.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Treasure-hunt language. "Goldmine", "hidden", "surface", "ROI". Big numbers as proof.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Warm amber/gold palette. Stat-heavy. Animated counters tick up live during scan.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-gold">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;color:#1C1C1E;">
+            <div class="h-eyebrow">You're sitting on a</div>
+            <div class="h-title serif" style="font-size:30px;color:#1C1C1E;margin-bottom:10px;">content<br><span style="color:#FF9500;">goldmine.</span></div>
+            <div style="background:rgba(0,0,0,.06);backdrop-filter:blur(6px);border-radius:12px;padding:10px 12px;margin-bottom:10px;">
+              <div style="font-size:9.5px;color:#8E8E93;font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:.1em;">In your camera roll</div>
+              <div style="font-size:34px;font-weight:800;color:#1C1C1E;line-height:1;margin:6px 0;">5,847</div>
+              <div style="font-size:10px;color:#3C3C43;">photos · <strong>~230 posts</strong> hidden inside</div>
+            </div>
+            <div style="font-size:11px;color:#3C3C43;margin-bottom:auto;line-height:1.4;">We'll surface them in <strong>under 2 minutes</strong>.</div>
+            <div class="cta orange">Show me the gold</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Surface value</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Confirm detected topics -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-eyebrow">We spotted these</div>
+            <div class="h-title" style="font-size:18px;margin-bottom:14px;">Look right?</div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <div style="display:flex;justify-content:space-between;padding:8px 11px;background:rgba(0,122,255,.06);border:1px solid rgba(0,122,255,.15);border-radius:9px;font-size:11px;align-items:center;">
+                <span style="font-weight:600;">🚗 Cars</span>
+                <span style="color:#007AFF;font-family:'Geist Mono',monospace;font-size:10.5px;">47</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px 11px;background:rgba(255,149,0,.06);border:1px solid rgba(255,149,0,.15);border-radius:9px;font-size:11px;align-items:center;">
+                <span style="font-weight:600;">☕ Food &amp; coffee</span>
+                <span style="color:#FF9500;font-family:'Geist Mono',monospace;font-size:10.5px;">32</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px 11px;background:rgba(52,199,89,.06);border:1px solid rgba(52,199,89,.15);border-radius:9px;font-size:11px;align-items:center;">
+                <span style="font-weight:600;">🌍 Travel</span>
+                <span style="color:#34C759;font-family:'Geist Mono',monospace;font-size:10.5px;">89</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:8px 11px;background:rgba(175,82,222,.06);border:1px solid rgba(175,82,222,.15);border-radius:9px;font-size:11px;align-items:center;">
+                <span style="font-weight:600;">💼 Build</span>
+                <span style="color:#AF52DE;font-family:'Geist Mono',monospace;font-size:10.5px;">23</span>
+              </div>
+              <div class="chip" style="justify-content:center;font-size:10px;color:#8E8E93;border-style:dashed;">+ Add / rename</div>
+            </div>
+            <div class="cta orange">Looks right · go</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Confirm finds</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scan — cataloging -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-gold">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;color:#1C1C1E;">
+            <div class="h-eyebrow">Cataloging</div>
+            <div class="h-title" style="font-size:18px;margin-bottom:10px;">Reading inventory…</div>
+            <div style="display:flex;flex-direction:column;gap:7px;flex:1;">
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#1C1C1E;"><span>🚗 Cars</span><span style="font-family:'Geist Mono',monospace;font-weight:700;">47</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#1C1C1E;"><span>☕ Food</span><span style="font-family:'Geist Mono',monospace;font-weight:700;">32</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#1C1C1E;"><span>🌍 Travel</span><span style="font-family:'Geist Mono',monospace;font-weight:700;">89</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:#1C1C1E;"><span>💼 Build</span><span style="font-family:'Geist Mono',monospace;font-weight:700;">23</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:10.5px;color:rgba(0,0,0,.4);"><span>📸 Other</span><span style="font-family:'Geist Mono',monospace;">7,656</span></div>
+              <div style="height:1px;background:rgba(0,0,0,.12);margin:4px 0;"></div>
+              <div style="display:flex;justify-content:space-between;font-size:12px;color:#1C1C1E;font-weight:700;"><span>Total sortable</span><span style="font-family:'Geist Mono',monospace;">191</span></div>
+            </div>
+            <div class="progress-bar" style="background:rgba(0,0,0,.08);"><div class="fill" style="background:#FF9500;width:72%;"></div></div>
+            <div style="font-size:9px;color:rgba(0,0,0,.55);margin-top:5px;text-align:center;font-family:'Geist Mono',monospace;">3,621 / 5,847 read</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Catalog live</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. ROI -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-gold">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;color:#1C1C1E;">
+            <div class="h-eyebrow">Inventory total</div>
+            <div style="font-size:48px;font-weight:800;color:#FF9500;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.04em;">231</div>
+            <div style="font-size:11px;color:#1C1C1E;margin-bottom:14px;line-height:1.4;"><strong>potential posts</strong> = <strong>~6 months</strong> of daily content</div>
+            <div style="background:rgba(0,0,0,.06);border-radius:10px;padding:10px 12px;margin-bottom:auto;">
+              <div style="font-size:9.5px;color:#8E8E93;font-family:'Geist Mono',monospace;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;">At 30 sec/day</div>
+              <div style="font-size:12px;color:#1C1C1E;line-height:1.4;">First post ready in <strong>5 sec</strong>. When do you want to start?</div>
+            </div>
+            <div class="cta orange">Start today</div>
+            <div class="cta-sub">or schedule for tomorrow 7AM</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">ROI moment</span></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     VARIANT E — DAILY RITUAL (Habit, not feature)
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-e">
+  <div class="variant-header">
+    <span class="variant-letter">E</span>
+    <div class="variant-title">
+      <h2>Daily Ritual</h2>
+      <div class="codename">Habit-first · identity-anchored</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Hook</span><span class="val">Sell the new morning</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Dawn gradient · meditative</span></div>
+      <div class="row"><span class="lab">Risk</span><span class="val accent">Soft sell — may feel less urgent</span></div>
+    </div>
+  </div>
+
+  <div class="hook">
+    <div class="cell psych">
+      <div class="lab">Psychology</div>
+      <div class="body"><em>Habit formation + identity</em> — don't sell the app, sell THE ritual. The user adopts an identity ("someone who posts daily") before learning a feature.</div>
+    </div>
+    <div class="cell copy">
+      <div class="lab">Copy voice</div>
+      <div class="body">Imaginative, temporal. "Imagine your morning…", "Tomorrow at 7AM…". Almost ASMR.</div>
+    </div>
+    <div class="cell visual">
+      <div class="lab">Visual angle</div>
+      <div class="body">Soft dawn palette (peach → lilac). Clock-centric. Notification preview as the closer.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <!-- 1. Welcome — imagine -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-dawn">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow" style="color:#1C1C1E;opacity:.6;">Imagine</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;color:#1C1C1E;line-height:1.15;margin-bottom:14px;">your morning:<br>coffee,<br>30 seconds<br>in PostKit,<br><span style="color:#FF9500;">post done.</span></div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:9.5px;color:#3C3C43;margin-bottom:14px;">
+              <span style="font-size:18px;">☕</span><span>+</span>
+              <span style="font-size:18px;">📱</span><span>=</span>
+              <span style="font-size:18px;">🚀</span>
+            </div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:auto;line-height:1.5;">Same gallery. <strong>New rhythm.</strong></div>
+            <div class="cta dark">Try the rhythm</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Sell the morning</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 2. Topic — this week -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:32px;">
+            <div class="h-eyebrow">This week, you'll post about</div>
+            <div class="h-title" style="font-size:17px;margin-bottom:14px;">Pick your themes.</div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;">
+              <div style="display:flex;justify-content:space-between;padding:9px 11px;background:rgba(255,149,0,.08);border:1px solid rgba(255,149,0,.18);border-radius:10px;font-size:11px;font-weight:600;">
+                <span>☕ Food &amp; coffee</span>
+                <span style="color:#FF9500;">✓</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:9px 11px;background:rgba(52,199,89,.08);border:1px solid rgba(52,199,89,.18);border-radius:10px;font-size:11px;font-weight:600;">
+                <span>🌍 Travel</span>
+                <span style="color:#34C759;">✓</span>
+              </div>
+              <div style="display:flex;justify-content:space-between;padding:9px 11px;background:rgba(175,82,222,.08);border:1px solid rgba(175,82,222,.18);border-radius:10px;font-size:11px;font-weight:600;">
+                <span>💼 Build in public</span>
+                <span style="color:#AF52DE;">✓</span>
+              </div>
+              <div class="chip" style="justify-content:center;font-size:10px;color:#8E8E93;border-style:dashed;padding:9px;">+ Add for this week</div>
+            </div>
+            <div style="font-size:9.5px;color:#8E8E93;text-align:center;margin-bottom:6px;">You can change anytime.</div>
+            <div class="cta dark">Lock in for this week</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Light commitment</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 3. Scan — meditative -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-dawn">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:60px;align-items:center;text-align:center;">
+            <div style="width:60px;height:60px;border-radius:50%;background:rgba(255,149,0,.18);display:flex;align-items:center;justify-content:center;margin-bottom:14px;">
+              <div style="width:14px;height:14px;border-radius:50%;background:#FF9500;opacity:.85;"></div>
+            </div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;color:#1C1C1E;line-height:1.1;margin-bottom:8px;">Learning<br>your story.</div>
+            <div style="font-size:10px;color:#3C3C43;line-height:1.5;max-width:160px;">Take a breath. We're reading <strong>5,847 moments</strong>. ~90 seconds.</div>
+            <div style="margin-top:auto;font-size:9px;color:#8E8E93;font-family:'Geist Mono',monospace;letter-spacing:.04em;">on-device · private</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Meditative load</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- 4. Tomorrow 7AM -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-dawn">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:30px;">
+            <div class="h-eyebrow" style="color:#1C1C1E;opacity:.6;">Tomorrow</div>
+            <div style="font-family:'Fraunces',Georgia,serif;font-variation-settings:'opsz' 144;font-style:italic;font-weight:500;font-size:46px;color:#1C1C1E;line-height:1;margin-bottom:4px;letter-spacing:-.03em;">7:00</div>
+            <div style="font-size:11px;color:#3C3C43;margin-bottom:18px;">your first post will be ready.</div>
+            <!-- Mock notification preview -->
+            <div style="background:rgba(255,255,255,.85);backdrop-filter:blur(20px);border-radius:12px;padding:10px;display:flex;gap:9px;align-items:center;box-shadow:0 6px 18px rgba(0,0,0,.08);margin-bottom:auto;">
+              <div class="brand-icon" style="width:30px;height:30px;border-radius:7px;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;font-size:9px;color:#3C3C43;"><span style="font-weight:700;color:#1C1C1E;">PostKit</span><span>7:00 AM</span></div>
+                <div style="font-size:10.5px;color:#1C1C1E;margin-top:1px;">Your next post is ready 📸</div>
+              </div>
+            </div>
+            <div style="display:flex;justify-content:space-between;padding:7px 10px;background:rgba(0,0,0,.05);border-radius:8px;font-size:10px;margin-bottom:6px;align-items:center;">
+              <span style="color:#3C3C43;">Daily nudge</span>
+              <span style="font-family:'Geist Mono',monospace;font-weight:600;color:#1C1C1E;">7:00 AM ▾</span>
+            </div>
+            <div class="cta dark">Set the ritual</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Anchor habit</span></div>
+    </div>
+  </div>
+</section>
+
+
+<div class="footer-note">
+  <strong style="color:#fff;font-family:'Instrument Serif';font-style:italic;font-size:16px;">Next steps once you pick a variant —</strong><br><br>
+  1. I wire the chosen flow in <code>OnboardingFeature.swift</code> + the corresponding SwiftUI screens (we already have the design system tokens).<br>
+  2. Optional: animate the welcome screen of the chosen variant in Remotion (~30s clip) — could become the App Store preview video or the hero on the landing.<br>
+  3. Re-shoot the 4 onboarding screenshots with the marketing-capture skill we set up earlier (<code>-MarketingSeed 1 -MarketingTab home</code> equivalent for onboarding).<br><br>
+  <em style="color:rgba(255,255,255,.55);">Tu peux aussi mixer : variante A pour le hook, variante E pour le closer. Dis-moi.</em>
+</div>
+
+</body>
+</html>

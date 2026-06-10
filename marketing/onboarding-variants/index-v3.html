@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Onboarding V3 — Value Tour (5 steps)</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ─── V3 SPECIFIC ─── */
+
+  /* 5-step flow needs wider container */
+  .v3 .variant { max-width: 1480px; }
+  .v3 .flow {
+    grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr 24px 1fr;
+  }
+
+  /* Step pillar badge — shows WHICH value the step demonstrates */
+  .pillar-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .pillar-tag.hook    { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.55); border: 1px solid rgba(255, 255, 255, 0.10); }
+  .pillar-tag.sort    { background: rgba(0, 122, 255, 0.14); color: #5AC8FA; }
+  .pillar-tag.smart   { background: rgba(175, 82, 222, 0.18); color: #D98DFF; }
+  .pillar-tag.ritual  { background: rgba(255, 149, 0, 0.16); color: #FFAE42; }
+
+  /* Per-step gradient backgrounds */
+  .bg-v3-1 {
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(175, 82, 222, 0.35) 0%, transparent 55%),
+      linear-gradient(160deg, #0A0A14 0%, #1A1A2E 60%, #2A1F3D 100%);
+    color: #FFFFFF;
+  }
+  .bg-v3-2 {
+    background: linear-gradient(155deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+    color: #FFFFFF;
+  }
+  .bg-v3-3 {
+    background: linear-gradient(180deg, #FFFBF0 0%, #FAF7F2 60%, #F7F5F0 100%);
+    color: #1C1C1E;
+  }
+  .bg-v3-4 {
+    background: linear-gradient(160deg, #AF52DE 0%, #FF2D55 80%, #FF9500 100%);
+    color: #FFFFFF;
+  }
+  .bg-v3-5 {
+    background:
+      radial-gradient(ellipse at 20% 10%, rgba(255, 214, 10, 0.28) 0%, transparent 55%),
+      linear-gradient(180deg, #FFE4B5 0%, #FFB088 60%, #FF9F8B 100%);
+    color: #1C1C1E;
+  }
+
+  /* Glass surface on dark/vivid screens */
+  .glass {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    border-radius: 12px;
+  }
+  .glass-light {
+    background: rgba(255, 255, 255, 0.92);
+    color: #1C1C1E;
+    border-radius: 12px;
+  }
+
+  /* Chaotic photo cloud (step 1) */
+  .chaos {
+    position: relative;
+    height: 110px;
+    margin: 8px 0 12px;
+  }
+  .chaos img {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-radius: 8px;
+    object-fit: cover;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Bento sorted (step 3) */
+  .bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-gap: 6px;
+    margin: 8px 0;
+  }
+  .bento-cell {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+  .bento-cell .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #1C1C1E;
+  }
+  .bento-cell .count {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: #8E8E93;
+    font-weight: 500;
+  }
+  .bento-cell .thumb {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border-radius: 6px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Filter chips horizontal scroll (step 3) */
+  .filter-strip {
+    display: flex;
+    gap: 4px;
+    overflow: hidden;
+    margin-top: 8px;
+    flex-wrap: nowrap;
+  }
+  .filter-strip .chip {
+    flex-shrink: 0;
+    font-size: 9px;
+    padding: 4px 8px;
+  }
+
+  /* Week calendar (step 5) */
+  .week-cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+    margin: 8px 0;
+  }
+  .day-cell {
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 7px;
+    padding: 5px 2px;
+    text-align: center;
+    color: #1C1C1E;
+  }
+  .day-cell .dow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 7px;
+    color: #8E8E93;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .day-cell .ic { font-size: 12px; line-height: 1; }
+  .day-cell.active {
+    background: #1C1C1E;
+    color: #FFFFFF;
+  }
+  .day-cell.active .dow { color: #FFAE42; }
+
+  /* Notification preview (step 5) */
+  .notif-preview {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(12px);
+    border-radius: 10px;
+    padding: 8px 9px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+  }
+  .notif-preview .lab {
+    font-size: 8.5px;
+    color: #8E8E93;
+    font-family: 'Geist Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+  .notif-preview .ti {
+    font-size: 10.5px;
+    color: #1C1C1E;
+    margin-top: 1px;
+    line-height: 1.35;
+  }
+  .notif-preview .by {
+    font-size: 8.5px;
+    color: #1C1C1E;
+    font-weight: 700;
+  }
+
+  /* Live counter (step 2) */
+  .live-counter {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+  }
+  .live-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11px;
+    color: #FFFFFF;
+  }
+  .live-row .ic { font-size: 14px; }
+  .live-row .nm { flex: 1; font-weight: 500; }
+  .live-row .num {
+    font-family: 'Geist Mono', monospace;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Value-recap strip below variant header */
+  .value-strip {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 28px;
+  }
+  .value-cell {
+    padding: 14px 16px;
+    background: var(--panel-2);
+    border-radius: 12px;
+    border-top: 3px solid;
+  }
+  .value-cell.sort   { border-top-color: #5AC8FA; }
+  .value-cell.smart  { border-top-color: #AF52DE; }
+  .value-cell.ritual { border-top-color: #FF9500; }
+  .value-cell .lab {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 4px;
+  }
+  .value-cell .ti {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 18px;
+    line-height: 1.1;
+    margin-bottom: 6px;
+  }
+  .value-cell .desc {
+    font-size: 12px;
+    color: var(--text-2);
+    line-height: 1.5;
+  }
+  .value-cell.sort .ti   { color: #5AC8FA; }
+  .value-cell.smart .ti  { color: #D98DFF; }
+  .value-cell.ritual .ti { color: #FFAE42; }
+</style>
+</head>
+<body class="v3">
+
+<header class="page-header">
+  <div class="eyebrow">Onboarding V3 · 5-step Value Tour</div>
+  <h1>Stop asking. <em>Start showing.</em></h1>
+  <p>
+    5 steps. <b>No data entry</b> — only confirmation. Each step demonstrates one concrete value the
+    user gets from PostKit: a sorted gallery they can browse, posts assembled from a sentence, and a
+    recurring weekly rhythm. The user <em style="font-family:'Instrument Serif';font-style:italic;color:#FF9500;">constates</em> the
+    value, doesn't just hear about it.
+  </p>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     V3 — The Value Tour
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-c">
+  <div class="variant-header">
+    <span class="variant-letter">V3</span>
+    <div class="variant-title">
+      <h2>The Value Tour</h2>
+      <div class="codename">5 steps · 3 value pillars demonstrated · 0 forms</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Approach</span><span class="val">Show-don't-tell × 3 features</span></div>
+      <div class="row"><span class="lab">Friction</span><span class="val">1 tap to confirm permissions only</span></div>
+      <div class="row"><span class="lab">Time</span><span class="val accent">~90 sec total (~60s of scan)</span></div>
+    </div>
+  </div>
+
+  <!-- VALUE PILLARS RECAP -->
+  <div class="value-strip">
+    <div class="value-cell sort">
+      <div class="lab">Value 1 · Step 2-3</div>
+      <div class="ti">Sorted gallery</div>
+      <div class="desc">"Your chaos has structure now." Auto-classification surfaces the bento. <strong>Defensible tech</strong> (Core ML on-device).</div>
+    </div>
+    <div class="value-cell smart">
+      <div class="lab">Value 2 · Step 4</div>
+      <div class="ti">Sentence → post</div>
+      <div class="desc">"Type once, post once." Smart Post demo with the user's real photos. <strong>Magic moment</strong>.</div>
+    </div>
+    <div class="value-cell ritual">
+      <div class="lab">Value 3 · Step 5</div>
+      <div class="ti">Weekly rhythm</div>
+      <div class="desc">"Same gallery, different relationship with posting." Templates + reminders. <strong>Habit lock-in</strong>.</div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- ─── STEP 1 · HOOK ─── -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-v3-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag hook">Step 01 · Hook</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:24px;line-height:1.05;margin-bottom:8px;">Your gallery<br>is your<br><span style="color:#FFAE42;">portfolio.</span></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.7);line-height:1.45;margin-bottom:14px;">We'll prove it in 90 seconds.</div>
+
+            <div class="chaos">
+              <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:0;transform:rotate(-8deg);" alt="">
+              <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&h=120&fit=crop&auto=format&q=70" style="top:5px;left:48px;transform:rotate(4deg);" alt="">
+              <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:104px;transform:rotate(-3deg);" alt="">
+              <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:24px;transform:rotate(7deg);" alt="">
+              <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:74px;transform:rotate(-6deg);" alt="">
+              <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70" style="top:55px;left:124px;transform:rotate(9deg);" alt="">
+            </div>
+
+            <div style="font-size:10px;color:rgba(255,255,255,.6);text-align:center;font-family:'Geist Mono',monospace;letter-spacing:.06em;margin-bottom:auto;">5,847 photos · 0 posted this week</div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;">Let me see →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.55);">photo access · on-device only</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Hook + permission</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ─── STEP 2 · LIVE SCAN (Value 1a) ─── -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-v3-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag sort">Step 02 · Sorting live</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;">Reading your<br>5,847 moments.</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.7);font-family:'Geist Mono',monospace;letter-spacing:.04em;margin-bottom:14px;">on-device · private</div>
+
+            <div class="live-counter">
+              <div class="live-row">
+                <span class="ic">🚗</span>
+                <span class="nm">Cars</span>
+                <span class="num" style="color:#5AC8FA;">47</span>
+              </div>
+              <div class="live-row">
+                <span class="ic">☕</span>
+                <span class="nm">Food &amp; coffee</span>
+                <span class="num" style="color:#FFAE42;">32</span>
+              </div>
+              <div class="live-row">
+                <span class="ic">🌍</span>
+                <span class="nm">Travel</span>
+                <span class="num" style="color:#5CE6C7;">89</span>
+              </div>
+              <div class="live-row">
+                <span class="ic">💼</span>
+                <span class="nm">Build</span>
+                <span class="num" style="color:#D98DFF;">23</span>
+              </div>
+              <div class="live-row" style="color:rgba(255,255,255,.5);">
+                <span class="ic">📸</span>
+                <span class="nm">Other</span>
+                <span class="num" style="color:rgba(255,255,255,.7);">7,656</span>
+              </div>
+            </div>
+
+            <div class="progress-bar" style="background:rgba(255,255,255,.20);margin-top:auto;">
+              <div class="fill" style="background:#FFFFFF;width:62%;"></div>
+            </div>
+            <div style="font-size:9px;color:rgba(255,255,255,.7);text-align:center;margin-top:6px;font-family:'Geist Mono',monospace;letter-spacing:.04em;">3,621 / 5,847 · 32s left</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Classify live</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ─── STEP 3 · SORTED GALLERY (Value 1b) ─── -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-v3-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:24px;">
+            <div class="pillar-tag sort" style="background:rgba(0,122,255,.10);color:#007AFF;border:none;">Step 03 · Browse</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;color:#1C1C1E;">Find anything<br>in <em style="color:#FF9500;">seconds.</em></div>
+            <div style="font-size:10px;color:#3C3C43;margin-bottom:10px;">Your chaos has structure now.</div>
+
+            <div class="bento">
+              <div class="bento-cell">
+                <div class="head"><span>🚗 Cars</span><span class="count">47</span></div>
+                <img class="thumb" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&h=120&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="bento-cell">
+                <div class="head"><span>☕ Coffee</span><span class="count">32</span></div>
+                <img class="thumb" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=120&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="bento-cell">
+                <div class="head"><span>🌍 Travel</span><span class="count">89</span></div>
+                <img class="thumb" src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=120&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="bento-cell">
+                <div class="head"><span>💼 Build</span><span class="count">23</span></div>
+                <img class="thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=120&fit=crop&auto=format&q=70" alt="">
+              </div>
+            </div>
+
+            <div class="filter-strip">
+              <div class="chip" style="background:#1C1C1E;color:#FFFFFF;border-color:#1C1C1E;font-weight:600;">Last month</div>
+              <div class="chip">Italy</div>
+              <div class="chip">Portraits</div>
+              <div class="chip">Wide shots</div>
+            </div>
+
+            <div class="cta" style="margin-top:auto;">Looks right · keep going →</div>
+            <div class="cta-sub">tap to rename · add a topic</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Constate la valeur</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ─── STEP 4 · SMART POST (Value 2) ─── -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-v3-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag smart">Step 04 · Smart Post</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:10px;">Type a sentence.<br>Get a post.</div>
+
+            <div class="demo">
+              <div class="demo-prompt-row"><div class="demo-prompt" style="background:#1C1C1E;">"Italy trip last weekend"</div></div>
+              <div class="demo-grid">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=240&h=240&fit=crop&auto=format&q=70" alt="">
+              </div>
+              <div class="demo-cap">
+                <div class="by">Built from your photos · 2.1 s</div>
+                Three days, two cities, one road. Naples → Capri.
+              </div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;margin-top:auto;">Save · show me one more →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.55);">re-roll caption · pick different photos</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Premier post réel</span></div>
+    </div>
+
+    <div class="arrow">→</div>
+
+    <!-- ─── STEP 5 · TEMPLATES + RITUAL (Value 3) ─── -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-v3-5">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag ritual" style="background:rgba(255,149,0,.16);color:#FF9500;border:none;">Step 05 · Rhythm</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;">Your <em style="color:#FF2D55;">content week.</em></div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:10px;">5 templates auto-scheduled — adjust anytime.</div>
+
+            <div class="week-cal">
+              <div class="day-cell"><div class="dow">Sun</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell active"><div class="dow">Mon</div><div class="ic">🌍</div></div>
+              <div class="day-cell"><div class="dow">Tue</div><div class="ic">☕</div></div>
+              <div class="day-cell"><div class="dow">Wed</div><div class="ic">💼</div></div>
+              <div class="day-cell"><div class="dow">Thu</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell"><div class="dow">Fri</div><div class="ic">🚗</div></div>
+              <div class="day-cell"><div class="dow">Sat</div><div class="ic">☕</div></div>
+            </div>
+
+            <div class="notif-preview" style="margin-bottom:6px;">
+              <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <span class="by">PostKit</span>
+                  <span class="lab">tomorrow 7:00 AM</span>
+                </div>
+                <div class="ti">Your Italy weekend post is ready 📸</div>
+              </div>
+            </div>
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 10px;background:rgba(0,0,0,.06);border-radius:10px;font-size:10px;font-weight:600;">
+              <span>Daily nudge</span>
+              <span style="display:inline-block;width:30px;height:18px;background:#34C759;border-radius:100px;position:relative;"><span style="position:absolute;top:2px;right:2px;width:14px;height:14px;background:#FFF;border-radius:50%;"></span></span>
+            </div>
+
+            <div class="cta orange" style="margin-top:auto;">Start the rhythm ✨</div>
+            <div class="cta-sub">tomorrow 7:00 AM · adjustable</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">05</span><span class="name">Habit lock-in</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<div class="footer-note">
+  <strong style="color:#fff;font-family:'Instrument Serif';font-style:italic;font-size:16px;">Why this 5-step works —</strong><br><br>
+  <strong style="color:#fff;">1. Zero data entry.</strong> The user never types a topic name. AI auto-detects in step 2, user just confirms or renames in step 3. Friction stays low.<br>
+  <strong style="color:#fff;">2. Three value moments back-to-back.</strong> Step 3 (sorted gallery) lands the classification wow. Step 4 (Smart Post) lands the AI wow. Step 5 (calendar + notif) lands the habit anchor.<br>
+  <strong style="color:#fff;">3. Permission asked once, in context.</strong> Photo access requested on step 1 CTA — right before the scan starts, with on-device language. No surprise system prompts later.<br>
+  <strong style="color:#fff;">4. Real photos throughout.</strong> All Unsplash mocks now (Italy/coffee/car/code/build). For shipping we swap with <code>MarketingPhotoLibraryClient</code> bundled assets, same plumbing as App Store screenshots.<br>
+  <strong style="color:#fff;">5. Each step takes ~10-15 sec to read.</strong> Total perceived time matches the actual 90-sec scan, so the user doesn't feel they're waiting — they're <em style="color:#FF9500;">discovering</em>.<br><br>
+  <em style="color:rgba(255,255,255,.55);">Round 1 dans <code>index.html</code> · Round 2 dans <code>index-v2.html</code> · Round 3 ici. Dis-moi si on cale sur celle-ci ou si tu veux ajuster une étape.</em>
+</div>
+
+</body>
+</html>

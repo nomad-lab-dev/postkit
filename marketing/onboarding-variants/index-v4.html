@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Value Tour — 3 personality variants</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ─── SHARED V3 LAYOUT ─── */
+  .v3 .variant { max-width: 1480px; }
+  .v3 .flow {
+    grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr 24px 1fr;
+  }
+
+  .pillar-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 100px;
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px;
+  }
+
+  /* Glass surface helpers */
+  .glass {
+    background: rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.20);
+    border-radius: 12px;
+  }
+
+  /* Chaotic photo cloud (step 1) */
+  .chaos { position: relative; height: 110px; margin: 8px 0 12px; }
+  .chaos img {
+    position: absolute; width: 50px; height: 50px; border-radius: 8px;
+    object-fit: cover; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  /* Bento sorted (step 3) */
+  .bento {
+    display: grid; grid-template-columns: 1fr 1fr; grid-gap: 6px; margin: 8px 0;
+  }
+  .bento-cell {
+    background: #FFFFFF; border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 10px; overflow: hidden; padding: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  }
+  .bento-cell .head {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 10px; font-weight: 600; margin-bottom: 4px; color: #1C1C1E;
+  }
+  .bento-cell .count {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: #8E8E93; font-weight: 500;
+  }
+  .bento-cell .thumb {
+    width: 100%; aspect-ratio: 16 / 9; border-radius: 6px;
+    object-fit: cover; display: block;
+  }
+
+  /* Filter chips horizontal (step 3) */
+  .filter-strip { display: flex; gap: 4px; overflow: hidden; margin-top: 8px; }
+  .filter-strip .chip { flex-shrink: 0; font-size: 9px; padding: 4px 8px; }
+
+  /* Week calendar (step 5) */
+  .week-cal {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 3px; margin: 8px 0;
+  }
+  .day-cell {
+    background: rgba(255, 255, 255, 0.78); border-radius: 7px;
+    padding: 5px 2px; text-align: center; color: #1C1C1E;
+  }
+  .day-cell .dow {
+    font-family: 'Geist Mono', monospace; font-size: 7px;
+    color: #8E8E93; font-weight: 600; text-transform: uppercase; margin-bottom: 2px;
+  }
+  .day-cell .ic { font-size: 12px; line-height: 1; }
+  .day-cell.active { background: #1C1C1E; color: #FFFFFF; }
+  .day-cell.active .dow { color: #FFAE42; }
+
+  /* Notification preview (step 5) */
+  .notif-preview {
+    display: flex; gap: 8px; align-items: center;
+    background: rgba(255, 255, 255, 0.92); backdrop-filter: blur(12px);
+    border-radius: 10px; padding: 8px 9px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.10);
+  }
+  .notif-preview .lab {
+    font-size: 8.5px; color: #8E8E93;
+    font-family: 'Geist Mono', monospace;
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+  .notif-preview .ti { font-size: 10.5px; color: #1C1C1E; margin-top: 1px; line-height: 1.35; }
+  .notif-preview .by { font-size: 8.5px; color: #1C1C1E; font-weight: 700; }
+
+  /* Live counter (step 2) */
+  .live-counter { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+  .live-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .live-row .ic { font-size: 14px; }
+  .live-row .nm { flex: 1; font-weight: 500; }
+  .live-row .num { font-family: 'Geist Mono', monospace; font-weight: 700; font-size: 13px; }
+
+  /* Variant header strip */
+  .v-strip {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
+    gap: 8px; margin-bottom: 20px;
+  }
+  .v-strip .step-meta {
+    padding: 8px 10px; background: var(--panel-2); border-radius: 8px;
+    font-size: 10px; line-height: 1.4; color: var(--text-2);
+  }
+  .v-strip .step-meta .num {
+    font-family: 'Geist Mono', monospace; font-size: 9px;
+    color: var(--text-4); font-weight: 600; display: block; margin-bottom: 2px;
+  }
+  .v-strip .step-meta strong { color: var(--text); font-weight: 600; }
+
+  /* ─── COMPACT DEMO CARD (used on step 04 in all 3 variants) ─── */
+  .demo.compact { padding: 8px; }
+  .demo.compact .demo-prompt {
+    font-size: 9.5px; padding: 5px 9px; margin-bottom: 6px;
+    border-radius: 11px; border-bottom-right-radius: 4px;
+  }
+  .demo.compact .demo-prompt-row { margin-bottom: 4px; }
+  .demo.compact .demo-grid {
+    aspect-ratio: auto;
+    height: 124px;
+    gap: 2px;
+    margin-bottom: 6px;
+  }
+  .demo.compact .demo-cap { font-size: 9px; line-height: 1.35; }
+  .demo.compact .demo-cap .by {
+    font-size: 7.5px; margin-bottom: 3px;
+    letter-spacing: 0.1em;
+  }
+
+  /* ─── V3A — EDITORIAL DISCOVERY ─── */
+  .v3a-bg-1 {
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(255, 159, 0, 0.32) 0%, transparent 55%),
+      linear-gradient(160deg, #1A0F0A 0%, #2A1810 60%, #3A2418 100%);
+    color: #FFFFFF;
+  }
+  .v3a-bg-2 {
+    background: linear-gradient(180deg, #FFF8EC 0%, #FFEED1 60%, #FFE4B5 100%);
+    color: #1C1C1E;
+  }
+  .v3a-bg-3 {
+    background: linear-gradient(180deg, #FAF7F2 0%, #F4F1EC 100%);
+    color: #1C1C1E;
+  }
+  .v3a-bg-4 {
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(255, 159, 0, 0.32) 0%, transparent 55%),
+      linear-gradient(160deg, #2D1F3D 0%, #1A1029 80%, #0F0820 100%);
+    color: #FFFFFF;
+  }
+  .v3a-bg-5 {
+    background: linear-gradient(180deg, #FFE4B5 0%, #FFD699 40%, #F4C78A 100%);
+    color: #1C1C1E;
+  }
+  .v3a em.accent { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; color: #FF9500; }
+
+  /* ─── V3B — BOLD TECH ─── */
+  .v3b-bg-1 {
+    background: linear-gradient(160deg, #050511 0%, #0A0A1F 60%, #0F0F2E 100%);
+    color: #FFFFFF;
+  }
+  .v3b-bg-2 {
+    background: linear-gradient(160deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+    color: #FFFFFF;
+  }
+  .v3b-bg-3 {
+    background: #FFFFFF; color: #0A0A0C;
+  }
+  .v3b-bg-4 {
+    background: linear-gradient(160deg, #AF52DE 0%, #FF2D55 60%, #FF6D00 100%);
+    color: #FFFFFF;
+  }
+  .v3b-bg-5 {
+    background: linear-gradient(160deg, #0A0A1F 0%, #1A1A3F 100%);
+    color: #FFFFFF;
+  }
+  .v3b em.accent {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic; color: #FF2D55;
+  }
+
+  /* ─── V3C — WARM PERSONAL ─── */
+  .v3c-bg-1 {
+    background: linear-gradient(165deg, #FFD0B0 0%, #FFB0A0 60%, #FF96A0 100%);
+    color: #1C1C1E;
+  }
+  .v3c-bg-2 {
+    background: linear-gradient(165deg, #C5F0E0 0%, #A0DCEC 60%, #87CEEB 100%);
+    color: #1C1C1E;
+  }
+  .v3c-bg-3 {
+    background: linear-gradient(180deg, #FFFBF5 0%, #FFF4E5 100%);
+    color: #1C1C1E;
+  }
+  .v3c-bg-4 {
+    background: linear-gradient(165deg, #E6D0FF 0%, #D0B0F0 60%, #BF8FFF 100%);
+    color: #1C1C1E;
+  }
+  .v3c-bg-5 {
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(255, 214, 130, 0.4) 0%, transparent 55%),
+      linear-gradient(180deg, #FFE0C0 0%, #FFB8A8 60%, #FF8AA8 100%);
+    color: #1C1C1E;
+  }
+  .v3c em.accent {
+    font-family: 'Fraunces', Georgia, serif;
+    font-variation-settings: "opsz" 144;
+    font-style: italic; font-weight: 600; color: #BF5AF2;
+  }
+</style>
+</head>
+<body class="v3">
+
+<header class="page-header">
+  <div class="eyebrow">Onboarding V3 · 3 personality variants · same 5-step skeleton</div>
+  <h1>Same flow. <em>Three voices.</em></h1>
+  <p>
+    All three keep the proven 5-step Value Tour (hook → live sort → bento → Smart Post → ritual) — only
+    the <b>copywriting tone</b> and the <b>visual palette</b> change. Pick the personality that matches
+    the brand voice you want for PostKit, I'll wire it up in SwiftUI.
+  </p>
+</header>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     V3a — EDITORIAL DISCOVERY
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-a v3a">
+  <div class="variant-header">
+    <span class="variant-letter">V3<small style="font-size:13px;">a</small></span>
+    <div class="variant-title">
+      <h2>Editorial Discovery</h2>
+      <div class="codename">Refined · Instrument Serif italic · cream + sunset</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Voice</span><span class="val">Poetic, contemplative, "we curate"</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">NYT Magazine × Apple Editorial</span></div>
+      <div class="row"><span class="lab">Best for</span><span class="val">Creators / writers / craft audience</span></div>
+    </div>
+  </div>
+
+  <div class="v-strip">
+    <div class="step-meta"><span class="num">01 · Hook</span><strong>"Your gallery is your portfolio."</strong></div>
+    <div class="step-meta"><span class="num">02 · Sort</span>"Reading 5,847 quiet moments."</div>
+    <div class="step-meta"><span class="num">03 · Bento</span>"A library you can finally browse."</div>
+    <div class="step-meta"><span class="num">04 · Smart Post</span>"Tell us your sentence. We compose the page."</div>
+    <div class="step-meta"><span class="num">05 · Rhythm</span>"A week of stories, already drafted."</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- V3a · Step 1 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3a-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,159,0,.16);color:#FFAE42;">Step 01 · Hook</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:26px;line-height:1.0;margin-bottom:6px;">Your gallery<br>is your <span class="accent" style="color:#FFAE42;">portfolio.</span></div>
+            <div style="font-size:11px;color:rgba(255,255,255,.65);line-height:1.5;margin-bottom:12px;">We just need to show you the pieces.</div>
+            <div class="chaos">
+              <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:0;transform:rotate(-8deg);">
+              <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&h=120&fit=crop&auto=format&q=70" style="top:5px;left:48px;transform:rotate(4deg);">
+              <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:104px;transform:rotate(-3deg);">
+              <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:24px;transform:rotate(7deg);">
+              <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:74px;transform:rotate(-6deg);">
+              <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70" style="top:55px;left:124px;transform:rotate(9deg);">
+            </div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9.5px;color:rgba(255,255,255,.55);text-align:center;letter-spacing:.06em;margin-bottom:auto;">5,847 photos · still untold</div>
+            <div class="cta" style="background:#FFAE42;color:#1C1C1E;">Show me the pieces →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.45);">photo access · on-device · private</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Curated invitation</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3a · Step 2 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3a-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.10);color:#FF9500;">Step 02 · Listening</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;">Reading <span class="accent">5,847</span><br>quiet moments.</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#8E8E93;letter-spacing:.04em;margin-bottom:14px;">on-device · nothing leaves the phone</div>
+            <div class="live-counter">
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">🚗</span><span class="nm">Cars</span><span class="num" style="color:#007AFF;">47</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">☕</span><span class="nm">Food &amp; coffee</span><span class="num" style="color:#FF9500;">32</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">🌍</span><span class="nm">Travel</span><span class="num" style="color:#34C759;">89</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">💼</span><span class="nm">Build</span><span class="num" style="color:#AF52DE;">23</span></div>
+            </div>
+            <div class="progress-bar" style="background:rgba(0,0,0,.10);margin-top:auto;"><div class="fill" style="background:#FF9500;width:62%;"></div></div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#8E8E93;text-align:center;margin-top:6px;letter-spacing:.04em;">3,621 of 5,847 read</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Listening</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3a · Step 3 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3a-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:24px;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.10);color:#FF9500;">Step 03 · Browse</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;">A library you can<br><span class="accent">finally</span> browse.</div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:8px;">Tap a pillar to see all of it.</div>
+            <div class="bento">
+              <div class="bento-cell"><div class="head"><span>🚗 Cars</span><span class="count">47</span></div><img class="thumb" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>☕ Coffee</span><span class="count">32</span></div><img class="thumb" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>🌍 Travel</span><span class="count">89</span></div><img class="thumb" src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>💼 Build</span><span class="count">23</span></div><img class="thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=120&fit=crop&auto=format&q=70"></div>
+            </div>
+            <div class="filter-strip">
+              <div class="chip" style="background:#1C1C1E;color:#FFFFFF;border-color:#1C1C1E;font-weight:600;">Last month</div>
+              <div class="chip">Italy</div>
+              <div class="chip">Portraits</div>
+            </div>
+            <div class="cta" style="background:#1C1C1E;margin-top:auto;">Beautiful — keep going →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">The library</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3a · Step 4 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3a-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:18px 14px 12px;">
+            <div class="pillar-tag" style="background:rgba(255,159,0,.18);color:#FFAE42;">Step 04 · Compose</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:19px;line-height:1.05;margin-bottom:12px;">1 sentence → <span style="color:#FFAE42;">1 post.</span></div>
+
+            <!-- INPUT -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:rgba(255,255,255,.5);letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:4px;">You type</div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+              <div style="background:#FFAE42;color:#1C1C1E;padding:5px 10px;border-radius:11px;border-bottom-right-radius:4px;font-size:10.5px;font-weight:600;">"Italy weekend"</div>
+            </div>
+
+            <!-- TRANSFORM -->
+            <div style="text-align:center;font-family:'Geist Mono',monospace;font-size:8px;color:rgba(255,255,255,.5);letter-spacing:.18em;margin-bottom:6px;">↓ 2.1S COMPOSED</div>
+
+            <!-- OUTPUT (post mockup — single 1:1 image w/ carousel dots, IG-style) -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:rgba(255,255,255,.5);letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:4px;">You get</div>
+            <div style="background:#FFFFFF;border-radius:10px;overflow:hidden;color:#1C1C1E;max-width:158px;margin:0 auto;box-shadow:0 8px 22px rgba(0,0,0,.32);">
+              <div style="display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:1px solid rgba(0,0,0,.06);">
+                <div style="width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,#FFAE42,#FF6D00);flex-shrink:0;"></div>
+                <div style="font-size:9px;font-weight:700;color:#1C1C1E;">@nicolas</div>
+                <div style="margin-left:auto;font-size:7px;color:#FFAE42;font-family:'Geist Mono',monospace;font-weight:700;letter-spacing:.1em;">DRAFT</div>
+              </div>
+              <div style="width:100%;aspect-ratio:1/1;background:#000;">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </div>
+              <div style="display:flex;justify-content:center;gap:4px;padding:5px 0 3px;">
+                <div style="width:5px;height:5px;border-radius:50%;background:#FFAE42;"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+              </div>
+              <div style="padding:0 7px 6px;">
+                <div style="font-size:8.5px;line-height:1.35;color:#1C1C1E;margin-bottom:3px;">Three days, two cities, one road. Naples → Capri.</div>
+                <div style="display:flex;gap:7px;font-size:8px;color:#8E8E93;align-items:center;">
+                  <span>♥ 47</span><span>💬 3</span><span>↗ 2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;margin-top:auto;">Save · one more →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">First composition</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3a · Step 5 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3a-bg-5">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.16);color:#FF9500;">Step 05 · Cadence</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:22px;line-height:1.05;margin-bottom:4px;">A week of stories,<br>already <span class="accent">drafted.</span></div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:10px;">One arrives each morning.</div>
+            <div class="week-cal">
+              <div class="day-cell"><div class="dow">Sun</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell active"><div class="dow">Mon</div><div class="ic">🌍</div></div>
+              <div class="day-cell"><div class="dow">Tue</div><div class="ic">☕</div></div>
+              <div class="day-cell"><div class="dow">Wed</div><div class="ic">💼</div></div>
+              <div class="day-cell"><div class="dow">Thu</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell"><div class="dow">Fri</div><div class="ic">🚗</div></div>
+              <div class="day-cell"><div class="dow">Sat</div><div class="ic">☕</div></div>
+            </div>
+            <div class="notif-preview">
+              <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;">
+                  <span class="by">PostKit</span><span class="lab">tomorrow 7:00</span>
+                </div>
+                <div class="ti">Your Italy weekend is drafted.</div>
+              </div>
+            </div>
+            <div class="cta orange" style="margin-top:auto;">Begin the cadence ✦</div>
+            <div class="cta-sub">7:00 AM · adjustable</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">05</span><span class="name">Cadence</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     V3b — BOLD TECH
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-b v3b">
+  <div class="variant-header">
+    <span class="variant-letter">V3<small style="font-size:13px;">b</small></span>
+    <div class="variant-title">
+      <h2>Bold Tech</h2>
+      <div class="codename">Punchy · Space Grotesk Black · brand-saturated</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Voice</span><span class="val">Command verbs, declarative, numbers as proof</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">Linear × CRED × NB Camera</span></div>
+      <div class="row"><span class="lab">Best for</span><span class="val">Indie devs / power users / build-in-public</span></div>
+    </div>
+  </div>
+
+  <div class="v-strip">
+    <div class="step-meta"><span class="num">01 · Hook</span><strong>"5,847 photos. 0 posted this week."</strong></div>
+    <div class="step-meta"><span class="num">02 · Sort</span>"Sorting 5,847 in 90s. On-device."</div>
+    <div class="step-meta"><span class="num">03 · Bento</span>"Done. 191 ready for posting."</div>
+    <div class="step-meta"><span class="num">04 · Smart Post</span>"Type a sentence. Get a post. 2.1s."</div>
+    <div class="step-meta"><span class="num">05 · Rhythm</span>"Your week's queued. Wake up to posts."</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- V3b · Step 1 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3b-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,45,85,.14);color:#FF6388;">01 · Hook</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:36px;line-height:0.95;margin-bottom:6px;letter-spacing:-.03em;">5,847<br>PHOTOS.</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:32px;line-height:0.95;margin-bottom:14px;letter-spacing:-.03em;">0 <span class="accent" style="font-size:32px;">posted</span><br>this week.</div>
+            <div style="font-size:11px;color:rgba(255,255,255,.65);font-family:'Geist Mono',monospace;letter-spacing:.04em;margin-bottom:auto;">Fix that in 90 sec.</div>
+            <div class="cta" style="background:#FF2D55;color:#FFFFFF;">FIX THAT →</div>
+            <div class="cta-sub" style="color:rgba(255,255,255,.5);">photo access · on-device only</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Punch</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3b · Step 2 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3b-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">02 · Sorting</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:24px;line-height:1.0;margin-bottom:4px;letter-spacing:-.02em;text-transform:uppercase;">Sorting</div>
+            <div style="font-family:'Space Grotesk';font-weight:800;font-size:36px;line-height:0.95;margin-bottom:4px;letter-spacing:-.03em;">5,847</div>
+            <div style="font-family:'Geist Mono',monospace;font-size:10px;color:rgba(255,255,255,.75);letter-spacing:.04em;margin-bottom:14px;">in 90s · on-device</div>
+            <div class="live-counter">
+              <div class="live-row"><span class="ic">🚗</span><span class="nm">Cars</span><span class="num" style="color:#5AC8FA;">47</span></div>
+              <div class="live-row"><span class="ic">☕</span><span class="nm">Food</span><span class="num" style="color:#FFAE42;">32</span></div>
+              <div class="live-row"><span class="ic">🌍</span><span class="nm">Travel</span><span class="num" style="color:#5CE6C7;">89</span></div>
+              <div class="live-row"><span class="ic">💼</span><span class="nm">Build</span><span class="num" style="color:#D98DFF;">23</span></div>
+            </div>
+            <div class="progress-bar" style="background:rgba(255,255,255,.22);margin-top:auto;"><div class="fill" style="background:#FFFFFF;width:62%;"></div></div>
+            <div style="font-family:'Geist Mono',monospace;font-size:10px;color:rgba(255,255,255,.85);text-align:center;margin-top:6px;letter-spacing:.04em;">62% · 32s left</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Sort fast</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3b · Step 3 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3b-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:24px;color:#0A0A0C;">
+            <div class="pillar-tag" style="background:#0A0A0C;color:#FFFFFF;">03 · Browse</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:26px;line-height:0.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:2px;">Done.</div>
+            <div style="font-family:'Space Grotesk';font-weight:800;font-size:38px;line-height:1.0;letter-spacing:-.04em;margin-bottom:4px;">191 <span class="accent" style="font-weight:400;font-size:32px;">ready.</span></div>
+            <div style="font-size:10px;color:#8E8E93;font-family:'Geist Mono',monospace;letter-spacing:.04em;margin-bottom:8px;">Sorted in 88s.</div>
+            <div class="bento">
+              <div class="bento-cell"><div class="head"><span>🚗 Cars</span><span class="count">47</span></div><img class="thumb" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>☕ Coffee</span><span class="count">32</span></div><img class="thumb" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>🌍 Travel</span><span class="count">89</span></div><img class="thumb" src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>💼 Build</span><span class="count">23</span></div><img class="thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=120&fit=crop&auto=format&q=70"></div>
+            </div>
+            <div class="filter-strip">
+              <div class="chip" style="background:#0A0A0C;color:#FFFFFF;border-color:#0A0A0C;font-weight:600;">Last month</div>
+              <div class="chip">Italy</div>
+              <div class="chip">Portraits</div>
+            </div>
+            <div class="cta dark" style="background:#0A0A0C;color:#FFFFFF;margin-top:auto;">BROWSE →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Done. 191.</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3b · Step 4 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3b-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:18px 14px 12px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">04 · Smart Post</div>
+            <div style="font-family:'Space Grotesk';font-weight:800;font-size:22px;line-height:0.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:12px;">Sentence → <span class="accent" style="font-size:22px;">post.</span></div>
+
+            <!-- INPUT -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:rgba(255,255,255,.55);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:4px;">You type</div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+              <div style="background:#0A0A0C;color:#FFFFFF;padding:5px 10px;border-radius:11px;border-bottom-right-radius:4px;font-size:10.5px;font-weight:600;">"Italy weekend"</div>
+            </div>
+
+            <!-- TRANSFORM -->
+            <div style="text-align:center;font-family:'Geist Mono',monospace;font-size:8px;color:#FF2D55;letter-spacing:.18em;font-weight:700;margin-bottom:6px;">↓ 2.1S · DONE</div>
+
+            <!-- OUTPUT (post mockup — single 1:1 image w/ carousel dots, IG-style) -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:rgba(255,255,255,.55);letter-spacing:.18em;text-transform:uppercase;font-weight:700;margin-bottom:4px;">You get</div>
+            <div style="background:#FFFFFF;border-radius:10px;overflow:hidden;color:#1C1C1E;max-width:158px;margin:0 auto;box-shadow:0 8px 22px rgba(0,0,0,.45);">
+              <div style="display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:1px solid rgba(0,0,0,.06);">
+                <div style="width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,#FF2D55,#AF52DE);flex-shrink:0;"></div>
+                <div style="font-size:9px;font-weight:800;color:#1C1C1E;">@nicolas</div>
+                <div style="margin-left:auto;font-size:7px;color:#FF2D55;font-family:'Geist Mono',monospace;font-weight:800;letter-spacing:.1em;">DRAFT</div>
+              </div>
+              <div style="width:100%;aspect-ratio:1/1;background:#000;">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </div>
+              <div style="display:flex;justify-content:center;gap:4px;padding:5px 0 3px;">
+                <div style="width:5px;height:5px;border-radius:50%;background:#FF2D55;"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+              </div>
+              <div style="padding:0 7px 6px;">
+                <div style="font-size:8.5px;line-height:1.35;color:#1C1C1E;margin-bottom:3px;font-weight:500;">Three days, two cities, one road. Naples → Capri.</div>
+                <div style="display:flex;gap:7px;font-size:8px;color:#8E8E93;align-items:center;">
+                  <span>♥ 47</span><span>💬 3</span><span>↗ 2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#1C1C1E;margin-top:auto;">SAVE · ONE MORE →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">2.1s.</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3b · Step 5 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3b-bg-5">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:24px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.18);color:#FFAE42;">05 · Rhythm</div>
+            <div style="font-family:'Space Grotesk';font-weight:700;font-size:24px;line-height:0.95;letter-spacing:-.03em;text-transform:uppercase;margin-bottom:2px;">Your week's</div>
+            <div style="font-family:'Space Grotesk';font-weight:800;font-size:34px;line-height:0.95;letter-spacing:-.03em;margin-bottom:10px;"><span class="accent" style="font-size:34px;">queued.</span></div>
+            <div class="week-cal">
+              <div class="day-cell"><div class="dow">Sun</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell active"><div class="dow">Mon</div><div class="ic">🌍</div></div>
+              <div class="day-cell"><div class="dow">Tue</div><div class="ic">☕</div></div>
+              <div class="day-cell"><div class="dow">Wed</div><div class="ic">💼</div></div>
+              <div class="day-cell"><div class="dow">Thu</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell"><div class="dow">Fri</div><div class="ic">🚗</div></div>
+              <div class="day-cell"><div class="dow">Sat</div><div class="ic">☕</div></div>
+            </div>
+            <div class="notif-preview">
+              <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="by">PostKit</span><span class="lab">7:00 AM</span></div>
+                <div class="ti">Wake up to posts.</div>
+              </div>
+            </div>
+            <div class="cta" style="background:#FF9500;color:#1C1C1E;margin-top:auto;">SET 7AM RITUAL →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">05</span><span class="name">Queued.</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     V3c — WARM PERSONAL
+═══════════════════════════════════════════════════════════════════════════ -->
+<section class="variant variant-e v3c">
+  <div class="variant-header">
+    <span class="variant-letter">V3<small style="font-size:13px;">c</small></span>
+    <div class="variant-title">
+      <h2>Warm Personal</h2>
+      <div class="codename">Friendly · Fraunces italic · dawn pastels</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Voice</span><span class="val">Smart friend, conversational, "you and me"</span></div>
+      <div class="row"><span class="lab">Vibe</span><span class="val">BeReal × Calm × Headspace</span></div>
+      <div class="row"><span class="lab">Best for</span><span class="val">Casual creators / personal brand / habit</span></div>
+    </div>
+  </div>
+
+  <div class="v-strip">
+    <div class="step-meta"><span class="num">01 · Hook</span><strong>"Hey. Quick tour?"</strong></div>
+    <div class="step-meta"><span class="num">02 · Sort</span>"Reading what you've lived. (90 sec)"</div>
+    <div class="step-meta"><span class="num">03 · Bento</span>"Look at that — your life, sorted."</div>
+    <div class="step-meta"><span class="num">04 · Smart Post</span>"What's your story today?"</div>
+    <div class="step-meta"><span class="num">05 · Rhythm</span>"Tomorrow you'll wake up to a post."</div>
+  </div>
+
+  <div class="flow">
+
+    <!-- V3c · Step 1 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3c-bg-1">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(191,90,242,.16);color:#9D4EDD;">01 · Hello</div>
+            <div style="font-family:'Fraunces';font-variation-settings:'opsz' 144;font-weight:600;font-style:italic;font-size:30px;line-height:1.0;letter-spacing:-.02em;margin-bottom:6px;">Hey. <span class="accent">Quick tour?</span></div>
+            <div style="font-size:11.5px;color:#3C3C43;line-height:1.55;margin-bottom:12px;">I'll show you what's in your gallery — takes about 90 seconds.</div>
+            <div class="chaos">
+              <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:0;transform:rotate(-8deg);">
+              <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&h=120&fit=crop&auto=format&q=70" style="top:5px;left:48px;transform:rotate(4deg);">
+              <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:104px;transform:rotate(-3deg);">
+              <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:24px;transform:rotate(7deg);">
+              <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:74px;transform:rotate(-6deg);">
+              <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70" style="top:55px;left:124px;transform:rotate(9deg);">
+            </div>
+            <div style="font-size:10px;color:#3C3C43;text-align:center;margin-bottom:auto;line-height:1.4;">5,847 of them.<br>I'll keep it all on your phone, promise.</div>
+            <div class="cta" style="background:#9D4EDD;color:#FFFFFF;">Sure, let's go →</div>
+            <div class="cta-sub" style="color:#8E8E93;">photo access · on-device only</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Friendly hello</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3c · Step 2 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3c-bg-2">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(0,122,255,.14);color:#007AFF;">02 · Reading</div>
+            <div style="font-family:'Fraunces';font-variation-settings:'opsz' 144;font-weight:600;font-style:italic;font-size:24px;line-height:1.0;letter-spacing:-.02em;margin-bottom:4px;">Reading what you've <span class="accent" style="color:#5856D6;">lived.</span></div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#3C3C43;letter-spacing:.04em;margin-bottom:14px;">on-device · no upload</div>
+            <div class="live-counter">
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">🚗</span><span class="nm">Cars</span><span class="num" style="color:#007AFF;">47</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">☕</span><span class="nm">Food &amp; coffee</span><span class="num" style="color:#FF9500;">32</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">🌍</span><span class="nm">Travel</span><span class="num" style="color:#34C759;">89</span></div>
+              <div class="live-row" style="color:#1C1C1E;"><span class="ic">💼</span><span class="nm">Build</span><span class="num" style="color:#AF52DE;">23</span></div>
+            </div>
+            <div class="progress-bar" style="background:rgba(255,255,255,.5);margin-top:auto;"><div class="fill" style="background:#5856D6;width:62%;"></div></div>
+            <div style="font-family:'Geist Mono',monospace;font-size:9px;color:#3C3C43;text-align:center;margin-top:6px;letter-spacing:.04em;">62% · 32s left · I'll be right back</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Reading…</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3c · Step 3 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3c-bg-3">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding-top:24px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(191,90,242,.12);color:#9D4EDD;">03 · Look</div>
+            <div style="font-family:'Fraunces';font-variation-settings:'opsz' 144;font-weight:600;font-style:italic;font-size:24px;line-height:1.0;letter-spacing:-.02em;margin-bottom:4px;">Look at that — <span class="accent">your life,</span> sorted.</div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:8px;">Pretty, right? Tap to explore.</div>
+            <div class="bento">
+              <div class="bento-cell"><div class="head"><span>🚗 Cars</span><span class="count">47</span></div><img class="thumb" src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>☕ Coffee</span><span class="count">32</span></div><img class="thumb" src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>🌍 Travel</span><span class="count">89</span></div><img class="thumb" src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=120&fit=crop&auto=format&q=70"></div>
+              <div class="bento-cell"><div class="head"><span>💼 Build</span><span class="count">23</span></div><img class="thumb" src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=120&fit=crop&auto=format&q=70"></div>
+            </div>
+            <div class="filter-strip">
+              <div class="chip" style="background:#9D4EDD;color:#FFFFFF;border-color:#9D4EDD;font-weight:600;">Last month</div>
+              <div class="chip">Italy</div>
+              <div class="chip">Portraits</div>
+            </div>
+            <div class="cta" style="background:#9D4EDD;margin-top:auto;">Love it · what's next? →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Look at that</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3c · Step 4 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3c-bg-4">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:18px 14px 12px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(191,90,242,.16);color:#9D4EDD;">04 · Smart Post</div>
+            <div style="font-family:'Fraunces';font-variation-settings:'opsz' 144;font-weight:600;font-style:italic;font-size:20px;line-height:1.05;letter-spacing:-.02em;margin-bottom:12px;">Sentence → <span class="accent">post.</span> ✨</div>
+
+            <!-- INPUT -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:#8E8E93;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:4px;">You type</div>
+            <div style="display:flex;justify-content:flex-end;margin-bottom:6px;">
+              <div style="background:#9D4EDD;color:#FFFFFF;padding:5px 10px;border-radius:11px;border-bottom-right-radius:4px;font-size:10.5px;font-weight:600;">"Italy weekend"</div>
+            </div>
+
+            <!-- TRANSFORM -->
+            <div style="text-align:center;font-family:'Geist Mono',monospace;font-size:8px;color:#9D4EDD;letter-spacing:.16em;font-weight:600;margin-bottom:6px;">✨ 2.1s here you go</div>
+
+            <!-- OUTPUT (post mockup — single 1:1 image w/ carousel dots, IG-style) -->
+            <div style="font-family:'Geist Mono',monospace;font-size:7.5px;color:#8E8E93;letter-spacing:.18em;text-transform:uppercase;font-weight:600;margin-bottom:4px;">You get</div>
+            <div style="background:#FFFFFF;border-radius:10px;overflow:hidden;color:#1C1C1E;border:1px solid rgba(0,0,0,.06);max-width:158px;margin:0 auto;box-shadow:0 6px 20px rgba(157,78,221,.22);">
+              <div style="display:flex;align-items:center;gap:5px;padding:5px 7px;border-bottom:1px solid rgba(0,0,0,.06);">
+                <div style="width:15px;height:15px;border-radius:50%;background:linear-gradient(135deg,#9D4EDD,#FFAE42);flex-shrink:0;"></div>
+                <div style="font-size:9px;font-weight:700;color:#1C1C1E;">@nicolas</div>
+                <div style="margin-left:auto;font-size:7px;color:#9D4EDD;font-family:'Geist Mono',monospace;font-weight:700;letter-spacing:.1em;">DRAFT</div>
+              </div>
+              <div style="width:100%;aspect-ratio:1/1;background:#000;">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75" style="width:100%;height:100%;object-fit:cover;display:block;">
+              </div>
+              <div style="display:flex;justify-content:center;gap:4px;padding:5px 0 3px;">
+                <div style="width:5px;height:5px;border-radius:50%;background:#9D4EDD;"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+                <div style="width:5px;height:5px;border-radius:50%;background:rgba(0,0,0,.15);"></div>
+              </div>
+              <div style="padding:0 7px 6px;">
+                <div style="font-size:8.5px;line-height:1.35;color:#1C1C1E;margin-bottom:3px;">Three days, two cities, one road. Naples → Capri.</div>
+                <div style="display:flex;gap:7px;font-size:8px;color:#8E8E93;align-items:center;">
+                  <span>♥ 47</span><span>💬 3</span><span>↗ 2</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#1C1C1E;color:#FFFFFF;margin-top:auto;">Love it · one more? →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">Your story</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- V3c · Step 5 -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen v3c-bg-5">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:24px 14px 14px;color:#1C1C1E;">
+            <div class="pillar-tag" style="background:rgba(255,149,0,.16);color:#FF6D00;">05 · Tomorrow</div>
+            <div style="font-family:'Fraunces';font-variation-settings:'opsz' 144;font-weight:600;font-style:italic;font-size:24px;line-height:1.0;letter-spacing:-.02em;margin-bottom:4px;">Tomorrow you'll<br>wake up to <span class="accent">a post.</span></div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:10px;">Then every morning. Like clockwork.</div>
+            <div class="week-cal">
+              <div class="day-cell"><div class="dow">Sun</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell active"><div class="dow">Mon</div><div class="ic">🌍</div></div>
+              <div class="day-cell"><div class="dow">Tue</div><div class="ic">☕</div></div>
+              <div class="day-cell"><div class="dow">Wed</div><div class="ic">💼</div></div>
+              <div class="day-cell"><div class="dow">Thu</div><div class="ic" style="opacity:.3;">·</div></div>
+              <div class="day-cell"><div class="dow">Fri</div><div class="ic">🚗</div></div>
+              <div class="day-cell"><div class="dow">Sat</div><div class="ic">☕</div></div>
+            </div>
+            <div class="notif-preview">
+              <div class="brand-icon" style="width:28px;height:28px;border-radius:6px;flex-shrink:0;"><span></span><span></span><span></span><span></span></div>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;justify-content:space-between;align-items:baseline;"><span class="by">PostKit</span><span class="lab">tomorrow 7:00</span></div>
+                <div class="ti">Good morning. Your Italy post is ready 🌅</div>
+              </div>
+            </div>
+            <div class="cta" style="background:#1C1C1E;color:#FFFFFF;margin-top:auto;">Sounds good · set it ✓</div>
+            <div class="cta-sub" style="color:#8E8E93;">change time anytime in Settings</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">05</span><span class="name">Like clockwork</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<div class="footer-note">
+  <strong style="color:#fff;font-family:'Instrument Serif';font-style:italic;font-size:16px;">How to choose —</strong><br><br>
+  <strong style="color:#fff;">V3a Editorial Discovery</strong> · poetic, curated, slow burn. Resonates with the landing's existing Instrument Serif × orange aesthetic. Best if your audience is craft-oriented (writers, photographers, designers).<br><br>
+  <strong style="color:#fff;">V3b Bold Tech</strong> · punchy, declarative, numbers as proof. Closer to Linear / NB Camera. Best for indie devs, power users, and the "build in public" crowd. Strongest for short-form Reels/TikTok demos.<br><br>
+  <strong style="color:#fff;">V3c Warm Personal</strong> · friendly, conversational, like a smart friend speaking. Closer to BeReal / Headspace / Calm. Best for habit-formation positioning and casual creators. Plays well in App Store screenshots that need to feel human.<br><br>
+  <em style="color:rgba(255,255,255,.55);">All three share the exact same 5-step structure — the only thing that changes is voice + palette + typography. Once you pick, I wire it up in SwiftUI and we can A/B the copy on the landing too.</em>
+</div>
+
+</body>
+</html>

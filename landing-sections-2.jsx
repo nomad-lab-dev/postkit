@@ -317,29 +317,98 @@ function PersonaSection({ lang, copy, density }) {
   );
 }
 
-/* ================== DOWNLOAD / PRIVACY ================== */
+/* ================== DOWNLOAD / TESTFLIGHT ================== */
 function DownloadSection({ lang, copy, density }) {
   const d = copy.download;
   return (
-    <section className="pk-section pk-download" style={{
+    <section id="download" className="pk-section pk-download" style={{
       padding: density === "airy" ? "140px 48px" : "100px 40px",
       background: "#0a0a0c", color: "#fff",
       position: "relative", overflow: "hidden",
     }}>
+      {/* Ambient blue radial glow */}
       <div style={{
         position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
-        width: 800, height: 800, borderRadius: "50%",
-        background: "radial-gradient(circle, rgba(0,122,255,.12) 0%, transparent 60%)",
+        width: 900, height: 900, borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(0,122,255,.18) 0%, transparent 60%)",
+        pointerEvents: "none",
       }}/>
-      <div style={{ maxWidth: 900, margin: "0 auto", textAlign: "center", position: "relative" }}>
+
+      <div style={{ maxWidth: 920, margin: "0 auto", textAlign: "center", position: "relative" }}>
+
+        {/* Apple-approved badge — pulse */}
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          padding: "8px 14px",
+          background: "rgba(52,199,89,.12)",
+          border: "1px solid rgba(52,199,89,.35)",
+          borderRadius: 100,
+          fontSize: 12, fontWeight: 600, letterSpacing: ".08em",
+          textTransform: "uppercase", color: "#34c759",
+          marginBottom: 22,
+        }}>
+          <span style={{
+            display: "inline-block", width: 8, height: 8, borderRadius: "50%",
+            background: "#34c759",
+            boxShadow: "0 0 0 0 rgba(52,199,89,.55)",
+            animation: "pk-pulse 2s ease-out infinite",
+          }}/>
+          {d.badge}
+        </div>
+
         <Eyebrow dark>{d.eyebrow}</Eyebrow>
-        <SectionTitle dark>{d.title}</SectionTitle>
-        <p style={{ fontSize: 17, color: "rgba(255,255,255,.6)", marginTop: 18, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.5 }}>{d.sub}</p>
-        <div style={{ display: "flex", gap: 14, justifyContent: "center", marginTop: 36, flexWrap: "wrap" }}>
-          <AppStoreBadge/>
-          <AppStoreBadge mac/>
+        <SectionTitle dark>
+          {d.title.split(".").slice(0, 1)}.<br/>
+          <em style={{ fontStyle: "italic", color: "#ff9500" }}>{d.title.split(".").slice(1).join(".").trim().replace(/\.$/, "")}</em>.
+        </SectionTitle>
+        <p style={{ fontSize: 17, color: "rgba(255,255,255,.66)", marginTop: 18, maxWidth: 600, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>{d.sub}</p>
+
+        {/* TestFlight CTA */}
+        <a
+          href={d.ctaUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: "inline-flex", alignItems: "center", gap: 12,
+            marginTop: 36,
+            padding: "18px 32px",
+            background: "#fff", color: "#0a0a0c",
+            borderRadius: 100,
+            fontSize: 17, fontWeight: 600, letterSpacing: "-.005em",
+            textDecoration: "none",
+            boxShadow: "0 12px 40px rgba(0,122,255,.30), 0 4px 12px rgba(0,0,0,.18)",
+            transition: "transform .2s ease, box-shadow .2s ease",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "translateY(-2px)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "translateY(0)"; }}
+        >
+          {/* TestFlight icon — Apple's white-on-blue paper airplane look */}
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M21.5 2.5 L2.5 11 L11 13 L13 21.5 Z" fill="#007aff" stroke="#007aff" strokeWidth="1.2" strokeLinejoin="round"/>
+            <path d="M21.5 2.5 L11 13" stroke="#fff" strokeWidth="1.2"/>
+          </svg>
+          {d.cta}
+          <span aria-hidden="true" style={{ fontSize: 18 }}>↗</span>
+        </a>
+
+        <div style={{
+          marginTop: 14,
+          fontSize: 13, fontWeight: 500,
+          color: "rgba(255,255,255,.5)",
+          fontFamily: "'Geist Mono', ui-monospace, monospace",
+          letterSpacing: ".02em",
+        }}>
+          {d.ctaSub}
         </div>
       </div>
+
+      <style>{`
+        @keyframes pk-pulse {
+          0%   { box-shadow: 0 0 0 0   rgba(52,199,89,.55); }
+          70%  { box-shadow: 0 0 0 10px rgba(52,199,89,0);   }
+          100% { box-shadow: 0 0 0 0   rgba(52,199,89,0);    }
+        }
+      `}</style>
     </section>
   );
 }
@@ -493,9 +562,13 @@ function Footer({ copy }) {
       <Logo size={22}/>
       <div style={{ fontSize: 12, color: "#86868b" }}>{copy.footer.tag}</div>
       <div style={{ display: "flex", gap: 20, fontSize: 12 }}>
-        {copy.footer.links.map((l, i) => (
-          <a key={i} href="#" onClick={e => e.preventDefault()} style={{ color: "#52525b", textDecoration: "none" }}>{l}</a>
-        ))}
+        {copy.footer.links.map((l, i) => {
+          const href = l === "Privacy" || l === "Confidentialité" ? "/privacy"
+                     : l === "Contact" ? "mailto:hello@nomad-lab.io"
+                     : "#";
+          const props = href === "#" ? { onClick: e => e.preventDefault() } : {};
+          return <a key={i} href={href} {...props} style={{ color: "#52525b", textDecoration: "none" }}>{l}</a>;
+        })}
       </div>
     </footer>
   );

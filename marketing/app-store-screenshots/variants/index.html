@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · App Store Variants</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..900;1,9..144,400..900&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@300..700&family=Geist+Mono:wght@400..700&display=swap');
+
+  :root {
+    --scale: 0.30;
+    --thumb-w: calc(1242px * var(--scale));
+    --thumb-h: calc(2688px * var(--scale));
+    --col-gap: 32px;
+    --row-gap: 56px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: #0E0E12;
+    color: #FFFFFF;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    min-height: 100vh;
+  }
+  body { padding: 64px 40px 96px; }
+
+  /* ---------- HEADER ---------- */
+  header {
+    max-width: calc(var(--thumb-w) * 3 + var(--col-gap) * 2 + 380px);
+    margin: 0 auto 40px;
+    text-align: center;
+  }
+  header .eyebrow {
+    font-family: 'Geist Mono', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.45);
+    margin-bottom: 16px;
+  }
+  header h1 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 56px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 14px;
+  }
+  header h1 em { color: #FF9500; font-style: italic; }
+  header p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.58);
+    line-height: 1.65;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  header p b { color: rgba(255, 255, 255, 0.92); font-weight: 600; }
+
+  /* ---------- SCALE CONTROL ---------- */
+  .scale-control {
+    margin: 28px auto 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, .5);
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+  .scale-control button {
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .14);
+    color: rgba(255, 255, 255, .85);
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    letter-spacing: 0.12em;
+  }
+  .scale-control button:hover { background: rgba(255, 255, 255, .14); }
+  .scale-control button.active {
+    background: #FFFFFF;
+    color: #0E0E12;
+    border-color: #FFFFFF;
+  }
+
+  /* ---------- VARIANT ROW ---------- */
+  .variant-row {
+    max-width: calc(var(--thumb-w) * 3 + var(--col-gap) * 2 + 380px);
+    margin: 0 auto var(--row-gap);
+    display: grid;
+    grid-template-columns: 340px var(--thumb-w) var(--thumb-w) var(--thumb-w);
+    gap: 40px var(--col-gap);
+    align-items: start;
+  }
+
+  /* Left sidebar describing the variant */
+  .variant-sidebar {
+    padding-top: 8px;
+    position: sticky;
+    top: 20px;
+  }
+  .variant-sidebar .letter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.10);
+    color: #FFFFFF;
+    font-family: 'Geist Mono', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  /* Per-variant letter accent color */
+  .variant-row.row-a .letter { background: linear-gradient(135deg, #F4F1EC, #FFE4C1); color: #0A0A0C; }
+  .variant-row.row-b .letter { background: linear-gradient(135deg, #007AFF, #AF52DE); color: #FFFFFF; }
+  .variant-row.row-c .letter { background: linear-gradient(135deg, #0A0A14, #1F1F3A); color: #FFFFFF; border: 1px solid rgba(255,255,255,.18); }
+
+  .variant-sidebar h2 {
+    font-size: 32px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 14px;
+    color: #FFFFFF;
+  }
+  /* Use different fonts in the sidebar h2 to preview the variant's typeface */
+  .variant-row.row-a h2 { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; }
+  .variant-row.row-b h2 { font-family: 'Space Grotesk', sans-serif; font-weight: 700; text-transform: uppercase; font-size: 28px; letter-spacing: -0.03em; }
+  .variant-row.row-c h2 { font-family: 'Fraunces', Georgia, serif; font-variation-settings: "opsz" 144, "SOFT" 50; font-style: italic; font-weight: 500; }
+
+  .variant-sidebar .meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .variant-sidebar .meta-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .variant-sidebar .meta-label {
+    flex-shrink: 0;
+    width: 64px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: rgba(255, 255, 255, 0.4);
+    padding-top: 4px;
+  }
+  .variant-sidebar .meta-value {
+    font-size: 13px;
+    line-height: 1.5;
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .variant-sidebar .meta-value em {
+    color: #FF9500;
+    font-style: italic;
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-size: 15px;
+  }
+  .variant-sidebar .desc {
+    font-size: 13px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.6);
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* ---------- THUMBNAIL ---------- */
+  .thumb {
+    display: block;
+    position: relative;
+    width: var(--thumb-w);
+    height: var(--thumb-h);
+    border-radius: 24px;
+    overflow: hidden;
+    background: #000;
+    box-shadow:
+      0 24px 60px rgba(0, 0, 0, 0.5),
+      0 0 0 1px rgba(255, 255, 255, 0.06);
+    text-decoration: none;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .thumb:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 32px 80px rgba(0, 0, 0, 0.7),
+      0 0 0 1px rgba(255, 255, 255, 0.16);
+  }
+  .thumb iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1242px;
+    height: 2688px;
+    border: 0;
+    transform: scale(var(--scale));
+    transform-origin: top left;
+    pointer-events: none;
+    display: block;
+  }
+  .thumb-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(0, 0, 0, 0.62);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: #FFFFFF;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 5px 10px;
+    border-radius: 100px;
+    z-index: 3;
+  }
+  .thumb-open {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #0E0E12;
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    padding: 5px 10px;
+    border-radius: 100px;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .thumb:hover .thumb-open { opacity: 1; }
+
+  /* ---------- COLUMN HEADERS (slide labels at top) ---------- */
+  .col-labels {
+    max-width: calc(var(--thumb-w) * 3 + var(--col-gap) * 2 + 380px);
+    margin: 0 auto 28px;
+    display: grid;
+    grid-template-columns: 340px var(--thumb-w) var(--thumb-w) var(--thumb-w);
+    gap: 40px var(--col-gap);
+  }
+  .col-labels .empty {}
+  .col-labels .label {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.5);
+    padding: 8px 0 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .col-labels .label strong { color: #FFFFFF; font-weight: 600; }
+
+  /* ---------- FOOTER ---------- */
+  footer {
+    max-width: calc(var(--thumb-w) * 3 + var(--col-gap) * 2 + 380px);
+    margin: 40px auto 0;
+    padding: 24px 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  footer h3 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 22px;
+    font-weight: 400;
+    margin-bottom: 10px;
+    color: #FFFFFF;
+  }
+  footer ul { padding-left: 22px; }
+  footer li { margin-bottom: 4px; }
+  footer code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">PostKit · App Store · 3 directions</div>
+  <h1>One row = one <em>direction</em>.</h1>
+  <p>
+    Each variant explores a different combo of <b>typography + copywriting voice</b> —
+    so you can review font choice, headline tone, cartouche style, and visual mood
+    all in one pass. Pick your favorite mix and I'll roll it out to slides 02 + 04.
+  </p>
+</header>
+
+<div class="scale-control">
+  <span>Preview scale</span>
+  <button data-scale="0.22">XS</button>
+  <button data-scale="0.30" class="active">S</button>
+  <button data-scale="0.38">M</button>
+  <button data-scale="0.50">L</button>
+</div>
+
+<div class="col-labels">
+  <div class="empty"></div>
+  <div class="label"><strong>01</strong> · Hook</div>
+  <div class="label"><strong>03</strong> · Smart Post</div>
+  <div class="label"><strong>05</strong> · Habit · CTA</div>
+</div>
+
+<!-- ROW A — Editorial Cream -->
+<div class="variant-row row-a">
+  <div class="variant-sidebar">
+    <span class="letter">A</span>
+    <h2>Editorial Cream</h2>
+    <div class="meta">
+      <div class="meta-row">
+        <div class="meta-label">Font</div>
+        <div class="meta-value">Instrument Serif <em>italic</em> · Geist Mono · 130pt</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Copy</div>
+        <div class="meta-value">State-an-outcome — poetic, second-person, "your"</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Mood</div>
+        <div class="meta-value">NYT Magazine × Apple Editorial</div>
+      </div>
+    </div>
+    <p class="desc">Cream paper background, refined serif headlines with orange italic emphasis, Geist Mono metadata strip top, PostKit lockup bottom. Closest match to the landing.</p>
+  </div>
+
+  <a class="thumb" href="a-01-hook.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">A · 01 Hook</span>
+    <iframe src="a-01-hook.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="a-03-smartpost.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">A · 03 Smart Post</span>
+    <iframe src="a-03-smartpost.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="a-05-habit.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">A · 05 Habit</span>
+    <iframe src="a-05-habit.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+</div>
+
+<!-- ROW B — Bold Stack -->
+<div class="variant-row row-b">
+  <div class="variant-sidebar">
+    <span class="letter">B</span>
+    <h2>Bold Stack</h2>
+    <div class="meta">
+      <div class="meta-row">
+        <div class="meta-label">Font</div>
+        <div class="meta-value">Space Grotesk Black UPPERCASE 168pt + <em>italic</em> serif emphasis</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Copy</div>
+        <div class="meta-value">Kill-a-pain — command, punchy verbs ("Stop. Start.")</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Mood</div>
+        <div class="meta-value">Linear × CRED × NB Camera</div>
+      </div>
+    </div>
+    <p class="desc">Saturated brand gradient bg, huge sans-serif stacked headlines with one italic serif word for contrast, white pill cartouche bottom-center. Modern tech ad energy.</p>
+  </div>
+
+  <a class="thumb" href="b-01-hook.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">B · 01 Hook</span>
+    <iframe src="b-01-hook.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="b-03-smartpost.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">B · 03 Smart Post</span>
+    <iframe src="b-03-smartpost.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="b-05-habit.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">B · 05 Habit</span>
+    <iframe src="b-05-habit.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+</div>
+
+<!-- ROW C — Dark Premium -->
+<div class="variant-row row-c">
+  <div class="variant-sidebar">
+    <span class="letter">C</span>
+    <h2>Dark Premium</h2>
+    <div class="meta">
+      <div class="meta-row">
+        <div class="meta-label">Font</div>
+        <div class="meta-value">Fraunces (variable serif) <em>italic</em> · 124pt</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Copy</div>
+        <div class="meta-value">Paint-a-moment — scenario / sequence ("Tonight: … Tomorrow: …")</div>
+      </div>
+      <div class="meta-row">
+        <div class="meta-label">Mood</div>
+        <div class="meta-value">Arc Browser × Raycast × Vercel</div>
+      </div>
+    </div>
+    <p class="desc">Navy bg with grid texture + per-slide ambient color glow. Headlines feel like a chapter opening. Phone floats on a light "stage" inside the dark canvas. Late-night creator vibe.</p>
+  </div>
+
+  <a class="thumb" href="c-01-hook.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">C · 01 Hook</span>
+    <iframe src="c-01-hook.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="c-03-smartpost.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">C · 03 Smart Post</span>
+    <iframe src="c-03-smartpost.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+  <a class="thumb" href="c-05-habit.html" target="_blank" rel="noopener">
+    <span class="thumb-badge">C · 05 Habit</span>
+    <iframe src="c-05-habit.html" loading="lazy"></iframe>
+    <span class="thumb-open">open ↗</span>
+  </a>
+</div>
+
+<footer>
+  <h3>Once you pick a direction</h3>
+  <ul>
+    <li>I'll build slide 02 (Before / After) and slide 04 (Pillars) in your chosen variant — same font, same copy voice.</li>
+    <li>You can also mix: "I'll take Variant A's font with Variant B's copy voice" — totally fine, just say so.</li>
+    <li>Click any thumb to open it at native 1242×2688.</li>
+    <li>Render any slide to PNG: <code>chrome --headless --screenshot --window-size=1242,2688 path/to/slide.html</code></li>
+  </ul>
+</footer>
+
+<script>
+  document.querySelectorAll('.scale-control button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.documentElement.style.setProperty('--scale', btn.dataset.scale);
+      document.querySelectorAll('.scale-control button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>

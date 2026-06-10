@@ -2,6 +2,7 @@
 // AppFeature.swift — Root app reducer: tab routing, onboarding presentation, child feature composition
 
 import ComposableArchitecture
+import Foundation
 
 enum AppTab: Int, Sendable {
     case home, explore, smartPost, create, settings
@@ -48,8 +49,13 @@ struct AppFeature {
             case .appLaunched:
                 return .none
 
-            case .onboarding(.presented(.persistResponse(.success))):
+            case .onboarding(.presented(.delegate(.startFirstPost(let prompt)))):
                 state.onboarding = nil
+                state.selectedTab = .smartPost
+                let trimmed = prompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmed.isEmpty {
+                    state.smartPost.inputText = trimmed
+                }
                 return .run { [userDefaults] send in
                     userDefaults.setBool(true, "onboardingComplete")
                     await send(.dashboard(.onAppear))

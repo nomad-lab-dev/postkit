@@ -1,0 +1,1135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · Onboarding FINAL — interactive prototype + spec</title>
+<link rel="stylesheet" href="styles.css">
+<style>
+  /* ─── FINAL-V6 LAYOUT ─── */
+  .v6 .variant { max-width: 1380px; }
+  .v6 .flow {
+    grid-template-columns: 1fr 24px 1fr 24px 1fr 24px 1fr 24px 1fr;
+  }
+
+  .pillar-tag {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 100px;
+    font-family: 'Geist Mono', monospace; font-size: 9px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 6px;
+  }
+
+  /* ─── PALETTE FINAL ─── */
+  .bg-brand {
+    background:
+      radial-gradient(ellipse at 80% 0%, rgba(255, 159, 0, 0.20) 0%, transparent 50%),
+      linear-gradient(160deg, #007AFF 0%, #5856D6 50%, #AF52DE 100%);
+    color: #FFFFFF;
+  }
+  .bg-canvas { background: #FAFBFF; color: #1C1C1E; }
+  .bg-warm {
+    background: linear-gradient(180deg, #FFF8EC 0%, #FFEED1 100%);
+    color: #1C1C1E;
+  }
+  .bg-mint {
+    background: linear-gradient(165deg, #007AFF 0%, #5CE6C7 50%, #34C759 100%);
+    color: #FFFFFF;
+  }
+
+  /* ─── SCREEN 1 · TOGGLE ─── */
+  .seg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 100px;
+    padding: 3px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    color: #1C1C1E;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .seg .seg-btn {
+    padding: 6px 10px;
+    border-radius: 100px;
+    text-align: center;
+    transition: all 0.25s ease;
+    color: rgba(0, 0, 0, 0.55);
+  }
+  .seg .seg-btn.active {
+    background: #FFFFFF;
+    color: #1C1C1E;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.10);
+  }
+
+  .stage {
+    flex: 1;
+    position: relative;
+    margin: 8px 0;
+  }
+  .stage .pane {
+    position: absolute;
+    inset: 0;
+    transition: opacity 0.45s ease, transform 0.45s ease;
+  }
+  .stage .pane.chaos { opacity: 1; transform: scale(1); }
+  .stage .pane.sorted { opacity: 0; transform: scale(0.96); }
+  .stage[data-mode="sorted"] .pane.chaos { opacity: 0; transform: scale(1.04); }
+  .stage[data-mode="sorted"] .pane.sorted { opacity: 1; transform: scale(1); }
+
+  .chaos-cloud {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  .chaos-cloud img {
+    position: absolute;
+    width: 46px;
+    height: 46px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  }
+
+  .mini-bento {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+  .mini-bento-cell {
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    padding: 5px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  }
+  .mini-bento-cell .h {
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 9px; font-weight: 700; margin-bottom: 3px;
+  }
+  .mini-bento-cell .h .cnt {
+    font-family: 'Geist Mono', monospace; font-size: 7.5px; color: #8E8E93; font-weight: 500;
+  }
+  .mini-bento-cell img {
+    width: 100%; aspect-ratio: 16/10;
+    border-radius: 4px; object-fit: cover; display: block;
+  }
+
+  /* ─── SCREEN 2 · SMART POST DEMO ─── */
+  .demo-card {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 12px;
+    padding: 9px;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.20);
+    color: #1C1C1E;
+    margin-bottom: 10px;
+  }
+  .demo-card .promptbubble {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 7px;
+  }
+  .demo-card .promptbubble > div {
+    background: #007AFF;
+    color: #FFFFFF;
+    padding: 5px 10px;
+    border-radius: 11px;
+    border-bottom-right-radius: 4px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+  .demo-card .grid4 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 2px;
+    aspect-ratio: 1/1;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    margin-bottom: 6px;
+  }
+  .demo-card .grid4 img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+  }
+  .demo-card .cap {
+    font-size: 9px; line-height: 1.4; color: #1C1C1E;
+  }
+  .demo-card .cap .by {
+    font-family: 'Geist Mono', monospace;
+    font-size: 7.5px;
+    color: #34C759;
+    margin-bottom: 2px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .demo-card .cap .by::before {
+    content: ''; width: 5px; height: 5px; border-radius: 50%; background: #34C759;
+  }
+
+  .prompt-chips {
+    display: flex;
+    gap: 5px;
+  }
+  .prompt-chips .chip {
+    flex: 1;
+    padding: 6px 8px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.32);
+    border-radius: 100px;
+    font-size: 9px;
+    font-weight: 600;
+    color: #FFFFFF;
+    text-align: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.25s ease;
+  }
+  .prompt-chips .chip.active {
+    background: #FFFFFF;
+    color: #007AFF;
+    border-color: #FFFFFF;
+  }
+
+  /* ─── SCREEN 3 · PILLAR EDITOR ─── */
+  .pillar-list {
+    display: flex; flex-direction: column; gap: 5px; flex: 1;
+    margin-bottom: 8px;
+  }
+  .pillar-row {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 9px;
+    background: #FFFFFF;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 9px;
+    font-size: 10.5px;
+    font-weight: 600;
+    color: #1C1C1E;
+    animation: slideIn 0.3s ease;
+  }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .pillar-row .emj { font-size: 13px; }
+  .pillar-row .name {
+    flex: 1; border: none; background: transparent;
+    font-size: 10.5px; font-weight: 600; color: #1C1C1E;
+    font-family: inherit;
+    outline: none;
+    min-width: 0;
+  }
+  .pillar-row .x {
+    width: 16px; height: 16px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    color: #8E8E93;
+    flex-shrink: 0;
+  }
+  .pillar-row .x:hover { background: rgba(255, 59, 48, 0.18); color: #FF3B30; }
+
+  .pillar-add {
+    display: flex; align-items: center; gap: 7px;
+    padding: 7px 9px;
+    background: #FFFFFF;
+    border: 1px dashed rgba(0, 0, 0, 0.18);
+    border-radius: 9px;
+  }
+  .pillar-add input {
+    flex: 1; border: none; background: transparent;
+    font-size: 10.5px; color: #1C1C1E;
+    font-family: inherit; outline: none;
+    min-width: 0;
+  }
+  .pillar-add input::placeholder { color: #8E8E93; }
+  .pillar-add .plus {
+    width: 18px; height: 18px;
+    background: #007AFF;
+    color: #FFFFFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .pillar-add .plus:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ─── SCREEN 4 · SCAN ─── */
+  .scan-stack { display: flex; flex-direction: column; gap: 7px; margin-bottom: 10px; }
+  .scan-row .head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 10px; margin-bottom: 3px;
+  }
+  .scan-row .nm { font-weight: 600; }
+  .scan-row .cnt {
+    font-family: 'Geist Mono', monospace;
+    font-weight: 700; font-size: 10px;
+  }
+  .scan-row .bar {
+    height: 5px; background: rgba(255, 255, 255, 0.22);
+    border-radius: 100px; overflow: hidden;
+  }
+  .scan-row .bar .fill {
+    height: 100%;
+    background: linear-gradient(90deg, #FFFFFF, #FFE4B5);
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+  .scan-row .bar .fill.done {
+    background: linear-gradient(90deg, #34C759, #5CE6C7);
+  }
+
+  .scan-status {
+    font-family: 'Geist Mono', monospace;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.80);
+    letter-spacing: 0.04em;
+    text-align: center;
+    margin-bottom: 6px;
+    min-height: 14px;
+  }
+  .scan-status .dots::after {
+    content: '...';
+    animation: dotting 1.5s infinite;
+  }
+  @keyframes dotting {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+  }
+  .scan-total {
+    text-align: center;
+    font-family: 'Geist Mono', monospace;
+    font-size: 8.5px;
+    color: rgba(255, 255, 255, 0.65);
+    letter-spacing: 0.06em;
+  }
+  .scan-total strong { color: #FFFFFF; font-size: 11px; font-weight: 700; }
+
+  .cta-disabled {
+    background: rgba(255, 255, 255, 0.18) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+  .cta-ready {
+    background: #FFFFFF !important;
+    color: #007AFF !important;
+    animation: pulseReady 1.5s ease infinite;
+  }
+  @keyframes pulseReady {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+    50% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18); }
+  }
+
+  /* ─── SCREEN 5 · YOUR TURN ─── */
+  .typed-prompt {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 12px;
+    padding: 11px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+    color: #1C1C1E;
+    margin-bottom: 9px;
+  }
+  .typed-prompt .lab {
+    font-family: 'Geist Mono', monospace;
+    font-size: 8px; color: #8E8E93;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 5px;
+  }
+  .typed-prompt .text {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+    color: #1C1C1E;
+    min-height: 18px;
+  }
+  .typed-prompt .caret {
+    display: inline-block;
+    width: 2px; height: 14px;
+    background: #007AFF;
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 1s steps(2, end) infinite;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  .prefill-pills {
+    display: flex; gap: 4px; flex-wrap: wrap;
+    margin-top: 7px;
+  }
+  .prefill-pills .pp {
+    font-size: 9px;
+    font-weight: 600;
+    padding: 4px 9px;
+    background: rgba(0, 122, 255, 0.10);
+    color: #007AFF;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .prefill-pills .pp:hover { background: rgba(0, 122, 255, 0.18); }
+  .prefill-pills .pp.active { background: #007AFF; color: #FFFFFF; }
+
+  .ig-mini {
+    background: #FFFFFF; border-radius: 10px; overflow: hidden;
+    color: #1C1C1E; max-width: 158px; margin: 0 auto;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+  }
+  .ig-mini .head {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 7px; border-bottom: 1px solid rgba(0, 0, 0, .06);
+  }
+  .ig-mini .avatar {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: linear-gradient(135deg, #007AFF, #AF52DE);
+    flex-shrink: 0;
+  }
+  .ig-mini .handle { font-size: 9px; font-weight: 700; }
+  .ig-mini .badge {
+    margin-left: auto; font-size: 7px;
+    color: #007AFF;
+    font-family: 'Geist Mono', monospace; font-weight: 700; letter-spacing: .1em;
+  }
+  .ig-mini .photo { width: 100%; aspect-ratio: 1; background: #000; }
+  .ig-mini .photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .ig-mini .dots {
+    display: flex; justify-content: center; gap: 4px; padding: 4px 0 3px;
+  }
+  .ig-mini .dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(0, 0, 0, .15); }
+  .ig-mini .dot.active { background: #007AFF; }
+  .ig-mini .cap { padding: 4px 7px 6px; font-size: 8.5px; line-height: 1.4; }
+  .ig-mini .eng {
+    display: flex; gap: 7px;
+    font-size: 7.5px; color: #8E8E93;
+    padding: 0 7px 5px;
+  }
+
+  /* ─── SPEC DOC ─── */
+  .spec-doc {
+    max-width: 1100px;
+    margin: 60px auto 0;
+    padding: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    color: var(--text-2);
+    line-height: 1.65;
+    font-size: 13.5px;
+  }
+  .spec-doc h2 {
+    font-family: 'Instrument Serif', Georgia, serif;
+    font-style: italic;
+    font-size: 32px;
+    font-weight: 400;
+    color: #FFFFFF;
+    margin-bottom: 14px;
+  }
+  .spec-doc h2 em { color: #FFAE42; }
+  .spec-doc h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 28px 0 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-doc h3 .id {
+    font-family: 'Geist Mono', monospace;
+    font-size: 11px;
+    color: var(--text-3);
+    letter-spacing: 0.1em;
+    margin-right: 10px;
+    font-weight: 600;
+  }
+  .spec-doc h4 {
+    font-size: 13px;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.92);
+    margin: 16px 0 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .spec-doc code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    color: #FFAE42;
+  }
+  .spec-doc pre {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    font-family: 'Geist Mono', monospace;
+    font-size: 11.5px;
+    line-height: 1.5;
+    overflow-x: auto;
+    margin: 8px 0 12px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .spec-doc pre .kw { color: #BF5AF2; }
+  .spec-doc pre .str { color: #34C759; }
+  .spec-doc pre .com { color: #8E8E93; font-style: italic; }
+  .spec-doc ul { padding-left: 22px; margin: 4px 0 10px; }
+  .spec-doc li { margin-bottom: 4px; }
+  .spec-doc table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 8px 0 14px;
+    font-size: 12.5px;
+  }
+  .spec-doc th, .spec-doc td {
+    padding: 7px 10px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .spec-doc th {
+    color: #FFFFFF;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.03);
+  }
+  .spec-doc .callout {
+    background: rgba(255, 174, 66, 0.10);
+    border-left: 3px solid #FFAE42;
+    padding: 10px 14px;
+    border-radius: 6px;
+    margin: 10px 0;
+    font-size: 12.5px;
+  }
+</style>
+</head>
+<body class="v3 v6">
+
+<header class="page-header">
+  <div class="eyebrow">PostKit · Onboarding FINAL · interactive prototype</div>
+  <h1>The <em>final</em> onboarding.</h1>
+  <p>
+    5 steps. <b>Try every interaction below</b> — toggle screen 1, swap prompts on screen 2, add/remove
+    pillars on screen 3, watch screen 4 auto-fill until conditions are met, type on screen 5.
+    The implementation spec for SwiftUI + TCA lives at the bottom.
+  </p>
+</header>
+
+<section class="variant variant-c">
+  <div class="variant-header">
+    <span class="variant-letter">★</span>
+    <div class="variant-title">
+      <h2>The 5-step flow</h2>
+      <div class="codename">Interactive · spec-driven · 100% on existing features</div>
+    </div>
+    <div class="variant-meta">
+      <div class="row"><span class="lab">Interactivity</span><span class="val">All 5 phones live — try them</span></div>
+      <div class="row"><span class="lab">Step 4 conditions</span><span class="val">20 photos per pillar OR 500 photos total</span></div>
+      <div class="row"><span class="lab">Spec at bottom</span><span class="val">→ ready for SwiftUI implementation</span></div>
+    </div>
+  </div>
+
+  <div class="flow">
+
+    <!-- ═══ STEP 01 · BEFORE/AFTER TOGGLE ═══ -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-canvas">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:18px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(0,122,255,.10);color:#007AFF;">Step 01 · Hook</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:10px;">Your gallery, <em style="color:#FF9500;">two ways.</em></div>
+
+            <div class="seg" id="s1-seg">
+              <div class="seg-btn active" data-mode="chaos">Without</div>
+              <div class="seg-btn" data-mode="sorted">With PostKit</div>
+            </div>
+
+            <div class="stage" id="s1-stage" data-mode="chaos">
+              <!-- Chaos pane -->
+              <div class="pane chaos">
+                <div class="chaos-cloud">
+                  <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:0;transform:rotate(-8deg);">
+                  <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=120&h=120&fit=crop&auto=format&q=70" style="top:5px;left:48px;transform:rotate(4deg);">
+                  <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=120&h=120&fit=crop&auto=format&q=70" style="top:0;left:104px;transform:rotate(-3deg);">
+                  <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:18px;transform:rotate(7deg);">
+                  <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=120&h=120&fit=crop&auto=format&q=70" style="top:50px;left:74px;transform:rotate(-6deg);">
+                  <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=120&h=120&fit=crop&auto=format&q=70" style="top:55px;left:124px;transform:rotate(9deg);">
+                  <img src="https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=120&h=120&fit=crop&auto=format&q=70" style="top:100px;left:6px;transform:rotate(-5deg);">
+                  <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=120&h=120&fit=crop&auto=format&q=70" style="top:108px;left:62px;transform:rotate(8deg);">
+                  <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=120&h=120&fit=crop&auto=format&q=70" style="top:104px;left:118px;transform:rotate(-9deg);">
+                </div>
+              </div>
+              <!-- Sorted pane -->
+              <div class="pane sorted">
+                <div class="mini-bento">
+                  <div class="mini-bento-cell">
+                    <div class="h"><span>🚗 Cars</span><span class="cnt">47</span></div>
+                    <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=160&h=100&fit=crop&auto=format&q=70">
+                  </div>
+                  <div class="mini-bento-cell">
+                    <div class="h"><span>☕ Coffee</span><span class="cnt">32</span></div>
+                    <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=160&h=100&fit=crop&auto=format&q=70">
+                  </div>
+                  <div class="mini-bento-cell">
+                    <div class="h"><span>🌍 Travel</span><span class="cnt">89</span></div>
+                    <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=160&h=100&fit=crop&auto=format&q=70">
+                  </div>
+                  <div class="mini-bento-cell">
+                    <div class="h"><span>💼 Build</span><span class="cnt">23</span></div>
+                    <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=160&h=100&fit=crop&auto=format&q=70">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta" style="background:#1C1C1E;color:#FFFFFF;margin-top:auto;">Show me the change →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">01</span><span class="name">Before / After</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ═══ STEP 02 · SMART POST DEMO ═══ -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-brand">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:18px 12px 12px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">Step 02 · Smart Post</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:20px;line-height:1.05;margin-bottom:10px;">Type a sentence.<br>Get <span style="color:#FFAE42;">a post.</span></div>
+
+            <div class="demo-card" id="s2-demo">
+              <div class="promptbubble"><div data-prompt="italy">"My weekend in Italy"</div></div>
+              <div class="grid4" data-pillar="italy">
+                <img src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=200&h=200&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=200&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=200&h=200&fit=crop&auto=format&q=70">
+                <img src="https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop&auto=format&q=70">
+              </div>
+              <div class="cap">
+                <div class="by">Generated · 2.1 s</div>
+                <span data-cap="italy">Three days, two cities, one road. Naples → Capri.</span>
+              </div>
+            </div>
+
+            <div class="prompt-chips" id="s2-chips">
+              <div class="chip active" data-prompt="italy">🌍 Italy</div>
+              <div class="chip" data-prompt="coffee">☕ Coffee</div>
+              <div class="chip" data-prompt="build">💼 Build</div>
+            </div>
+
+            <div class="cta" style="background:#FFFFFF;color:#007AFF;margin-top:auto;">Try with my photos →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">02</span><span class="name">Magic demo</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ═══ STEP 03 · PILLAR EDITOR ═══ -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-canvas">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:18px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(0,122,255,.10);color:#007AFF;">Step 03 · Your pillars</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:19px;line-height:1.05;margin-bottom:4px;">What's <em style="color:#FF9500;">your</em> brand?</div>
+            <div style="font-size:10.5px;color:#3C3C43;margin-bottom:10px;">Tap to rename · × to remove · add your own.</div>
+
+            <div class="pillar-list" id="s3-list">
+              <div class="pillar-row" data-pillar="travel">
+                <span class="emj">🌍</span>
+                <input class="name" value="Travel">
+                <span class="x" onclick="removePillar(this)">×</span>
+              </div>
+              <div class="pillar-row" data-pillar="coffee">
+                <span class="emj">☕</span>
+                <input class="name" value="Food &amp; coffee">
+                <span class="x" onclick="removePillar(this)">×</span>
+              </div>
+              <div class="pillar-row" data-pillar="build">
+                <span class="emj">💼</span>
+                <input class="name" value="Build in public">
+                <span class="x" onclick="removePillar(this)">×</span>
+              </div>
+            </div>
+
+            <div class="pillar-add">
+              <span class="emj">✨</span>
+              <input id="s3-input" placeholder="Add another (e.g. Fitness)…" onkeypress="if(event.key==='Enter') addPillar();">
+              <button class="plus" onclick="addPillar()">+</button>
+            </div>
+
+            <div class="cta" id="s3-cta" style="background:#007AFF;color:#FFFFFF;margin-top:auto;">Continue with <span id="s3-count">3</span> pillars →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">03</span><span class="name">Editable pillars</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ═══ STEP 04 · SCAN ═══ -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-brand">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar dark"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body dark" style="padding:18px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(255,255,255,.18);color:#FFFFFF;">Step 04 · Sorting your gallery</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:19px;line-height:1.05;margin-bottom:10px;">Stop, <em style="color:#FFAE42;">we have enough.</em></div>
+
+            <div class="scan-stack" id="s4-stack">
+              <div class="scan-row" data-pillar="travel">
+                <div class="head"><span class="nm">🌍 Travel</span><span class="cnt"><span class="now">0</span>/20</span></div>
+                <div class="bar"><div class="fill" style="width:0%;"></div></div>
+              </div>
+              <div class="scan-row" data-pillar="coffee">
+                <div class="head"><span class="nm">☕ Coffee</span><span class="cnt"><span class="now">0</span>/20</span></div>
+                <div class="bar"><div class="fill" style="width:0%;"></div></div>
+              </div>
+              <div class="scan-row" data-pillar="build">
+                <div class="head"><span class="nm">💼 Build</span><span class="cnt"><span class="now">0</span>/20</span></div>
+                <div class="bar"><div class="fill" style="width:0%;"></div></div>
+              </div>
+            </div>
+
+            <div class="scan-status" id="s4-status">Initializing<span class="dots"></span></div>
+            <div class="scan-total"><strong id="s4-total">0</strong> / 500 photos scanned</div>
+
+            <div class="cta cta-disabled" id="s4-cta" style="margin-top:auto;color:rgba(255,255,255,.65);">Building your library…</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">04</span><span class="name">★ Scan with conditions</span></div>
+    </div>
+    <div class="arrow">→</div>
+
+    <!-- ═══ STEP 05 · YOUR TURN ═══ -->
+    <div class="step">
+      <div class="phone">
+        <div class="phone-screen bg-canvas">
+          <div class="phone-notch"></div>
+          <div class="phone-statusbar"><span>9:41</span><span>● ●●●</span></div>
+          <div class="phone-body" style="padding:18px 14px 14px;">
+            <div class="pillar-tag" style="background:rgba(0,122,255,.10);color:#007AFF;">Step 05 · Your turn</div>
+            <div style="font-family:'Instrument Serif';font-style:italic;font-size:19px;line-height:1.05;margin-bottom:8px;">Make your <em style="color:#FF9500;">first</em> post.</div>
+
+            <div class="typed-prompt">
+              <div class="lab">Type or pick</div>
+              <div class="text" id="s5-text">A post about <span id="s5-prompt-text">my Italy trip</span><span class="caret"></span></div>
+              <div class="prefill-pills" id="s5-pills">
+                <div class="pp active" data-prompt="my Italy trip" data-photos="italy">🌍 Italy trip</div>
+                <div class="pp" data-prompt="my coffee routine" data-photos="coffee">☕ Coffee routine</div>
+                <div class="pp" data-prompt="my latest build" data-photos="build">💼 Latest build</div>
+              </div>
+            </div>
+
+            <div class="ig-mini">
+              <div class="head">
+                <div class="avatar"></div>
+                <div class="handle">@nicolas</div>
+                <div class="badge">DRAFT</div>
+              </div>
+              <div class="photo">
+                <img id="s5-photo" src="https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75">
+              </div>
+              <div class="dots">
+                <div class="dot active"></div>
+                <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+              </div>
+              <div class="cap" id="s5-cap">Three days, two cities, one road. Naples → Capri.</div>
+              <div class="eng"><span>♥ 47</span><span>💬 3</span><span>↗ 2</span></div>
+            </div>
+
+            <div class="cta" style="background:#007AFF;color:#FFFFFF;margin-top:auto;">Save · I'm in →</div>
+          </div>
+        </div>
+      </div>
+      <div class="step-label"><span class="num">05</span><span class="name">First real prompt</span></div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     IMPLEMENTATION SPEC
+═══════════════════════════════════════════════════════════════════════════ -->
+<div class="spec-doc">
+  <h2>Implementation <em>spec</em> — SwiftUI + TCA</h2>
+  <p>
+    Below is the technical specification for shipping this onboarding in PostKit. The structure maps
+    onto a TCA <code>OnboardingFeature</code> reducer with one state branch per step. Every step is
+    independently testable. Photos throughout are pulled from <code>PhotoLibraryClient</code> (real)
+    or <code>MarketingPhotoLibraryClient</code> (demo-mode).
+  </p>
+
+  <h3><span class="id">STATE</span> Global onboarding state</h3>
+  <pre><span class="com">// OnboardingFeature.State</span>
+<span class="kw">@ObservableState</span> <span class="kw">struct</span> State: <span class="kw">Equatable</span> {
+  <span class="kw">var</span> step: Step = .hook
+  <span class="kw">var</span> pillars: [PillarDraft] = .default3  <span class="com">// editable</span>
+  <span class="kw">var</span> scanProgress: ScanProgress = .init()
+  <span class="kw">var</span> demoPrompt: DemoPrompt = .italy   <span class="com">// step 02 active chip</span>
+  <span class="kw">var</span> selectedFirstPrompt: PrefilledPrompt? = <span class="kw">nil</span>
+  <span class="kw">var</span> hookMode: HookMode = .without    <span class="com">// step 01 toggle</span>
+  <span class="kw">var</span> firstPostDraft: GeneratedPostSnapshot? = <span class="kw">nil</span>
+}
+<span class="kw">enum</span> Step { <span class="kw">case</span> hook, demo, pillars, scan, firstPrompt }</pre>
+
+  <h3><span class="id">01</span> Hook — Before/After toggle</h3>
+  <h4>UX</h4>
+  <ul>
+    <li>Segmented control top: <strong>Without</strong> / <strong>With PostKit</strong>.</li>
+    <li><strong>Without</strong>: chaotic photo cloud — 9 random thumbnails from the user's gallery, scattered with rotations (−9°..+9°).</li>
+    <li><strong>With PostKit</strong>: mini-bento 2×2 with mock pillar names (Travel, Coffee, Cars, Build) + 1 preview thumbnail per cell. <strong>The photos used are the same gallery thumbnails as the Without state</strong> — just organised. Drives the "same photos, different relationship" mental model.</li>
+    <li>Transition: 0.45s opacity + scale cross-fade between panes. <strong>SwiftUI</strong>: <code>matchedGeometryEffect</code> between modes lets specific thumbnails fly to their bento cells.</li>
+  </ul>
+  <h4>Action wiring</h4>
+  <pre><span class="kw">case</span> hookToggle(HookMode)               <span class="com">// updates state.hookMode</span>
+<span class="kw">case</span> hookContinueTapped                  <span class="com">// → state.step = .demo</span></pre>
+  <h4>Data needed</h4>
+  <ul>
+    <li><code>photoLibrary.fetchRecentPhotos(limit: 9)</code> — pulled at <code>.onAppear</code></li>
+    <li>If permission denied → fallback to <code>MarketingPhotoLibraryClient</code> bundled samples</li>
+  </ul>
+
+  <h3><span class="id">02</span> Demo — Smart Post showcase</h3>
+  <h4>UX</h4>
+  <ul>
+    <li>3 prompt chips at the bottom: 🌍 Italy / ☕ Coffee / 💼 Build. Tapping a chip swaps the demo card content.</li>
+    <li>Demo card = chat bubble + 2×2 photo grid + generated caption + "Generated · 2.1s" timestamp.</li>
+    <li>Photos for each demo come from the <strong>MarketingPhotoLibraryClient bundle</strong> — not the user's gallery (since permission hasn't been requested yet at this step).</li>
+    <li>Transition between chip selections: 0.3s opacity fade on the demo card content.</li>
+  </ul>
+  <h4>Action wiring</h4>
+  <pre><span class="kw">case</span> demoChipTapped(DemoPrompt)            <span class="com">// state.demoPrompt = ...</span>
+<span class="kw">case</span> demoContinueTapped                    <span class="com">// → state.step = .pillars</span></pre>
+  <div class="callout">
+    💡 <strong>No permission requested yet.</strong> This is intentional — the user sees the magic before being asked to grant photo access, which raises consent rates dramatically (foot-in-door psychology).
+  </div>
+
+  <h3><span class="id">03</span> Pillars — editable list</h3>
+  <h4>UX</h4>
+  <ul>
+    <li>3 default pillars pre-shown: 🌍 Travel · ☕ Food &amp; coffee · 💼 Build in public.</li>
+    <li>Each pillar row has: tappable name (inline rename), × button (remove).</li>
+    <li>"+ Add another" row with text input + emoji selector + primary plus button.</li>
+    <li>Continue CTA label updates dynamically: <strong>"Continue with N pillars →"</strong>.</li>
+    <li><strong>Constraints:</strong> minimum 2 pillars, maximum 7. CTA disabled outside this range.</li>
+    <li>Animations: new pillar slides in from top (0.3s ease). Removed pillar fades out + collapses (0.25s).</li>
+  </ul>
+  <h4>Action wiring</h4>
+  <pre><span class="kw">case</span> pillarRenamed(id: UUID, name: String)
+<span class="kw">case</span> pillarRemoved(id: UUID)
+<span class="kw">case</span> pillarAdded(name: String, emoji: String)
+<span class="kw">case</span> pillarsContinueTapped                   <span class="com">// → state.step = .scan</span>
+                                            <span class="com">//   + photoLibrary.requestAuthorization()</span></pre>
+  <h4>Permission request placement</h4>
+  <p>
+    Photo authorisation is requested on the <strong>Continue</strong> tap of step 03 — right before
+    the scan begins. The system prompt fires inside the <code>.run</code> effect; if denied, the
+    coordinator routes to a recoverable explainer screen ("PostKit needs photo access to sort your
+    library, but you can grant limited access in Settings"). It is NOT requested at app launch.
+  </p>
+
+  <h3><span class="id">04</span> Scan — bounded incremental classification ★</h3>
+  <h4>UX</h4>
+  <ul>
+    <li>Live progress bar per pillar (0/20 → 20/20).</li>
+    <li>Total counter at the bottom (X / 500 photos scanned).</li>
+    <li>Animated status text cycles through: "Reading photo N…", "Found 12 Travel moments", "Tagging in Cars…", "Reading photo N…", etc. Cycles every 1.2 sec.</li>
+    <li><strong>CTA disabled until exit conditions are met.</strong> Disabled state text: "Building your library…". Once met, button transforms with pulse animation to "Continue · your gallery is ready →".</li>
+    <li>Once met, screen <strong>does NOT auto-advance</strong> — user taps CTA to acknowledge. (Auto-advance is jarring on success states.)</li>
+  </ul>
+
+  <h4>Exit conditions (OR-gated)</h4>
+  <table>
+    <tr><th>Condition</th><th>Why</th></tr>
+    <tr><td>≥ 20 photos in every pillar</td><td>Enough samples to draft 6-photo posts comfortably for each pillar</td></tr>
+    <tr><td>OR 500 photos total scanned</td><td>Hard ceiling so users with small galleries still complete onboarding (5K-photo cap doesn't gate them)</td></tr>
+    <tr><td>OR 100% of library scanned</td><td>For users with &lt;500 photos, exit when nothing left to scan</td></tr>
+  </table>
+
+  <h4>Scan strategy</h4>
+  <ul>
+    <li>Pull batches of 30 photos from <code>PhotoLibraryClient.fetchAllPhotos(batchSize: 30)</code>.</li>
+    <li>For each photo, run <code>imageClassifier.classify</code> (Core ML on-device).</li>
+    <li>Confidence &lt; 0.55 → mark <code>.pending</code>, doesn't count toward pillar bucket.</li>
+    <li>Confidence ≥ 0.55 → write to SwiftData via <code>persistence.batchSavePhotos</code> + increment in-state counter for that pillar.</li>
+    <li>After each save, re-evaluate exit conditions. When met → cancel the scan effect.</li>
+  </ul>
+
+  <h4>Action wiring</h4>
+  <pre><span class="kw">case</span> scanStartRequested                  <span class="com">// fires on .onAppear of scan step</span>
+<span class="kw">case</span> scanPhotoProcessed(pillarID: UUID?, confidence: Float)
+<span class="kw">case</span> scanExitConditionsMet               <span class="com">// CTA becomes pulse-ready</span>
+<span class="kw">case</span> scanContinueTapped                  <span class="com">// → state.step = .firstPrompt</span>
+                                          <span class="com">//   + background continues scan</span></pre>
+
+  <div class="callout">
+    💡 <strong>The scan continues in background after onboarding ends.</strong> The 20-per-pillar / 500-total exit conditions are just for unblocking onboarding. A separate background task (Dashboard's <code>startFullScanRequested</code> already implements this) processes the rest of the gallery overnight or on next app open.
+  </div>
+
+  <h3><span class="id">05</span> First prompt — guided commit</h3>
+  <h4>UX</h4>
+  <ul>
+    <li>Typewriter-style typed prompt input: "A post about <em>my Italy trip</em>".</li>
+    <li>3 prefill chips below input, generated from the user's confirmed pillars. Tapping a chip swaps the typed text + the post preview's photo + caption.</li>
+    <li>Live IG-style post mockup updates as user changes prompt.</li>
+    <li>"Save · I'm in →" CTA fires the actual <code>SmartPostFeature.sendMessageTapped</code> with the prefilled prompt, then opens the <code>PostEditorFeature</code> sheet with the filled slots.</li>
+  </ul>
+  <h4>Action wiring</h4>
+  <pre><span class="kw">case</span> firstPromptChipTapped(PrefilledPrompt)
+<span class="kw">case</span> firstPromptSaveTapped               <span class="com">// → triggers SmartPost flow</span>
+                                          <span class="com">//   + sets onboardingComplete = true</span>
+                                          <span class="com">//   + dismisses sheet, lands user on Dashboard</span></pre>
+
+  <h3><span class="id">FX</span> Transitions between steps</h3>
+  <ul>
+    <li>Step 01 → 02 : horizontal slide (matchedGeometryEffect carries one bento thumbnail into the demo card photo 1).</li>
+    <li>Step 02 → 03 : standard slide. Prompt chip pillar names carry into the editable pillar list (smart UX shortcut).</li>
+    <li>Step 03 → 04 : the 3-4 pillar rows fade up, the scan stack fades down → photos appear to "leave" the cards and start being sorted.</li>
+    <li>Step 04 → 05 : <code>20 → 20</code> counters morph into the "20 photos · ready" line in the post preview.</li>
+    <li>Step 05 → Dashboard : <code>matchedGeometryEffect</code> on the IG post mockup → it becomes the top card in the Dashboard's "Today" section.</li>
+  </ul>
+
+  <h3><span class="id">META</span> Accessibility &amp; edge cases</h3>
+  <ul>
+    <li><strong>Reduce Motion ON:</strong> all transitions become 0.2s opacity-only. No translation/scale.</li>
+    <li><strong>Dynamic Type:</strong> Instrument Serif titles use the <code>.title2</code> scaling family with clamps at <code>.accessibility3</code>.</li>
+    <li><strong>Reduce Transparency:</strong> glass surfaces fall back to opaque <code>Palette.surface</code>.</li>
+    <li><strong>Photo permission denied:</strong> after step 03, route to recovery screen with deep-link to iOS Settings. Sample bundled photos used for demo card on step 02 in this case.</li>
+    <li><strong>Small library (&lt; 100 photos):</strong> skip step 04 entirely. Scan completes in &lt;5sec. Land directly on step 05 with all detected pillars.</li>
+    <li><strong>Empty pillars after scan:</strong> if a pillar has 0 high-confidence matches, show in step 04 results as "We didn't find enough X yet — we'll keep looking." Don't surface in step 05 prefills.</li>
+  </ul>
+
+  <h3><span class="id">DONE</span> Definition of done</h3>
+  <ul>
+    <li>All 5 steps reachable from <code>OnboardingFeature.State()</code> initial state.</li>
+    <li>State persists across kill-restart (uses <code>UserDefaults("onboarding.step")</code> as save point).</li>
+    <li>Onboarding complete writes <code>UserDefaults("onboardingComplete") = true</code> + clears the step pointer.</li>
+    <li>Resumability: if user kills app at any step, next launch returns to that step (with scan progress restored from SwiftData counts).</li>
+    <li>Test coverage: each step has its own <code>TestStore</code> assertion suite. Scan logic has a fake clock-driven test verifying exit conditions.</li>
+  </ul>
+</div>
+
+
+<script>
+  // ═══════════════════════════════════════════════════════════════════════════
+  // INTERACTIVE PROTOTYPE LOGIC
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // ─── Screen 01 · Toggle ────────────────────────────────────────────────
+  document.querySelectorAll('#s1-seg .seg-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const mode = btn.dataset.mode;
+      document.querySelectorAll('#s1-seg .seg-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+      document.getElementById('s1-stage').dataset.mode = mode;
+    });
+  });
+
+  // ─── Screen 02 · Prompt chips swap demo ────────────────────────────────
+  const demoData = {
+    italy: {
+      photos: [
+        "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1499678329028-101435549a4e?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=200&h=200&fit=crop&auto=format&q=70"
+      ],
+      prompt: '"My weekend in Italy"',
+      caption: 'Three days, two cities, one road. Naples → Capri.'
+    },
+    coffee: {
+      photos: [
+        "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=200&h=200&fit=crop&auto=format&q=70"
+      ],
+      prompt: '"Coffee shops I keep coming back to"',
+      caption: 'Three rooms, one ritual. The flat white that started the day.'
+    },
+    build: {
+      photos: [
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1531297484001-80022131f5a1?w=200&h=200&fit=crop&auto=format&q=70",
+        "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=200&h=200&fit=crop&auto=format&q=70"
+      ],
+      prompt: '"Build log · what shipped this week"',
+      caption: 'Three PRs, one feature, zero regressions. Subscription tier is live.'
+    }
+  };
+
+  document.querySelectorAll('#s2-chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const key = chip.dataset.prompt;
+      document.querySelectorAll('#s2-chips .chip').forEach(c => c.classList.toggle('active', c.dataset.prompt === key));
+      const card = document.getElementById('s2-demo');
+      const imgs = card.querySelectorAll('.grid4 img');
+      const data = demoData[key];
+      imgs.forEach((img, i) => img.src = data.photos[i]);
+      card.querySelector('.promptbubble > div').textContent = data.prompt;
+      card.querySelector('.cap span[data-cap]').textContent = data.caption;
+    });
+  });
+
+  // ─── Screen 03 · Pillar editor ─────────────────────────────────────────
+  const pillarEmojis = ['✨', '🎨', '📚', '🏋️', '🎵', '🌱', '🍷', '🏛️', '🎯', '⚡'];
+  let emojiIdx = 0;
+
+  function removePillar(x) {
+    const row = x.closest('.pillar-row');
+    row.style.transition = 'opacity 0.25s, transform 0.25s, max-height 0.25s, margin 0.25s';
+    row.style.opacity = '0';
+    row.style.transform = 'translateX(-8px)';
+    row.style.maxHeight = '0';
+    row.style.margin = '0';
+    setTimeout(() => { row.remove(); updatePillarCount(); }, 250);
+  }
+
+  function addPillar() {
+    const input = document.getElementById('s3-input');
+    const name = input.value.trim();
+    if (!name) return;
+    const list = document.getElementById('s3-list');
+    const emj = pillarEmojis[emojiIdx % pillarEmojis.length];
+    emojiIdx++;
+    const row = document.createElement('div');
+    row.className = 'pillar-row';
+    row.innerHTML = `<span class="emj">${emj}</span><input class="name" value="${name}"><span class="x" onclick="removePillar(this)">×</span>`;
+    list.appendChild(row);
+    input.value = '';
+    updatePillarCount();
+  }
+
+  function updatePillarCount() {
+    const n = document.querySelectorAll('#s3-list .pillar-row').length;
+    document.getElementById('s3-count').textContent = n;
+    const cta = document.getElementById('s3-cta');
+    if (n < 2 || n > 7) {
+      cta.style.background = 'rgba(0,0,0,.10)';
+      cta.style.color = '#8E8E93';
+      cta.style.pointerEvents = 'none';
+    } else {
+      cta.style.background = '#007AFF';
+      cta.style.color = '#FFFFFF';
+      cta.style.pointerEvents = 'auto';
+    }
+  }
+
+  // ─── Screen 04 · Scan with bounded conditions ──────────────────────────
+  const pillarOrder = ['travel', 'coffee', 'build'];
+  const statusMessages = [
+    'Reading photo {N}…',
+    'Tagging in Travel',
+    'Reading photo {N}…',
+    'Found a Coffee moment',
+    'Reading photo {N}…',
+    'Sorting Build artifact',
+    'Reading photo {N}…',
+    'Almost there',
+    'Reading photo {N}…',
+    'Quality check on confidence'
+  ];
+
+  function startScan() {
+    const counts = { travel: 0, coffee: 0, build: 0 };
+    let total = 0;
+    let statusIdx = 0;
+    const totalEl = document.getElementById('s4-total');
+    const statusEl = document.getElementById('s4-status');
+    const ctaEl = document.getElementById('s4-cta');
+
+    const interval = setInterval(() => {
+      // Pick a random pillar with a slight skew toward the smallest
+      const skewed = pillarOrder.slice().sort((a,b) => counts[a] - counts[b]);
+      const pillar = Math.random() < 0.7 ? skewed[0] : skewed[Math.floor(Math.random() * skewed.length)];
+      if (counts[pillar] < 20) counts[pillar]++;
+      total++;
+
+      // Update UI
+      Object.entries(counts).forEach(([p, c]) => {
+        const row = document.querySelector(`[data-pillar="${p}"]`);
+        if (!row) return;
+        row.querySelector('.now').textContent = c;
+        const fill = row.querySelector('.bar .fill');
+        fill.style.width = `${(c / 20) * 100}%`;
+        if (c >= 20) fill.classList.add('done');
+      });
+      totalEl.textContent = total;
+
+      // Status text rotation
+      if (total % 7 === 0) {
+        statusIdx = (statusIdx + 1) % statusMessages.length;
+        statusEl.innerHTML = statusMessages[statusIdx].replace('{N}', total) + '<span class="dots"></span>';
+      } else {
+        statusEl.innerHTML = statusMessages[statusIdx].replace('{N}', total) + '<span class="dots"></span>';
+      }
+
+      // Exit conditions
+      const allFull = pillarOrder.every(p => counts[p] >= 20);
+      if (allFull || total >= 500) {
+        clearInterval(interval);
+        statusEl.innerHTML = '✓ Your gallery is ready.';
+        ctaEl.classList.remove('cta-disabled');
+        ctaEl.classList.add('cta-ready');
+        ctaEl.textContent = 'Continue · open my pillars →';
+      }
+    }, 80);
+  }
+
+  // Auto-start when scan phone is scrolled into view
+  const scanPhone = document.querySelector('[data-pillar="travel"]').closest('.phone');
+  let scanStarted = false;
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !scanStarted) {
+        scanStarted = true;
+        setTimeout(startScan, 500);
+      }
+    });
+  }, { threshold: 0.4 });
+  obs.observe(scanPhone);
+
+  // Restart button — long-press the cta restarts
+  document.getElementById('s4-cta').addEventListener('dblclick', () => {
+    location.reload();
+  });
+
+  // ─── Screen 05 · Prefilled prompt swap ─────────────────────────────────
+  const promptData = {
+    italy:  { photo: "https://images.unsplash.com/photo-1531572753322-ad063cecc140?w=320&h=320&fit=crop&auto=format&q=75", cap: 'Three days, two cities, one road. Naples → Capri.' },
+    coffee: { photo: "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=320&h=320&fit=crop&auto=format&q=75", cap: 'Latte before email. The only ritual that survived 2026.' },
+    build:  { photo: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=320&h=320&fit=crop&auto=format&q=75", cap: 'Subscription tier is live. Three PRs, one feature shipped.' }
+  };
+
+  document.querySelectorAll('#s5-pills .pp').forEach(pp => {
+    pp.addEventListener('click', () => {
+      document.querySelectorAll('#s5-pills .pp').forEach(p => p.classList.toggle('active', p === pp));
+      document.getElementById('s5-prompt-text').textContent = pp.dataset.prompt;
+      const data = promptData[pp.dataset.photos];
+      document.getElementById('s5-photo').src = data.photo;
+      document.getElementById('s5-cap').textContent = data.cap;
+    });
+  });
+</script>
+
+</body>
+</html>

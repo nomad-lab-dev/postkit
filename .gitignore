@@ -31,3 +31,16 @@ Packages/
 __pycache__/
 *.pyc
 .env*.local
+
+# Node — never commit
+node_modules/
+**/node_modules/
+
+# Remotion render output + chrome shell
+marketing/onboarding-video/out/
+**/.remotion/
+**/.cache/
+
+# Claude Code agent artifacts
+PostKit/.agents/
+PostKit/skills-lock.json

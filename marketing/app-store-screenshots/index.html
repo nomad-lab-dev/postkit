@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · App Store Screenshots Preview</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+    background: #0E0E12;
+    color: #FFFFFF;
+    padding: 60px 40px;
+    min-height: 100vh;
+  }
+
+  header {
+    max-width: 1640px;
+    margin: 0 auto 50px;
+  }
+
+  h1 {
+    font-size: 38px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+  }
+
+  .sub {
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.55);
+    line-height: 1.55;
+    max-width: 720px;
+  }
+
+  .sub b { color: rgba(255, 255, 255, 0.85); font-weight: 600; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 28px;
+    max-width: 1640px;
+    margin: 0 auto;
+  }
+
+  .card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .card-label {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+  }
+
+  .card-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.45);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+
+  /* iframe holds the full-resolution slide; we scale visually with CSS transform */
+  .frame {
+    width: 1242px;
+    height: 2688px;
+    border: none;
+    transform: scale(0.232);
+    transform-origin: top left;
+    border-radius: 28px;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .frame-wrapper {
+    width: 288px;
+    height: 624px;
+    overflow: hidden;
+    border-radius: 28px;
+  }
+
+  .legend {
+    max-width: 1640px;
+    margin: 60px auto 0;
+    padding: 28px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    font-size: 13px;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .legend h2 {
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 12px;
+    color: #FFFFFF;
+  }
+  .legend ul { padding-left: 22px; }
+  .legend li { margin-bottom: 6px; }
+  .legend code {
+    background: rgba(255, 255, 255, 0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: "SF Mono", monospace;
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>PostKit · App Store Screenshots</h1>
+  <p class="sub">
+    5 slide canvases at <b>1242 × 2688</b> (iPhone 6.7" App Store spec).
+    Each phone bezel contains a <b>screenshot prompt</b> describing the exact screen + filling needed.
+    Click any thumbnail to open it full-res. Once real screenshots are captured, swap the prompt placeholder for the PNG.
+  </p>
+</header>
+
+<div class="grid">
+  <a href="slide-01-hook.html" class="card" target="_blank">
+    <div class="card-label">
+      <span class="card-num">01</span>
+      <span class="card-title">Hook</span>
+    </div>
+    <div class="frame-wrapper"><iframe src="slide-01-hook.html" class="frame"></iframe></div>
+  </a>
+
+  <a href="slide-02-before-after.html" class="card" target="_blank">
+    <div class="card-label">
+      <span class="card-num">02</span>
+      <span class="card-title">Before / After</span>
+    </div>
+    <div class="frame-wrapper"><iframe src="slide-02-before-after.html" class="frame"></iframe></div>
+  </a>
+
+  <a href="slide-03-smartpost.html" class="card" target="_blank">
+    <div class="card-label">
+      <span class="card-num">03</span>
+      <span class="card-title">Smart Post</span>
+    </div>
+    <div class="frame-wrapper"><iframe src="slide-03-smartpost.html" class="frame"></iframe></div>
+  </a>
+
+  <a href="slide-04-pillars.html" class="card" target="_blank">
+    <div class="card-label">
+      <span class="card-num">04</span>
+      <span class="card-title">Pillars</span>
+    </div>
+    <div class="frame-wrapper"><iframe src="slide-04-pillars.html" class="frame"></iframe></div>
+  </a>
+
+  <a href="slide-05-habit.html" class="card" target="_blank">
+    <div class="card-label">
+      <span class="card-num">05</span>
+      <span class="card-title">Habit / CTA</span>
+    </div>
+    <div class="frame-wrapper"><iframe src="slide-05-habit.html" class="frame"></iframe></div>
+  </a>
+</div>
+
+<div class="legend">
+  <h2>Next steps</h2>
+  <ul>
+    <li>Open any slide alone (<code>slide-0X-*.html</code>) — renders at 1242×2688 in browser.</li>
+    <li>To render a slide as PNG: <code>chrome --headless --screenshot --window-size=1242,2688 slide-01-hook.html</code></li>
+    <li>To replace a prompt placeholder with a real screenshot: remove the <code>.phone-mockup__prompt</code> div in the slide HTML, drop the captured PNG inside <code>.phone-mockup__screen</code> sized 100% × 100%.</li>
+    <li>To iterate on copy: edit the <code>&lt;textPath&gt;</code> content for the arc headline, and the cartouche <code>&lt;span&gt;</code>s for the lower-tier line.</li>
+  </ul>
+</div>
+
+</body>
+</html>

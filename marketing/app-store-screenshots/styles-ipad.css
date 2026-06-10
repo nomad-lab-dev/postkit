@@ -1,0 +1,431 @@
+/* PostKit — App Store screenshot design tokens (iPad)
+ * Canvas: 2064 × 2752 (iPad 12.9"/13" App Store spec, portrait)
+ *
+ * Design philosophy (same as iPhone):
+ * - Headline lives in an arc across the top ~26%
+ * - Device mockup(s) dominate the middle 54%
+ * - Black cartouche pinned to the lower band as the sub-claim
+ * - Each slide has its own gradient story
+ *
+ * Scale factor vs iPhone (1242×2688): ~1.66× wider, ~1.02× taller
+ */
+
+:root {
+  --brand-blue:   #007AFF;
+  --brand-cyan:   #5AC8FA;
+  --brand-purple: #AF52DE;
+  --brand-pink:   #FF2D55;
+  --brand-rose:   #FFB6C1;
+  --brand-green:  #34C759;
+  --brand-orange: #FF9F0A;
+  --brand-peach:  #FFB088;
+  --brand-grey:   #8E8E93;
+  --brand-mint:   #00B0FF;
+  --brand-pale:   #F0F8FF;
+
+  --bezel:        #0A0A0A;
+  --screen-bg:    #FFFFFF;
+  --screen-warm:  #F7F5F0;
+  --text:         #1C1C1E;
+  --text-2:       #3C3C43;
+  --text-3:       #8E8E93;
+  --border:       rgba(0, 0, 0, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 2064px;
+  height: 2752px;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- SLIDE CANVAS ---------- */
+
+.slide {
+  position: relative;
+  width: 2064px;
+  height: 2752px;
+  overflow: hidden;
+}
+
+/* ---------- BACKGROUND GRADIENTS (same stories) ---------- */
+
+.bg-hook {
+  background:
+    radial-gradient(ellipse at 70% 20%, rgba(255,255,255,.35) 0%, transparent 55%),
+    linear-gradient(160deg, var(--brand-blue) 0%, var(--brand-cyan) 55%, var(--brand-pale) 100%);
+}
+.bg-before-after {
+  background:
+    radial-gradient(ellipse at 80% 30%, rgba(255,255,255,.18) 0%, transparent 50%),
+    linear-gradient(105deg, var(--brand-grey) 0%, #B8B8C0 28%, var(--brand-orange) 65%, var(--brand-peach) 100%);
+}
+.bg-smartpost {
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(255,255,255,.28) 0%, transparent 50%),
+    linear-gradient(155deg, var(--brand-green) 0%, var(--brand-mint) 50%, var(--brand-blue) 100%);
+}
+.bg-pillars {
+  background:
+    radial-gradient(ellipse at 25% 15%, rgba(255,255,255,.25) 0%, transparent 55%),
+    linear-gradient(165deg, var(--brand-purple) 0%, var(--brand-pink) 55%, var(--brand-rose) 100%);
+}
+.bg-habit {
+  background:
+    radial-gradient(ellipse at 20% 15%, rgba(255,255,255,.22) 0%, transparent 55%),
+    linear-gradient(155deg, var(--brand-blue) 0%, var(--brand-purple) 100%);
+}
+
+/* ---------- ARC HEADLINE ---------- */
+
+.arc-headline {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 0;
+  width: 2064px;
+  height: 720px;
+  pointer-events: none;
+}
+
+.arc-headline svg {
+  width: 100%;
+  height: 100%;
+}
+
+.arc-text {
+  font-size: 96px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.96);
+  stroke-width: 1.6px;
+  paint-order: stroke;
+}
+.arc-text--solid {
+  fill: #FFFFFF;
+  stroke: none;
+}
+.arc-text--dark {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.85);
+  stroke-width: 1.6px;
+}
+
+/* ---------- CARTOUCHE BOTTOM ---------- */
+
+.cartouche {
+  position: absolute;
+  left: 50%;
+  bottom: 200px;
+  transform: translateX(-50%);
+  background: #0A0A0A;
+  color: #FFFFFF;
+  font-size: 160px;
+  font-weight: 900;
+  line-height: 1.04;
+  letter-spacing: -0.01em;
+  padding: 42px 72px 52px;
+  border-radius: 28px;
+  text-align: center;
+  text-transform: uppercase;
+  font-stretch: condensed;
+  font-family: "Anton", "Impact", -apple-system, BlinkMacSystemFont, sans-serif;
+  box-shadow:
+    0 0 0 7px #FFFFFF,
+    0 30px 100px rgba(0, 0, 0, .35);
+  max-width: 1560px;
+  white-space: nowrap;
+}
+.cartouche span { display: block; }
+
+/* ---------- PHONE MOCKUP (scaled up for iPad canvas) ---------- */
+
+.phone-mockup {
+  position: absolute;
+  width: 820px;
+  height: 1680px;
+  border-radius: 100px;
+  background: var(--bezel);
+  box-shadow:
+    0 0 0 7px rgba(255, 255, 255, .18),
+    0 70px 160px rgba(0, 0, 0, .35),
+    0 35px 70px rgba(0, 0, 0, .25);
+  padding: 20px;
+  overflow: hidden;
+}
+
+.phone-mockup__screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 82px;
+  background: var(--screen-bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.phone-mockup__statusbar {
+  height: 76px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 64px;
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--text);
+  position: relative;
+}
+.phone-mockup__notch {
+  position: absolute;
+  top: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 240px;
+  height: 40px;
+  background: #0A0A0A;
+  border-radius: 24px;
+}
+
+.phone-mockup__prompt {
+  flex: 1;
+  margin: 4px 24px 24px;
+  border: 3px dashed rgba(0, 0, 0, .18);
+  border-radius: 34px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(0,0,0,.015) 0 18px,
+      rgba(0,0,0,.04) 18px 36px
+    );
+  display: flex;
+  flex-direction: column;
+  padding: 40px 36px;
+  gap: 20px;
+  overflow: hidden;
+}
+
+.phone-mockup__prompt-label {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #C71F37;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.phone-mockup__prompt-label::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #C71F37;
+}
+
+.phone-mockup__prompt-title {
+  font-size: 38px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.phone-mockup__prompt-body {
+  font-size: 24px;
+  font-weight: 500;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.phone-mockup__prompt-body ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+.phone-mockup__prompt-body li {
+  padding-left: 24px;
+  position: relative;
+  margin-bottom: 8px;
+}
+.phone-mockup__prompt-body li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--brand-blue);
+  font-weight: 700;
+}
+
+/* Tilt variants */
+.phone-mockup--tilt-left  { transform: rotate(-3deg); }
+.phone-mockup--tilt-right { transform: rotate(3deg); }
+.phone-mockup--tilt-l8    { transform: rotate(-8deg); }
+.phone-mockup--tilt-r8    { transform: rotate(8deg); }
+
+/* ---------- IPAD MOCKUP ---------- */
+
+.ipad-mockup {
+  position: absolute;
+  background: var(--bezel);
+  border-radius: 60px;
+  box-shadow:
+    0 0 0 7px rgba(255, 255, 255, .18),
+    0 70px 160px rgba(0, 0, 0, .38),
+    0 35px 70px rgba(0, 0, 0, .25);
+  padding: 24px;
+  overflow: hidden;
+}
+
+.ipad-mockup__screen {
+  width: 100%;
+  height: 100%;
+  border-radius: 40px;
+  background: var(--screen-bg);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Camera pill at top center (iPad Pro Face ID) */
+.ipad-mockup__camera {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 140px;
+  height: 22px;
+  background: #0A0A0A;
+  border-radius: 14px;
+}
+
+.ipad-mockup__statusbar {
+  height: 56px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 52px;
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--text);
+  position: relative;
+}
+
+.ipad-mockup__prompt {
+  flex: 1;
+  margin: 4px 20px 20px;
+  border: 3px dashed rgba(0, 0, 0, .18);
+  border-radius: 28px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(0,0,0,.015) 0 18px,
+      rgba(0,0,0,.04) 18px 36px
+    );
+  display: flex;
+  flex-direction: column;
+  padding: 36px 32px;
+  gap: 18px;
+  overflow: hidden;
+}
+
+.ipad-mockup__prompt-label {
+  font-size: 20px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: #C71F37;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ipad-mockup__prompt-label::before {
+  content: "";
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #C71F37;
+}
+
+.ipad-mockup__prompt-title {
+  font-size: 42px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  line-height: 1.15;
+}
+
+.ipad-mockup__prompt-body {
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text-2);
+  line-height: 1.45;
+}
+
+.ipad-mockup__prompt-body ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 12px;
+}
+.ipad-mockup__prompt-body li {
+  padding-left: 28px;
+  position: relative;
+  margin-bottom: 10px;
+}
+.ipad-mockup__prompt-body li::before {
+  content: "→";
+  position: absolute;
+  left: 0;
+  color: var(--brand-blue);
+  font-weight: 700;
+}
+
+/* ---------- DECORATIVE ---------- */
+
+.glow {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+}
+
+.label-pill {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(0, 0, 0, .82);
+  color: #FFFFFF;
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 18px 32px;
+  border-radius: 100px;
+  box-shadow: 0 0 0 4px rgba(255,255,255,.85), 0 14px 48px rgba(0,0,0,.25);
+}
+.label-pill::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--brand-green);
+}
+.label-pill--red::before  { background: var(--brand-pink); }
+.label-pill--blue::before { background: var(--brand-blue); }
+
+.arrow-curved {
+  position: absolute;
+  font-size: 240px;
+  color: rgba(255, 255, 255, .9);
+  font-weight: 100;
+  line-height: 1;
+}

@@ -34,7 +34,7 @@ struct SmartPostView: View {
                                                 .scaleEffect(0.8)
                                                 .tint(Palette.onAccent)
                                         }
-                                        Text(store.isFillingSlots ? "Filling slots..." : "Create Post")
+                                        Text(store.isFillingSlots ? LocalizedStringKey("Filling slots...") : LocalizedStringKey("Create Post"))
                                     }
                                     .font(Typography.subheadline)
                                     .fontWeight(.semibold)
