@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PostKit · iPad Slide 1 — Hook</title>
+<link rel="stylesheet" href="styles-ipad.css">
+</head>
+<body>
+<div class="slide bg-hook">
+
+  <div class="glow" style="width:860px;height:860px;background:rgba(255,255,255,.55);top:-260px;left:-260px;"></div>
+  <div class="glow" style="width:1120px;height:1120px;background:rgba(0,122,255,.45);bottom:-360px;right:-320px;"></div>
+
+  <div class="arc-headline">
+    <svg viewBox="0 0 2064 720" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <path id="arc-1-top" d="M 80 540 A 1040 620 0 0 1 1984 540" fill="none"/>
+        <path id="arc-1-bot" d="M 140 660 A 940 540 0 0 1 1924 660" fill="none"/>
+      </defs>
+      <text class="arc-text arc-text--solid" font-size="110">
+        <textPath href="#arc-1-top" startOffset="50%" text-anchor="middle">YOUR CAMERA ROLL</textPath>
+      </text>
+      <text class="arc-text" font-size="96">
+        <textPath href="#arc-1-bot" startOffset="50%" text-anchor="middle">ALREADY HAS YOUR NEXT POST</textPath>
+      </text>
+    </svg>
+  </div>
+
+  <div class="label-pill label-pill--blue" style="top:810px;left:50%;transform:translateX(-50%);">
+    Built for daily creators
+  </div>
+
+  <!-- Single centered phone — same as iPhone slide-01 but larger and centered on wider canvas -->
+  <div class="phone-mockup phone-mockup--tilt-left" style="top:900px;left:622px;width:820px;height:1680px;">
+    <div class="phone-mockup__screen">
+      <div class="phone-mockup__notch"></div>
+      <div class="phone-mockup__statusbar">
+        <span>9:41</span>
+        <span>● ●●●</span>
+      </div>
+      <div class="phone-mockup__prompt">
+        <div class="phone-mockup__prompt-label">SCREENSHOT PROMPT</div>
+        <div class="phone-mockup__prompt-title">Dashboard — hero stat + status banner + bento grid</div>
+        <div class="phone-mockup__prompt-body">
+          <ul>
+            <li>Top: greeting eyebrow + <b>"1,247"</b> in 52pt rounded heavy + "photos ready" sub</li>
+            <li>Status banner (green strip) — "All caught up · Last scan 2h ago"</li>
+            <li><b>"Your Pillars"</b> section header + Add CTA</li>
+            <li>2×2 bento: 🚗 Automotive 47 · 🍽️ Food 32 · 🌍 Travel 89 · 💼 Build 23</li>
+            <li>Each pillar tile shows 4-photo preview grid below the emoji</li>
+            <li>Bottom: Quick Actions (Smart Post · From template)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cartouche">
+    <span>Start</span>
+    <span>posting</span>
+  </div>
+
+</div>
+</body>
+</html>

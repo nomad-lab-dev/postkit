@@ -4,6 +4,9 @@
 import ComposableArchitecture
 import SwiftUI
 
+private let termsOfUseURL = URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+private let privacyPolicyURL = URL(string: "https://postkit-vision.vercel.app/privacy")!
+
 struct PaywallView: View {
     @Bindable var store: StoreOf<PaywallFeature>
 
@@ -124,10 +127,15 @@ struct PaywallView: View {
 
             Spacer()
 
-            Text(product.displayPrice)
-                .font(Typography.title3)
-                .fontWeight(.bold)
-                .foregroundStyle(isSelected ? Palette.accent : Palette.text)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(product.displayPrice)
+                    .font(Typography.title3)
+                    .fontWeight(.bold)
+                    .foregroundStyle(isSelected ? Palette.accent : Palette.text)
+                Text(product.isYearly ? "per year" : "per week")
+                    .font(Typography.caption2)
+                    .foregroundStyle(Palette.text3)
+            }
         }
         .padding(Spacing.lg)
         .background(
@@ -186,11 +194,22 @@ struct PaywallView: View {
     // MARK: - Legal
 
     private var legalSection: some View {
-        Text("7-day free trial, then auto-renews. Cancel anytime at least 24 hours before the end of the current period. Manage in Settings > Apple ID > Subscriptions.")
-            .font(Typography.caption2)
-            .foregroundStyle(Palette.text4)
-            .multilineTextAlignment(.center)
-            .padding(.bottom, Spacing.lg)
+        VStack(spacing: Spacing.sm) {
+            Text("7-day free trial, then auto-renews. Cancel anytime at least 24 hours before the end of the current period. Manage in Settings > Apple ID > Subscriptions.")
+                .font(Typography.caption2)
+                .foregroundStyle(Palette.text4)
+                .multilineTextAlignment(.center)
+
+            HStack(spacing: Spacing.md) {
+                Link("Terms of Use", destination: termsOfUseURL)
+                Text("·")
+                    .foregroundStyle(Palette.text4)
+                Link("Privacy Policy", destination: privacyPolicyURL)
+            }
+            .font(Typography.caption)
+            .foregroundStyle(Palette.accent)
+        }
+        .padding(.bottom, Spacing.lg)
     }
 }
 

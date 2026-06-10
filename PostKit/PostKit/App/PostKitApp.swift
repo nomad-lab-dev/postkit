@@ -68,6 +68,9 @@ struct PostKitApp: App {
                 case "smartPost": initialState.selectedTab = .smartPost
                 case "create":    initialState.selectedTab = .create
                 case "settings":  initialState.selectedTab = .settings
+                case "italianTemplate":
+                    initialState.selectedTab = .smartPost
+                    initialState.smartPost.generatedTemplate = DemoDataSeeder.italianTemplateSnapshot
                 default: break
                 }
             }

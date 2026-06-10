@@ -220,7 +220,7 @@ struct TopicEditorFeature {
 
     private func saveAndDismiss(state: inout State) -> Effect<Action> {
         state.isSaving = true
-        var snapshot = PillarSnapshot(
+        let snapshot = PillarSnapshot(
             id: state.existingPillarID ?? UUID(),
             name: state.name.trimmingCharacters(in: .whitespaces),
             emoji: state.emoji.isEmpty ? "📌" : state.emoji,
@@ -232,16 +232,17 @@ struct TopicEditorFeature {
             colorHex: state.colorHex
         )
         let needsKeywords = snapshot.referenceTags.isEmpty && snapshot.referencePhotoIDs.isEmpty
-        return .run { [postGenerator] send in
+        return .run { [postGenerator, persistence, snapshot] send in
+            var finalSnapshot = snapshot
             if needsKeywords {
                 let keywords = (try? await postGenerator.generatePillarKeywords(
-                    snapshot.name, snapshot.about, snapshot.topics
+                    finalSnapshot.name, finalSnapshot.about, finalSnapshot.topics
                 )) ?? []
                 if !keywords.isEmpty {
-                    snapshot.referenceTags = keywords
+                    finalSnapshot.referenceTags = keywords
                 }
             }
-            try await persistence.savePillar(snapshot)
+            try await persistence.savePillar(finalSnapshot)
             await send(.saved)
         }
     }

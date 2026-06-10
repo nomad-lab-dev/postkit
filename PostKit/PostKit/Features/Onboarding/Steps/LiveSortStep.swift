@@ -1,5 +1,7 @@
 import Combine
 import ComposableArchitecture
+import os
+import Photos
 import SwiftUI
 
 struct LiveSortStep: View {
@@ -38,7 +40,15 @@ struct LiveSortStep: View {
                             HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step05HeadlinePart1), font: .obHeadline(28), color: Palette.text),
                             HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step05HeadlineEmphasis), font: .obEmphasis(30), color: Color(red: 0/255, green: 122/255, blue: 255/255)),
                         ],
-                        show: scanDone
+                        show: scanDone,
+                        onFinished: {
+                            Task { @MainActor in
+                                try? await Task.sleep(for: .milliseconds(120))
+                                phase = 3
+                                try? await Task.sleep(for: .milliseconds(450))
+                                phase = 4
+                            }
+                        }
                     )
                     .transition(.opacity.combined(with: .move(edge: .bottom)))
                 } else {
@@ -96,6 +106,13 @@ struct LiveSortStep: View {
                                     }
                                     .frame(height: 6)
                                 }
+                                if scanDone && !topic.matchedAssetIDs.isEmpty {
+                                    ScanThumbnailStrip(
+                                        assetIDs: topic.matchedAssetIDs,
+                                        totalCount: topic.matchedPhotos
+                                    )
+                                    .transition(.opacity.combined(with: .scale(scale: 0.95, anchor: .top)))
+                                }
                             }
                             .padding(.horizontal, Spacing.sm)
                             .padding(.vertical, Spacing.xs)
@@ -113,7 +130,7 @@ struct LiveSortStep: View {
                         }
                     }
                     .padding(Spacing.lg)
-                    .background(Color.white, in: RoundedRectangle(cornerRadius: Radius.card))
+                    .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: Radius.card))
                     .shadow(color: .black.opacity(0.05), radius: 8, y: 2)
 
                     if !scanDone {
@@ -172,6 +189,8 @@ struct LiveSortStep: View {
         }
     }
 
+    // MARK: - Helpers (must be defined inside LiveSortStep to access pillarAccent)
+
     @ViewBuilder
     private var yourTurnContent: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
@@ -199,5 +218,91 @@ struct LiveSortStep: View {
             .background(Palette.surface, in: RoundedRectangle(cornerRadius: Radius.card))
             .padding(.top, Spacing.xxs)
         }
+    }
+}
+
+// MARK: - Thumbnail strip
+
+private struct ScanThumbnailStrip: View {
+    let assetIDs: [String]
+    let totalCount: Int
+
+    private let thumbSize: CGFloat = 52
+    private let maxVisible = 4
+
+    private var showOverflow: Bool { totalCount > maxVisible }
+    private var overflowCount: Int { totalCount - (maxVisible - 1) }
+    private var displayIDs: [String] {
+        showOverflow ? Array(assetIDs.prefix(maxVisible - 1)) : Array(assetIDs.prefix(maxVisible))
+    }
+
+    var body: some View {
+        HStack(spacing: 4) {
+            ForEach(displayIDs, id: \.self) { id in
+                ScanThumb(assetID: id, size: thumbSize)
+            }
+            if showOverflow, let lastID = assetIDs.dropFirst(maxVisible - 1).first {
+                ZStack {
+                    ScanThumb(assetID: lastID, size: thumbSize)
+                    Color.black.opacity(0.55)
+                        .clipShape(RoundedRectangle(cornerRadius: 6))
+                    Text("+\(overflowCount)")
+                        .font(.custom("SpaceGrotesk-Bold", size: 11))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: thumbSize, height: thumbSize)
+            }
+            Spacer(minLength: 0)
+        }
+    }
+}
+
+private struct ScanThumb: View {
+    let assetID: String
+    let size: CGFloat
+    @State private var image: UIImage?
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 6)
+            .fill(Color(.systemGray5))
+            .overlay {
+                if let image {
+                    Image(uiImage: image)
+                        .resizable()
+                        .scaledToFill()
+                        .clipped()
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .frame(width: size, height: size)
+            .task(id: assetID) {
+                let fetchResult = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
+                guard let asset = fetchResult.firstObject else { return }
+                let scale = UIScreen.main.scale
+                let side = ceil(size * scale)
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .fastFormat
+                options.isNetworkAccessAllowed = false
+                let result = await withCheckedContinuation { (continuation: CheckedContinuation<UIImage?, Never>) in
+                    let resumed = OSAllocatedUnfairLock(initialState: false)
+                    PHImageManager.default().requestImage(
+                        for: asset,
+                        targetSize: CGSize(width: side, height: side),
+                        contentMode: .aspectFill,
+                        options: options
+                    ) { img, info in
+                        let degraded = (info?[PHImageResultIsDegradedKey] as? Bool) ?? false
+                        if degraded { return }
+                        let already = resumed.withLock { v -> Bool in
+                            let was = v
+                            v = true
+                            return was
+                        }
+                        if !already { continuation.resume(returning: img) }
+                    }
+                }
+                guard !Task.isCancelled, let result else { return }
+                withAnimation(.easeInOut(duration: 0.25)) { image = result }
+            }
     }
 }

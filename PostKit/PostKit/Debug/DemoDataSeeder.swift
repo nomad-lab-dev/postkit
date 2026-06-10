@@ -19,6 +19,22 @@ enum DemoDataSeeder {
     /// Asset prefix used by MarketingPhotoLibraryClient to serve bundled images.
     static let assetPrefix = "marketing:"
 
+    /// Pre-baked Italian Summer template snapshot for slide 03B (template preview in SmartPost).
+    static let italianTemplateSnapshot = TemplateSnapshot(
+        name: "Italian Summer",
+        about: "6 photos, 6 villes, un tour du monde italien",
+        slots: [
+            TemplateSlotData(name: "Naples",   cadrages: [.portrait], pillarIDs: [travelID],     locations: ["Naples, IT"],   about: "Portrait golden hour"),
+            TemplateSlotData(name: "Rome",     cadrages: [.detail],   pillarIDs: [foodID],       locations: ["Rome, IT"],     about: "Cacio e pepe close-up"),
+            TemplateSlotData(name: "Positano", cadrages: [.wide],     pillarIDs: [travelID],     locations: ["Positano, IT"], about: "Coastline at sunset"),
+            TemplateSlotData(name: "Florence", cadrages: [.portrait], pillarIDs: [automotiveID], locations: ["Florence, IT"], about: "Fiat 500 yellow"),
+            TemplateSlotData(name: "Capri",    cadrages: [.wide],     pillarIDs: [travelID],     locations: ["Capri, IT"],    about: "Capri sunset boat POV"),
+            TemplateSlotData(name: "Milan",    cadrages: [.detail],   pillarIDs: [foodID],       locations: ["Milan, IT"],    about: "Espresso bar interior")
+        ],
+        locations: ["Naples, IT", "Rome, IT", "Positano, IT", "Florence, IT", "Capri, IT", "Milan, IT"],
+        schedule: TemplateSchedule(weekdays: [.monday, .wednesday, .friday])
+    )
+
     /// Pre-baked Italian Summer conversation for slide 03A (Smart Post chat).
     static let italianChatMessages: [ChatMessage] = [
         ChatMessage(

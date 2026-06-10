@@ -10,63 +10,72 @@ struct MagicDemoStep: View {
             Palette.bg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: Spacing.md) {
-                        TypewriterText(
-                            text: localizedString(for: AppStrings.Onboarding.step02Eyebrow),
-                            font: .obMono(9), color: Palette.text4, show: phase >= 1
-                        )
-                        .padding(.top, Spacing.md)
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(alignment: .leading, spacing: Spacing.md) {
+                            TypewriterText(
+                                text: localizedString(for: AppStrings.Onboarding.step02Eyebrow),
+                                font: .obMono(9), color: Palette.text4, show: phase >= 1
+                            )
+                            .padding(.top, Spacing.md)
 
-                        TypewriterHeadline(
-                            segments: [
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart1), font: .obHeadline(28), color: Palette.text),
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlineEmphasis), font: .obEmphasis(30), color: Color(red: 1, green: 149/255, blue: 0)),
-                                HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart2), font: .obHeadline(28), color: Palette.text),
-                            ],
-                            show: phase >= 1,
-                            onFinished: {
-                                Task { @MainActor in
-                                    try? await Task.sleep(for: .milliseconds(120))
-                                    phase = 3
+                            TypewriterHeadline(
+                                segments: [
+                                    HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart1), font: .obHeadline(28), color: Palette.text),
+                                    HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlineEmphasis), font: .obEmphasis(30), color: Color(red: 1, green: 149/255, blue: 0)),
+                                    HeadlineSegment(text: localizedString(for: AppStrings.Onboarding.step02HeadlinePart2), font: .obHeadline(28), color: Palette.text),
+                                ],
+                                show: phase >= 1,
+                                onFinished: {
+                                    Task { @MainActor in
+                                        try? await Task.sleep(for: .milliseconds(120))
+                                        phase = 3
+                                    }
+                                }
+                            )
+
+                            HStack(spacing: Spacing.xs) {
+                                ForEach(OnboardingFeature.DemoChip.allCases, id: \.self) { chip in
+                                    Button {
+                                        Haptics.lightTap()
+                                        store.send(.demoChipTapped(chip))
+                                    } label: {
+                                        Text(chip.label)
+                                            .font(.obBody(12))
+                                            .foregroundStyle(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255) : Palette.text2)
+                                            .padding(.horizontal, Spacing.sm)
+                                            .padding(.vertical, 6)
+                                            .background(
+                                                store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.1) : Color.black.opacity(0.04),
+                                                in: Capsule()
+                                            )
+                                            .overlay(
+                                                Capsule()
+                                                    .strokeBorder(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.35) : Color.black.opacity(0.1), lineWidth: 1)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                    .animation(.easeInOut(duration: 0.2), value: store.activeDemoChip)
                                 }
                             }
-                        )
+                            .obEntrance(show: phase >= 3)
 
-                        HStack(spacing: Spacing.xs) {
-                            ForEach(OnboardingFeature.DemoChip.allCases, id: \.self) { chip in
-                                Button {
-                                    Haptics.lightTap()
-                                    store.send(.demoChipTapped(chip))
-                                } label: {
-                                    Text(chip.label)
-                                        .font(.obBody(12))
-                                        .foregroundStyle(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255) : Palette.text2)
-                                        .padding(.horizontal, Spacing.sm)
-                                        .padding(.vertical, 6)
-                                        .background(
-                                            store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.1) : Color.black.opacity(0.04),
-                                            in: Capsule()
-                                        )
-                                        .overlay(
-                                            Capsule()
-                                                .strokeBorder(store.activeDemoChip == chip ? Color(red: 0/255, green: 122/255, blue: 255/255).opacity(0.35) : Color.black.opacity(0.1), lineWidth: 1)
-                                        )
+                            MagicDemoCard(data: DemoData.make(store.activeDemoChip), onShareVisible: {
+                                phase = 4
+                                withAnimation(.easeInOut(duration: 0.4)) {
+                                    proxy.scrollTo("demoBottom", anchor: .bottom)
                                 }
-                                .buttonStyle(.plain)
-                                .animation(.easeInOut(duration: 0.2), value: store.activeDemoChip)
-                            }
-                        }
-                        .obEntrance(show: phase >= 3)
-
-                        MagicDemoCard(data: DemoData.make(store.activeDemoChip), onShareVisible: { phase = 4 })
+                            })
                             .shadow(color: .black.opacity(0.22), radius: 14, y: 6)
                             .obEntrance(show: phase >= 3)
+
+                            Color.clear.frame(height: 1).id("demoBottom")
+                        }
+                        .padding(.horizontal, Layout.Padding.screen.leading)
+                        .padding(.bottom, 28)
                     }
-                    .padding(.horizontal, Layout.Padding.screen.leading)
-                    .padding(.bottom, 28)
+                    .scrollClipDisabled()
                 }
-                .scrollClipDisabled()
 
                 ctaBar {
                     Button {
@@ -215,7 +224,7 @@ struct MagicDemoCard: View {
             }
         }
         .padding(Spacing.md)
-        .background(Color.white.opacity(0.97), in: RoundedRectangle(cornerRadius: 14))
+        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 14))
         .task(id: data.id) {
             await playSequence()
         }

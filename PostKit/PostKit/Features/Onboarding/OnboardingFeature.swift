@@ -12,6 +12,14 @@ struct OnboardingTopic: Equatable, Identifiable, Sendable {
     var emoji: String
     var about: String
     var matchedPhotos: Int = 0
+    var matchedAssetIDs: [String] = []
+}
+
+struct QuickScanPhotoData: Equatable, Sendable {
+    let assetID: String
+    let matchedPillarNames: [String]
+    let confidence: Float
+    let tags: [String]
 }
 
 @Reducer
@@ -55,6 +63,9 @@ struct OnboardingFeature {
         var selectedPillarPillID: OnboardingTopic.ID?
         var cloudAIEnabled: Bool = false
         var isSaving: Bool = false
+
+        // Accumulated during quick scan for persistence at the end of onboarding
+        var quickScanPhotos: [QuickScanPhotoData] = []
 
         @Presents var alert: AlertState<Action.Alert>?
 
@@ -249,13 +260,31 @@ struct OnboardingFeature {
                 state.totalToScan = max(totalPhotos, 1)
                 return .none
 
-            case let .scanProgressed(results, _):
+            case let .scanProgressed(results, assetID):
                 state.scannedCount += 1
                 state.scanProgress = Double(state.scannedCount) / Double(state.totalToScan)
+                var matchedNames: [String] = []
                 for result in results {
                     if let index = state.topics.firstIndex(where: { $0.name == result.pillarName }) {
                         state.topics[index].matchedPhotos += 1
+                        // Cap at 4 — only need enough for the thumbnail strip
+                        if state.topics[index].matchedAssetIDs.count < 4 {
+                            state.topics[index].matchedAssetIDs.append(assetID)
+                        }
+                        matchedNames.append(result.pillarName)
                     }
+                }
+                if !matchedNames.isEmpty {
+                    let bestConfidence = results.map(\.confidence).max() ?? 0
+                    let tags = Array(Set(results.flatMap(\.suggestedTags)).prefix(5))
+                    state.quickScanPhotos.append(
+                        QuickScanPhotoData(
+                            assetID: assetID,
+                            matchedPillarNames: matchedNames,
+                            confidence: bestConfidence,
+                            tags: tags
+                        )
+                    )
                 }
                 return .none
 
@@ -283,7 +312,11 @@ struct OnboardingFeature {
                     state.step = .pillars
                     state.scannedCount = 0
                     state.scanProgress = 0
-                    for i in state.topics.indices { state.topics[i].matchedPhotos = 0 }
+                    for i in state.topics.indices {
+                        state.topics[i].matchedPhotos = 0
+                        state.topics[i].matchedAssetIDs = []
+                    }
+                    state.quickScanPhotos = []
                     return .merge(
                         .cancel(id: CancelID.quickScan),
                         .cancel(id: CancelID.emojiResolution)
@@ -307,7 +340,9 @@ struct OnboardingFeature {
                 guard !state.isSaving else { return .none }
                 state.isSaving = true
                 let topics = state.topics
+                let quickScanPhotos = state.quickScanPhotos
                 return .run { [persistence, gallery] send in
+                    // 1. Save pillars
                     let existing = try await persistence.fetchPillars()
                     let existingByName = Dictionary(
                         existing.map { ($0.name.lowercased(), $0) },
@@ -322,6 +357,30 @@ struct OnboardingFeature {
                             try await persistence.savePillar(
                                 PillarSnapshot(name: topic.name, emoji: topic.emoji, about: topic.about, referenceTags: [])
                             )
+                        }
+                    }
+                    // 2. Persist quick scan photos so the full scan skips them
+                    if !quickScanPhotos.isEmpty {
+                        let savedPillars = try await persistence.fetchPillars()
+                        let pillarNameToID = Dictionary(
+                            savedPillars.map { ($0.name.lowercased(), $0.id) },
+                            uniquingKeysWith: { first, _ in first }
+                        )
+                        let snapshots = quickScanPhotos.compactMap { data -> ClassifiedPhotoSnapshot? in
+                            let ids = data.matchedPillarNames.compactMap { pillarNameToID[$0.lowercased()] }
+                            guard !ids.isEmpty else { return nil }
+                            return ClassifiedPhotoSnapshot(
+                                assetLocalIdentifier: data.assetID,
+                                pillarID: ids.first,
+                                pillarIDs: ids,
+                                confidence: data.confidence,
+                                classifiedByAI: true,
+                                tags: data.tags,
+                                status: .classified
+                            )
+                        }
+                        if !snapshots.isEmpty {
+                            try await persistence.batchSavePhotos(snapshots)
                         }
                     }
                     await gallery.invalidateAll()

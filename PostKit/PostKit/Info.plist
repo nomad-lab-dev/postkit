@@ -11,6 +11,8 @@
 		<string>InstrumentSerif-Italic.ttf</string>
 		<string>GeistMono-SemiBold.ttf</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>

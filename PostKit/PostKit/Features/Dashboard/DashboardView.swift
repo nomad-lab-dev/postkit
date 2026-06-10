@@ -7,56 +7,18 @@ import SwiftUI
 struct DashboardView: View {
     @Bindable var store: StoreOf<DashboardFeature>
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.horizontalSizeClass) private var sizeClass
+
+    private var isIPad: Bool { sizeClass == .regular }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             if store.isInitialLoading {
                 dashboardSkeleton
+            } else if isIPad {
+                iPadLayout
             } else {
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: Spacing.lg) {
-                        DashboardStatusBanner(
-                            status: store.derivedStatus,
-                            sortedUpToDate: store.sortedUpToDate,
-                            onPrimary: { store.send(.statusPrimaryTapped) }
-                        )
-                        .padding(.top, Spacing.xs)
-
-                        if !store.scheduledTemplates.isEmpty {
-                            PlannedTodaySection(
-                                templates: store.scheduledTemplates,
-                                now: Date(),
-                                onTap: { store.send(.scheduledTemplateTapped($0)) }
-                            )
-                        }
-
-                        if store.pillars.isEmpty {
-                            EmptyPillarsState { store.send(.addPillarTapped) }
-                        } else {
-                            PillarsBentoSection(
-                                pillars: store.pillars,
-                                onTap: { store.send(.pillarTapped($0)) }
-                            )
-                        }
-
-                        QuickActionsSection(
-                            onCompose: { store.send(.composePostTapped) },
-                            onNewTemplate: { store.send(.newTemplateTapped) }
-                        )
-
-                        if store.pendingReviewCount > 0 {
-                            PendingReviewCard(
-                                count: store.pendingReviewCount,
-                                onReview: { store.send(.reviewPendingTapped) }
-                            )
-                        }
-
-                        Spacer(minLength: Spacing.xxl)
-                    }
-                    .padding(.horizontal, Spacing.lg)
-                }
-                .scrollIndicators(.hidden)
-                .refreshable { await store.send(.pullToRefresh).finish() }
+                iPhoneLayout
             }
 
             if store.showScanCompleteToast {
@@ -105,6 +67,129 @@ struct DashboardView: View {
         .animation(.snappy(duration: 0.35), value: store.derivedStatus)
     }
 
+    // MARK: - iPhone layout
+
+    private var iPhoneLayout: some View {
+        ScrollView {
+            LazyVStack(alignment: .leading, spacing: Spacing.lg) {
+                DashboardStatusBanner(
+                    status: store.derivedStatus,
+                    sortedUpToDate: store.sortedUpToDate,
+                    onPrimary: { store.send(.statusPrimaryTapped) }
+                )
+                .padding(.top, Spacing.xs)
+
+                if !store.scheduledTemplates.isEmpty {
+                    PlannedTodaySection(
+                        templates: store.scheduledTemplates,
+                        now: Date(),
+                        onTap: { store.send(.scheduledTemplateTapped($0)) }
+                    )
+                }
+
+                if store.pillars.isEmpty {
+                    EmptyPillarsState { store.send(.addPillarTapped) }
+                } else {
+                    PillarsBentoSection(
+                        pillars: store.pillars,
+                        onTap: { store.send(.pillarTapped($0)) }
+                    )
+                }
+
+                QuickActionsSection(
+                    onCompose: { store.send(.composePostTapped) },
+                    onNewTemplate: { store.send(.newTemplateTapped) }
+                )
+
+                Spacer(minLength: Spacing.xl)
+
+                if store.pendingReviewCount > 0 {
+                    PendingReviewCard(
+                        count: store.pendingReviewCount,
+                        totalSorted: store.classifiedAssetCount,
+                        onReview: { store.send(.reviewPendingTapped) }
+                    )
+                }
+
+                Spacer(minLength: Spacing.xxl)
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .scrollIndicators(.hidden)
+        .refreshable { await store.send(.pullToRefresh).finish() }
+    }
+
+    // MARK: - iPad layout (2-column split, orientation-aware)
+    // Portrait → 3-col pillar grid · Landscape → 4-col pillar grid
+    // Right panel scrolls only when pillar content overflows the screen.
+
+    private var iPadLayout: some View {
+        GeometryReader { geo in
+            let isLandscape = geo.size.width > geo.size.height
+            let pillarColumns = isLandscape ? 4 : 3
+            let railWidth: CGFloat = isLandscape ? 280 : 300
+
+            HStack(alignment: .top, spacing: Spacing.xl) {
+
+                // Left rail — never scrolls
+                VStack(alignment: .leading, spacing: Spacing.lg) {
+                    DashboardStatusBanner(
+                        status: store.derivedStatus,
+                        sortedUpToDate: store.sortedUpToDate,
+                        onPrimary: { store.send(.statusPrimaryTapped) }
+                    )
+
+                    if !store.scheduledTemplates.isEmpty {
+                        PlannedTodaySection(
+                            templates: store.scheduledTemplates,
+                            now: Date(),
+                            onTap: { store.send(.scheduledTemplateTapped($0)) }
+                        )
+                    }
+
+                    QuickActionsSection(
+                        onCompose: { store.send(.composePostTapped) },
+                        onNewTemplate: { store.send(.newTemplateTapped) }
+                    )
+
+                    Spacer()
+
+                    if store.pendingReviewCount > 0 {
+                        PendingReviewCard(
+                            count: store.pendingReviewCount,
+                            totalSorted: store.classifiedAssetCount,
+                            onReview: { store.send(.reviewPendingTapped) }
+                        )
+                    }
+                }
+                .frame(width: railWidth)
+
+                // Right panel — scrolls only when pillar rows overflow
+                ScrollView {
+                    VStack(alignment: .leading, spacing: 0) {
+                        if store.pillars.isEmpty {
+                            EmptyPillarsState { store.send(.addPillarTapped) }
+                        } else {
+                            PillarsBentoSection(
+                                pillars: store.pillars,
+                                columns: pillarColumns,
+                                onTap: { store.send(.pillarTapped($0)) }
+                            )
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
+                .scrollBounceBehavior(.basedOnSize)
+                .scrollIndicators(.hidden)
+                .frame(maxWidth: .infinity)
+            }
+            .padding(.horizontal, Spacing.lg)
+            .padding(.top, Spacing.xs)
+        }
+    }
+
+    // MARK: - Skeleton
+
     private var dashboardSkeleton: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: Spacing.lg) {
@@ -140,30 +225,31 @@ struct DashboardView: View {
 
 private struct PendingReviewCard: View {
     let count: Int
+    let totalSorted: Int
     let onReview: () -> Void
-
-    private var countKey: LocalizedStringKey {
-        count == 1
-            ? "We found 1 photo we're not sure about"
-            : "We found \(count) photos we're not sure about"
-    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.sm) {
             HStack(spacing: Spacing.sm) {
-                Image(systemName: "eye")
-                    .font(.system(size: 18))
-                    .foregroundStyle(Palette.text3)
+                Image(systemName: "eye.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundStyle(Palette.accent)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(countKey)
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("\(count) photo\(count == 1 ? "" : "s") need your call")
                         .font(Typography.subheadline)
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                         .foregroundStyle(Palette.text)
 
-                    Text("Take a quick look — they might belong to a topic")
-                        .font(Typography.caption)
-                        .foregroundStyle(Palette.text3)
+                    if totalSorted > 0 {
+                        Text("The AI sorted \(totalSorted.formatted()) — these \(count) it's not sure about")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.text3)
+                    } else {
+                        Text("The AI hesitated on their topic — your call takes seconds")
+                            .font(Typography.caption)
+                            .foregroundStyle(Palette.text3)
+                    }
                 }
 
                 Spacer(minLength: 0)
@@ -173,7 +259,7 @@ private struct PendingReviewCard: View {
                 Haptics.tap()
                 onReview()
             } label: {
-                Text("Take a look")
+                Text("Review now")
                     .font(Typography.subheadline)
                     .fontWeight(.semibold)
                     .foregroundStyle(Palette.accent)
