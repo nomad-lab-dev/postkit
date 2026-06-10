@@ -108,8 +108,8 @@ struct PaywallView: View {
                     Text(product.displayName)
                         .font(Typography.headline)
                         .foregroundStyle(Palette.text)
-                    if product.isYearly {
-                        Text("SAVE 74%")
+                    if let savings = product.savingsPercent {
+                        Text("SAVE \(savings)%")
                             .font(Typography.caption2)
                             .fontWeight(.bold)
                             .foregroundStyle(.white)
@@ -119,7 +119,7 @@ struct PaywallView: View {
                     }
                 }
                 if let weekly = product.weeklyEquivalent {
-                    Text("$\(weekly)/wk")
+                    Text("\(weekly)/wk")
                         .font(Typography.caption)
                         .foregroundStyle(Palette.text3)
                 }
@@ -214,8 +214,8 @@ struct PaywallView: View {
 }
 
 private let mockProducts = [
-    ProProduct(id: "lucchettan.postkit.pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "Weekly Pro", weeklyEquivalent: nil, isYearly: false),
-    ProProduct(id: "lucchettan.postkit.pro_yearly", displayName: "Yearly", displayPrice: "$39.99", description: "Yearly Pro", weeklyEquivalent: "0.77", isYearly: true),
+    ProProduct(id: "lucchettan.postkit.pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "Weekly Pro", weeklyEquivalent: nil, savingsPercent: nil, isYearly: false),
+    ProProduct(id: "lucchettan.postkit.pro_yearly", displayName: "Yearly", displayPrice: "$59.99", description: "Yearly Pro", weeklyEquivalent: "$1.15", savingsPercent: 61, isYearly: true),
 ]
 
 #Preview("Yearly selected") {

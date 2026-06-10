@@ -13,6 +13,7 @@ struct ProProduct: Equatable, Identifiable, Sendable {
     let displayPrice: String
     let description: String
     let weeklyEquivalent: String?  // per-week cost shown under the annual card
+    let savingsPercent: Int?       // yearly card badge — computed vs weekly × 52
     let isYearly: Bool
 }
 
@@ -32,11 +33,23 @@ extension SubscriptionClient: DependencyKey {
             log.info("🔍 Requesting products for IDs: \(productIDs)")
             let products = try await Product.products(for: productIDs)
             log.info("📦 StoreKit returned \(products.count) products: \(products.map(\.id))")
+            // savings % is computed cross-product: 1 - (yearly / (weekly × 52))
+            let weeklyProduct = products.first { $0.id == "lucchettan.postkit.pro_weekly" }
+            let yearlyProduct = products.first { $0.id == "lucchettan.postkit.pro_yearly" }
+            let yearlySavingsPercent: Int? = {
+                guard let weeklyProduct, let yearlyProduct else { return nil }
+                let yearOfWeekly = weeklyProduct.price * 52
+                guard yearOfWeekly > 0 else { return nil }
+                let ratio = NSDecimalNumber(decimal: yearlyProduct.price / yearOfWeekly).doubleValue
+                let percent = Int((1 - ratio) * 100)
+                return percent > 0 ? percent : nil
+            }()
+
             return products.compactMap { product in
                 let isYearly = product.id == "lucchettan.postkit.pro_yearly"
-                // annual plan: show per-week equivalent ($39.99 ÷ 52 ≈ $0.77/wk)
+                // annual plan: show per-week equivalent formatted in the product's currency/locale
                 let weeklyEquivalent: String? = isYearly
-                    ? String(format: "%.2f", NSDecimalNumber(decimal: product.price / 52).doubleValue)
+                    ? (product.price / 52).formatted(product.priceFormatStyle)
                     : nil
                 return ProProduct(
                     id: product.id,
@@ -44,6 +57,7 @@ extension SubscriptionClient: DependencyKey {
                     displayPrice: product.displayPrice,
                     description: product.description,
                     weeklyEquivalent: weeklyEquivalent,
+                    savingsPercent: isYearly ? yearlySavingsPercent : nil,
                     isYearly: isYearly
                 )
             }
@@ -86,8 +100,8 @@ extension SubscriptionClient: DependencyKey {
     static let previewValue = SubscriptionClient(
         fetchProducts: {
             [
-                ProProduct(id: "lucchettan.postkit.pro_yearly", displayName: "Yearly", displayPrice: "$39.99", description: "PostKit Pro Yearly", weeklyEquivalent: "0.77", isYearly: true),
-                ProProduct(id: "lucchettan.postkit.pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "PostKit Pro Weekly", weeklyEquivalent: nil, isYearly: false),
+                ProProduct(id: "lucchettan.postkit.pro_yearly", displayName: "Yearly", displayPrice: "$59.99", description: "PostKit Pro Yearly", weeklyEquivalent: "$1.15", savingsPercent: 61, isYearly: true),
+                ProProduct(id: "lucchettan.postkit.pro_weekly", displayName: "Weekly", displayPrice: "$2.99", description: "PostKit Pro Weekly", weeklyEquivalent: nil, savingsPercent: nil, isYearly: false),
             ]
         },
         purchase: { _ in true },
